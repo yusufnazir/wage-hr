@@ -1,0 +1,29 @@
+/* Semantic tokens — components use Tailwind theme keys or these vars only */
+@import "./tokens-primitives.css";
+
+:root {
+  --color-bg: var(--p-neutral-50);
+  --color-surface: var(--p-white);
+  --color-text: var(--p-neutral-950);
+  --color-muted: var(--p-neutral-500);
+  --color-border: var(--p-neutral-200);
+  --color-primary: var(--p-green-700);
+  --color-primary-foreground: var(--p-green-50);
+  /* Tenant / white-label hook: defaults to primary; future tenant theme can override on a wrapper */
+  --color-accent: var(--p-green-700);
+  --color-accent-foreground: var(--p-green-50);
+  --radius-md: 0.5rem;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.dark {
+  --color-bg: var(--p-neutral-950);
+  --color-surface: var(--p-neutral-900);
+  --color-text: var(--p-neutral-50);
+  --color-muted: var(--p-neutral-400);
+  --color-border: var(--p-neutral-800);
+  --color-primary: var(--p-green-500);
+  --color-primary-foreground: var(--p-green-950);
+  --color-accent: var(--p-green-500);
+  --color-accent-foreground: var(--p-green-950);
+}

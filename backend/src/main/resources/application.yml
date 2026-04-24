@@ -1,0 +1,52 @@
+server:
+  port: ${SERVER_PORT:8300}
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:none}
+
+spring:
+  application:
+    name: wage-payroll-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:mariadb://127.0.0.1:3307/wagepayroll}
+    username: ${DATABASE_USERNAME:wage}
+    password: ${DATABASE_PASSWORD:wage}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+app:
+  public:
+    frontend-origin: ${PUBLIC_FRONTEND_ORIGIN:http://auth.lvh.me:3007}
+  host:
+    base-domain: ${BASE_DOMAIN:lvh.me}
+    auth-subdomain: ${AUTH_SUBDOMAIN:auth}
+    app-subdomain: ${APP_SUBDOMAIN:app}
+    cookie-domain: ${COOKIE_DOMAIN:.lvh.me}
+    reserved-subdomains-extra: ${RESERVED_SUBDOMAINS_EXTRA:}
+  cors:
+    allowed-origin-patterns: ${CORS_ORIGINS:http://localhost:3007,http://127.0.0.1:3007,http://auth.lvh.me:3007,http://app.lvh.me:3007,http://*.lvh.me:3007,http://auth.lvh.me:3108,http://app.lvh.me:3108,http://*.lvh.me:3108}
+  security:
+    rate-limit:
+      login-max-attempts: ${LOGIN_RATE_MAX:5}
+      login-window-minutes: ${LOGIN_RATE_WINDOW_MINUTES:15}
+      forgot-password-max-attempts: ${FORGOT_RATE_MAX:5}
+      forgot-password-window-minutes: ${FORGOT_RATE_WINDOW_MINUTES:60}
+    headers:
+      content-security-policy: "default-src 'none'; frame-ancestors 'none'"
+      referrer-policy: strict-origin-when-cross-origin
+      permissions-policy: "geolocation=(), microphone=(), camera=()"
+  forwarding:
+    trust-proxy: ${TRUST_PROXY:false}
+  invitation:
+    expose-plain-token: ${APP_INVITATION_EXPOSE_PLAIN_TOKEN:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

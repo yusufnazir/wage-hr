@@ -1,0 +1,8 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.jdt.ls.java.home": "D:\\Tools\\Eclipse Adoptium\\jdk-21.0.3.9-hotspot",
+    "terminal.integrated.env.windows": {
+        "JAVA_HOME": "D:\\Tools\\Eclipse Adoptium\\jdk-21.0.3.9-hotspot"
+    }
+}

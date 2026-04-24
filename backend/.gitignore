@@ -1,0 +1,7 @@
+/.jdk/
+/target/
+*.iml
+.idea/
+application-local.yml
+.env
+.env.*

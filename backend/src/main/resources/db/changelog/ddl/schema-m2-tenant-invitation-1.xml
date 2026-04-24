@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m2-tenant-invitation-1" author="wagepayroll">
+        <createTable tableName="tenant_invitation">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invited_email" type="VARCHAR(320)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inviter_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_hash" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accepted_user_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="ux_tenant_invitation_token_hash" tableName="tenant_invitation" unique="true">
+            <column name="token_hash"/>
+        </createIndex>
+        <createIndex indexName="idx_tenant_invitation_tenant_email" tableName="tenant_invitation">
+            <column name="tenant_id"/>
+            <column name="invited_email"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

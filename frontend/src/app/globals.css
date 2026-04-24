@@ -1,0 +1,21 @@
+@import "../styles/tokens-semantic.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

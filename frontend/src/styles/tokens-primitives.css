@@ -1,0 +1,22 @@
+/**
+ * Raw palette — swap here for rebrand (see docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md).
+ * UI must not reference these directly; use semantic tokens in tokens-semantic.css + Tailwind theme keys.
+ */
+:root {
+  --p-white: #ffffff;
+  --p-neutral-50: #fafafa;
+  --p-neutral-100: #f5f5f5;
+  --p-neutral-200: #e5e5e5;
+  --p-neutral-400: #a3a3a3;
+  --p-neutral-500: #737373;
+  --p-neutral-700: #404040;
+  --p-neutral-800: #262626;
+  --p-neutral-900: #171717;
+  --p-neutral-950: #0a0a0a;
+  --p-green-950: #052e16;
+  --p-green-800: #166534;
+  --p-green-700: #15803d;
+  --p-green-500: #22c55e;
+  --p-green-100: #dcfce7;
+  --p-green-50: #f0fdf4;
+}

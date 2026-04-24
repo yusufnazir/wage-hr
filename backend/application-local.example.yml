@@ -1,0 +1,10 @@
+# Copy to application-local.yml (do not commit secrets). Spring Boot merges this with application.yml.
+#
+# spring:
+#   datasource:
+#     url: jdbc:mariadb://127.0.0.1:3306/wagepayroll
+#     username: root
+#     password:
+#
+# server:
+#   forward-headers-strategy: framework   # behind reverse proxy only
