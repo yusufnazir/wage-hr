@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m3-billing-usage-event-1" author="wagepayroll">
+        <createTable tableName="billing_usage_event">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metric_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="DECIMAL(19,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="idempotency_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recorded_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_usage_event" columnNames="tenant_id,idempotency_key"
+                             constraintName="ux_billing_usage_event_tenant_idempotency"/>
+        <createIndex tableName="billing_usage_event" indexName="idx_billing_usage_event_tenant_recorded">
+            <column name="tenant_id"/>
+            <column name="recorded_at"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="billing_usage_event" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_usage_event_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>

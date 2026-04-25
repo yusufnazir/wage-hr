@@ -18,6 +18,7 @@ import com.wagepayroll.domain.user.UserAccountEntity;
 import com.wagepayroll.domain.user.UserAccountRepository;
 import com.wagepayroll.i18n.UserLocaleService;
 import com.wagepayroll.security.PermissionService;
+import com.wagepayroll.subscription.SubscriptionGatingService;
 import com.wagepayroll.tenant.TenantContext;
 import com.wagepayroll.tenant.TenantDirectoryService;
 
@@ -39,14 +40,17 @@ public class MeController {
 	private final UserLocaleService userLocaleService;
 	private final AuditService auditService;
 	private final TenantDirectoryService tenantDirectoryService;
+	private final SubscriptionGatingService subscriptionGatingService;
 
 	public MeController(UserAccountRepository userAccountRepository, PermissionService permissionService,
-			UserLocaleService userLocaleService, AuditService auditService, TenantDirectoryService tenantDirectoryService) {
+			UserLocaleService userLocaleService, AuditService auditService, TenantDirectoryService tenantDirectoryService,
+			SubscriptionGatingService subscriptionGatingService) {
 		this.userAccountRepository = userAccountRepository;
 		this.permissionService = permissionService;
 		this.userLocaleService = userLocaleService;
 		this.auditService = auditService;
 		this.tenantDirectoryService = tenantDirectoryService;
+		this.subscriptionGatingService = subscriptionGatingService;
 	}
 
 	@GetMapping("/me")
@@ -63,11 +67,14 @@ public class MeController {
 		if (tenant.isEmpty() || tenant.get().tenantId() == null) {
 			payload.put("privileges", List.of());
 			payload.put("tenantHandle", null);
+			payload.put("planFeatureCodes", List.of());
 			return ApiResponse.of(payload, rid);
 		}
-		List<String> privs = permissionService.effectivePrivilegeCodes(userId, tenant.get().tenantId());
+		UUID tenantId = tenant.get().tenantId();
+		List<String> privs = permissionService.effectivePrivilegeCodes(userId, tenantId);
 		payload.put("privileges", privs);
 		payload.put("tenantHandle", tenant.get().tenantHandle());
+		payload.put("planFeatureCodes", subscriptionGatingService.activePlanFeatureCodesOrEmpty(tenantId));
 		return ApiResponse.of(payload, rid);
 	}
 

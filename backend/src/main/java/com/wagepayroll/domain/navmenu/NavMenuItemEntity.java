@@ -32,6 +32,9 @@ public class NavMenuItemEntity extends TenantScopedEntity {
 	@Column(name = "required_privilege_code", length = 128)
 	private String requiredPrivilegeCode;
 
+	@Column(name = "required_plan_feature_code", length = 64)
+	private String requiredPlanFeatureCode;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -76,6 +79,14 @@ public class NavMenuItemEntity extends TenantScopedEntity {
 
 	public void setRequiredPrivilegeCode(String requiredPrivilegeCode) {
 		this.requiredPrivilegeCode = requiredPrivilegeCode;
+	}
+
+	public String getRequiredPlanFeatureCode() {
+		return requiredPlanFeatureCode;
+	}
+
+	public void setRequiredPlanFeatureCode(String requiredPlanFeatureCode) {
+		this.requiredPlanFeatureCode = requiredPlanFeatureCode;
 	}
 
 	public Instant getCreatedAt() {

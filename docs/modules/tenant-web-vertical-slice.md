@@ -30,7 +30,8 @@ A developer can follow documented steps and observe:
 2. After successful login, browser navigates to **`http://demo.lvh.me:3007/app`** when `redirect-check` allows that URL.
 3. **`GET /api/bff/v1/me`** (from `/app`, same-origin to Next) returns **`tenantHandle: "demo"`** and non-empty **`privileges`** for the admin user on the demo host (Next proxies to Spring with **`X-Forwarded-Host`**).
 4. **`GET /api/bff/v1/demo/user-view`** succeeds for that user (same relay session + tenant + `USER_VIEW`).
-5. Unknown tenant host → **404** from backend; `/app` shows the **unknown tenant** message when the stack is reachable.
+5. **M3 billing card** on **`/app`**: **`GET .../tenant/billing/summary`** (**`USER_VIEW`**) shows provider flags + subscription snapshot; **`GET .../tenant/billing/commercial-plans`** (**`TENANT_SETTINGS_EDIT`**) drives the plan picker + Stripe/PayPal actions for admins (`billing-plan-picker` / `billing-plans-forbidden` in Playwright).
+6. Unknown tenant host → **404** from backend; `/app` shows the **unknown tenant** message when the stack is reachable.
 
 ---
 
@@ -93,8 +94,10 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 | GET | `/api/v1/me/tenants` | Authenticated | — | All memberships: `tenants[]` with `handle`, `name`, `roles` |
 | PATCH | `/api/v1/me/locale` | Authenticated | — | Body `{ "locale": "nl-sr" }`; **204**; CSRF |
 | GET | `/api/v1/demo/user-view` | Authenticated | Required | **`USER_VIEW`** or **403** |
+| GET | `/api/v1/tenant/billing/summary` | Authenticated | Required | **`USER_VIEW`**; provider flags + subscription snapshot |
+| GET | `/api/v1/tenant/billing/commercial-plans` | Authenticated | Required | **`TENANT_SETTINGS_EDIT`**; active plan catalog (Stripe/PayPal ids) |
 
-**Tests:** `backend/src/test/java/com/wagepayroll/api/MeEndpointIT.java`, `MeTenantsIT.java`, `MeLocalePatchIT.java`, `com.wagepayroll.audit.AuditAppendIT.java`, `DemoPrivilegedEndpointIT.java`.
+**Tests:** `backend/src/test/java/com/wagepayroll/api/MeEndpointIT.java`, `MeTenantsIT.java`, `MeLocalePatchIT.java`, `com.wagepayroll.audit.AuditAppendIT.java`, `DemoPrivilegedEndpointIT.java`, `TenantBillingSummaryIT.java`.
 
 ---
 
@@ -103,7 +106,7 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 | Flow | Behavior |
 |------|----------|
 | Auth login | `http://auth.lvh.me:3007/login` → POST login → **`redirect-check`** on `http://demo.lvh.me:3007/app` → **`window.location.assign`** if **204**; else message with manual link. |
-| Tenant shell | `http://{tenant}.lvh.me:3007/app` loads **`/app`**, fetches **`/api/bff/v1/me`**, tenants, demo user-view (+ navigation); **tenant switcher** when the user has more than one tenant; **locale** `<select>` calls **`PATCH /api/bff/v1/me/locale`**. |
+| Tenant shell | `http://{tenant}.lvh.me:3007/app` loads **`/app`**, fetches **`/api/bff/v1/me`**, tenants, billing summary + catalog (M3), demo user-view (+ navigation); **tenant switcher** when the user has more than one tenant; **locale** `<select>` calls **`PATCH /api/bff/v1/me/locale`**. |
 | Unauthenticated | **`/api/bff/v1/me`** returns **401** → show **Sign in** `<a href={authLoginUrl()}>` (cross-host). |
 | Unknown tenant | **`/api/bff/v1/me`** returns **404** → unknown-tenant copy. |
 | Backend unreachable / other errors | Message plus **Sign in** link so users are not stuck off-host. |
@@ -128,6 +131,7 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 - [x] **`/api/v1/demo/user-view`** succeeds for admin on tenant host (manual + backend IT).
 - [x] Unknown tenant → **404** + UI message (manual / Playwright with API).
 - [x] Manual / automated verification documented (`FEATURE-tenant-web-vertical-slice-VERIFICATION.md`, README link).
+- [x] **M3 billing** on **`/app`**: tenant billing summary + commercial catalog (privilege-aware); Playwright `m1-platform.spec.ts` (admin picker vs viewer forbidden).
 
 ---
 
@@ -136,6 +140,7 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 | Date | Change |
 |------|--------|
 | 2026-04-22 | Implemented `/app` shell, `web-origins` + API helpers, post-login `redirect-check`, `MeEndpointIT`, Playwright `tenant-vertical-slice.spec.ts`, verification doc, README + PROJECT-CONTEXT updates; later same day: **BFF** (`/api/bff/...`), **`API_BASE_URL`** server-only, relay cookies, **`X-Forwarded-Host`** for tenants. |
+| 2026-04-22 | **M3:** `/app` billing integration + API table rows (`/tenant/billing/summary`, `/tenant/billing/commercial-plans`); Playwright billing privilege coverage. |
 
 ---
 

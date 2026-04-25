@@ -97,6 +97,8 @@ export type MePayload = {
   email: string;
   locale: string;
   privileges: string[];
+  /** Active commercial plan feature codes for the current tenant host; empty when none or not subscribed. */
+  planFeatureCodes: string[];
   tenantHandle: string | null;
   platformSuperadmin: boolean;
 };
@@ -126,6 +128,133 @@ export type MeTenantsFetchResult =
   | { ok: true; tenants: TenantSummary[] }
   | { ok: false; status: number };
 
+export type TenantBillingSubscriptionSnapshot = {
+  status: string;
+  commercialPlanId: string;
+  commercialPlanCode: string | null;
+};
+
+export type TenantBillingSummary = {
+  stripeBillingEnabled: boolean;
+  paypalBillingEnabled: boolean;
+  stripeCustomerLinked: boolean;
+  paypalCustomerLinked: boolean;
+  subscription: TenantBillingSubscriptionSnapshot | null;
+};
+
+export type BillingSummaryFetchResult =
+  | { ok: true; summary: TenantBillingSummary }
+  | { ok: false; status: number };
+
+export type CommercialPlanListItem = {
+  id: string;
+  code: string;
+  sortOrder: number;
+  active: boolean;
+  featureCount: number;
+  stripeSubscriptionPriceId: string | null;
+  paypalBillingPlanId: string | null;
+};
+
+export type TenantCommercialPlansFetchResult =
+  | { ok: true; plans: CommercialPlanListItem[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/tenant/billing/commercial-plans — requires TENANT_SETTINGS_EDIT; active plans only (for checkout / subscribe UI). */
+export async function fetchTenantCommercialPlans(): Promise<TenantCommercialPlansFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/billing/commercial-plans"), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ plans: CommercialPlanListItem[] }>;
+  return { ok: true, plans: body.data.plans };
+}
+
+/** GET /api/v1/tenant/billing/summary — requires USER_VIEW; provider flags, link presence, optional subscription snapshot. */
+export async function fetchBillingSummary(): Promise<BillingSummaryFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/billing/summary"), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ summary: TenantBillingSummary }>;
+  return { ok: true, summary: body.data.summary };
+}
+
+export type StripePortalSessionResult = { ok: true; url: string } | { ok: false; status: number };
+
+export type StripeCheckoutSessionResult = { ok: true; url: string } | { ok: false; status: number };
+
+/** POST /api/v1/tenant/billing/stripe/checkout-session — requires TENANT_SETTINGS_EDIT + linked Stripe customer + active plan with matching price. */
+export async function createStripeCheckoutSession(args: {
+  commercialPlanId: string;
+  priceId: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<StripeCheckoutSessionResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/billing/stripe/checkout-session"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      commercialPlanId: args.commercialPlanId,
+      priceId: args.priceId,
+      successUrl: args.successUrl,
+      cancelUrl: args.cancelUrl,
+    }),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ url: string }>;
+  return { ok: true, url: body.data.url };
+}
+
+export type PaypalSubscriptionSessionResult = { ok: true; approvalUrl: string } | { ok: false; status: number };
+
+/** POST /api/v1/tenant/billing/paypal/subscription — requires TENANT_SETTINGS_EDIT; returns PayPal approval URL. */
+export async function createPaypalSubscriptionSession(args: {
+  commercialPlanId: string;
+  planId: string;
+  returnUrl: string;
+  cancelUrl: string;
+}): Promise<PaypalSubscriptionSessionResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/billing/paypal/subscription"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      commercialPlanId: args.commercialPlanId,
+      planId: args.planId,
+      returnUrl: args.returnUrl,
+      cancelUrl: args.cancelUrl,
+    }),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ approvalUrl: string }>;
+  return { ok: true, approvalUrl: body.data.approvalUrl };
+}
+
+/** POST /api/v1/tenant/billing/stripe/billing-portal-session — requires TENANT_SETTINGS_EDIT + linked Stripe customer. */
+export async function createStripeBillingPortalSession(returnUrl: string): Promise<StripePortalSessionResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/billing/stripe/billing-portal-session"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnUrl }),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ url: string }>;
+  return { ok: true, url: body.data.url };
+}
+
 /**
  * Authenticated session + optional tenant context from {@code Host} (forwarded by the BFF as
  * {@code X-Forwarded-Host}).
@@ -145,6 +274,7 @@ export async function fetchMe(): Promise<MeFetchResult> {
     email: raw.email,
     locale: raw.locale ?? "en",
     privileges: raw.privileges,
+    planFeatureCodes: raw.planFeatureCodes ?? [],
     tenantHandle: raw.tenantHandle,
     platformSuperadmin: raw.platformSuperadmin ?? false,
   };

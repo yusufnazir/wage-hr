@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m3-tenant-subscription-1" author="wagepayroll">
+        <createTable tableName="tenant_subscription">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="commercial_plan_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_subscription" baseColumnNames="commercial_plan_id"
+                                 constraintName="fk_tenant_subscription_commercial_plan" referencedTableName="commercial_plan"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="tenant_subscription" baseColumnNames="tenant_id"
+                                 constraintName="fk_tenant_subscription_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+    </changeSet>
+</databaseChangeLog>

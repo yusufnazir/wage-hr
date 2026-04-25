@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import com.wagepayroll.domain.membership.MembershipRepository;
@@ -14,6 +15,7 @@ import com.wagepayroll.domain.privilege.TenantPrivilegeAllowanceRepository;
 import com.wagepayroll.domain.role.RolePrivilegeRepository;
 import com.wagepayroll.domain.role.UserRoleRepository;
 import com.wagepayroll.domain.user.UserAccountRepository;
+import com.wagepayroll.subscription.SubscriptionGatingService;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -28,16 +30,19 @@ public class PermissionService {
 	private final UserRoleRepository userRoleRepository;
 	private final RolePrivilegeRepository rolePrivilegeRepository;
 	private final UserAccountRepository userAccountRepository;
+	private final SubscriptionGatingService subscriptionGatingService;
 
 	public PermissionService(MembershipRepository membershipRepository, PrivilegeRepository privilegeRepository,
 			TenantPrivilegeAllowanceRepository tenantPrivilegeAllowanceRepository, UserRoleRepository userRoleRepository,
-			RolePrivilegeRepository rolePrivilegeRepository, UserAccountRepository userAccountRepository) {
+			RolePrivilegeRepository rolePrivilegeRepository, UserAccountRepository userAccountRepository,
+			SubscriptionGatingService subscriptionGatingService) {
 		this.membershipRepository = membershipRepository;
 		this.privilegeRepository = privilegeRepository;
 		this.tenantPrivilegeAllowanceRepository = tenantPrivilegeAllowanceRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.rolePrivilegeRepository = rolePrivilegeRepository;
 		this.userAccountRepository = userAccountRepository;
+		this.subscriptionGatingService = subscriptionGatingService;
 	}
 
 	@Transactional(readOnly = true)
@@ -63,7 +68,7 @@ public class PermissionService {
 		if (priv == null) {
 			return false;
 		}
-		if (!tenantPrivilegeAllowanceRepository.existsByTenantIdAndPrivilegeId(tenantId, priv.getId())) {
+		if (!effectivePoolContains(tenantId, priv)) {
 			return false;
 		}
 		List<UUID> roles = userRoleRepository.findRoleIdsByUserAndTenant(userId, tenantId);
@@ -87,27 +92,43 @@ public class PermissionService {
 			if (p == null) {
 				continue;
 			}
-			for (UUID roleId : roles) {
-				if (rolePrivilegeRepository.existsByTenantIdAndRoleIdAndPrivilegeId(tenantId, roleId, p.getId())) {
-					codes.add(p.getCode());
-					break;
-				}
-			}
+			addIfRoleGrants(tenantId, roles, codes, p);
+		}
+		for (String code : subscriptionGatingService.subscriptionDerivedPrivilegeCodes(tenantId)) {
+			privilegeRepository.findByCode(code).ifPresent(p -> addIfRoleGrants(tenantId, roles, codes, p));
 		}
 		return new ArrayList<>(codes);
 	}
 
+	private void addIfRoleGrants(UUID tenantId, List<UUID> roles, Set<String> codes, PrivilegeEntity p) {
+		for (UUID roleId : roles) {
+			if (rolePrivilegeRepository.existsByTenantIdAndRoleIdAndPrivilegeId(tenantId, roleId, p.getId())) {
+				codes.add(p.getCode());
+				return;
+			}
+		}
+	}
+
+	private boolean effectivePoolContains(UUID tenantId, PrivilegeEntity priv) {
+		if (tenantPrivilegeAllowanceRepository.existsByTenantIdAndPrivilegeId(tenantId, priv.getId())) {
+			return true;
+		}
+		return subscriptionGatingService.subscriptionCeilingContainsPrivilegeCode(tenantId, priv.getCode());
+	}
+
 	/**
-	 * Privilege codes allowed in the tenant pool ({@code tenant_privilege_allowance}), sorted.
+	 * Effective tenant privilege <strong>ceiling</strong> codes: union of {@code tenant_privilege_allowance} and
+	 * privileges implied by an {@code ACTIVE} commercial subscription ({@link com.wagepayroll.plans.PlanFeaturePrivilegeWiring}),
+	 * sorted.
 	 */
 	@Transactional(readOnly = true)
 	public List<String> tenantPoolPrivilegeCodes(UUID tenantId) {
-		List<String> codes = new ArrayList<>();
+		Set<String> codes = new TreeSet<>();
 		for (TenantPrivilegeAllowanceEntity a : tenantPrivilegeAllowanceRepository.findByTenantId(tenantId)) {
 			privilegeRepository.findById(a.getPrivilegeId()).map(PrivilegeEntity::getCode).ifPresent(codes::add);
 		}
-		codes.sort(String::compareTo);
-		return codes;
+		codes.addAll(subscriptionGatingService.subscriptionDerivedPrivilegeCodes(tenantId));
+		return new ArrayList<>(codes);
 	}
 
 	private boolean isPlatformSuperadmin(UUID userId) {

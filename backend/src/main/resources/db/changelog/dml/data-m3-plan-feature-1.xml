@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m3-plan-feature-1" author="wagepayroll">
+        <comment>M3: seed plan_feature rows — codes must match PlanFeatureCode enum</comment>
+        <insert tableName="plan_feature">
+            <column name="id" value="e1000000-0000-0000-0000-000000000001"/>
+            <column name="code" value="TENANT_CORE"/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+        <insert tableName="plan_feature">
+            <column name="id" value="e1000000-0000-0000-0000-000000000002"/>
+            <column name="code" value="HR_ESSENTIALS"/>
+            <column name="sort_order" valueNumeric="20"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+        <insert tableName="plan_feature">
+            <column name="id" value="e1000000-0000-0000-0000-000000000003"/>
+            <column name="code" value="PAYROLL_COUNTRY"/>
+            <column name="sort_order" valueNumeric="30"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+        <insert tableName="plan_feature">
+            <column name="id" value="e1000000-0000-0000-0000-000000000004"/>
+            <column name="code" value="DOCUMENT_STORAGE"/>
+            <column name="sort_order" valueNumeric="40"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+        <insert tableName="plan_feature">
+            <column name="id" value="e1000000-0000-0000-0000-000000000005"/>
+            <column name="code" value="COMMERCIAL_BILLING"/>
+            <column name="sort_order" valueNumeric="50"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

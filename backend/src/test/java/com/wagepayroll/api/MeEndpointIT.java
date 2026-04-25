@@ -34,7 +34,8 @@ class MeEndpointIT {
 				.andExpect(jsonPath("$.data.email").value("admin@demo.lvh.me"))
 				.andExpect(jsonPath("$.data.locale").value("en"))
 				.andExpect(jsonPath("$.data.tenantHandle").value(nullValue()))
-				.andExpect(jsonPath("$.data.privileges").isEmpty());
+				.andExpect(jsonPath("$.data.privileges").isEmpty())
+				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty());
 	}
 
 	@Test
@@ -44,7 +45,8 @@ class MeEndpointIT {
 				.andExpect(jsonPath("$.data.email").value("admin@demo.lvh.me"))
 				.andExpect(jsonPath("$.data.locale").value("en"))
 				.andExpect(jsonPath("$.data.tenantHandle").value("demo"))
-				.andExpect(jsonPath("$.data.privileges", hasItem("USER_VIEW")));
+				.andExpect(jsonPath("$.data.privileges", hasItem("USER_VIEW")))
+				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty());
 	}
 
 	@Test

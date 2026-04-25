@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m3-commercial-plan-seed-demo-1" author="wagepayroll">
+        <comment>M3: one active commercial plan for local dev / E2E (Stripe + PayPal ids are placeholders; replace in real sandboxes).</comment>
+        <insert tableName="commercial_plan">
+            <column name="id" value="c1000000-0000-0000-0000-000000000001"/>
+            <column name="code" value="DEMO_STARTER"/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="stripe_subscription_price_id" value="price_seed_demo_lvh"/>
+            <column name="paypal_billing_plan_id" value="P-SEEDDEMOLVH01"/>
+        </insert>
+        <insert tableName="commercial_plan_feature">
+            <column name="id" value="c1000000-0000-0000-0000-000000000011"/>
+            <column name="commercial_plan_id" value="c1000000-0000-0000-0000-000000000001"/>
+            <column name="plan_feature_id" value="e1000000-0000-0000-0000-000000000001"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

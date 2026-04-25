@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m3-commercial-plan-1" author="wagepayroll">
+        <createTable tableName="commercial_plan">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="sort_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_commercial_plan_sort" tableName="commercial_plan">
+            <column name="sort_order"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m3-commercial-plan-feature-1" author="wagepayroll">
+        <createTable tableName="commercial_plan_feature">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="commercial_plan_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plan_feature_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="commercial_plan_feature" columnNames="commercial_plan_id,plan_feature_id"
+                             constraintName="ux_commercial_plan_feature_plan_feature"/>
+        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="commercial_plan_id"
+                                 constraintName="fk_cpf_commercial_plan" referencedTableName="commercial_plan"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="plan_feature_id"
+                                 constraintName="fk_cpf_plan_feature" referencedTableName="plan_feature"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <createIndex indexName="idx_commercial_plan_feature_plan" tableName="commercial_plan_feature">
+            <column name="commercial_plan_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

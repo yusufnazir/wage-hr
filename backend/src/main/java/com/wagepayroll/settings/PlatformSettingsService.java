@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.wagepayroll.api.dto.SettingEntryDto;
 import com.wagepayroll.api.dto.SettingsPatchRequest;
+import com.wagepayroll.billing.BillingIntegrationSettingsValidator;
 import com.wagepayroll.domain.setting.PlatformSettingEntity;
 import com.wagepayroll.domain.setting.PlatformSettingRepository;
 
@@ -40,6 +41,7 @@ public class PlatformSettingsService {
 		for (SettingEntryDto entry : body.entries()) {
 			SettingsEntryValidator.validateKey(entry.key());
 			SettingsEntryValidator.validateValue(entry.value());
+			BillingIntegrationSettingsValidator.validateIfBillingKey(entry);
 			PlatformSettingEntity e = platformSettingRepository.findByKey(entry.key()).orElse(null);
 			if (e == null) {
 				PlatformSettingEntity n = new PlatformSettingEntity();

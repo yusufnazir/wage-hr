@@ -41,6 +41,27 @@ test.describe("M1 — auth host → tenant host session", () => {
     await expect(page.getByTestId("tenant-switcher")).toBeVisible();
     await expect(page.getByTestId("tenant-link-demo")).toBeVisible();
     await expect(page.getByTestId("tenant-link-acme")).toBeVisible();
+
+    await expect(page.getByTestId("billing-summary-section")).toBeVisible();
+    await expect(page.getByTestId("billing-plan-picker")).toBeVisible();
+  });
+});
+
+test.describe("M1 — billing catalog privilege", () => {
+  test("viewer sees billing summary but not plan picker (catalog 403)", async ({ page }) => {
+    test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL (e.g. http://127.0.0.1:8300) and start the API");
+
+    await page.goto(`http://auth.lvh.me:${port}/login`);
+    await page.getByRole("textbox", { name: "Email" }).fill("viewer@demo.lvh.me");
+    await page.getByRole("textbox", { name: "Password" }).fill("ChangeMe!1");
+    await Promise.all([
+      page.waitForURL(new RegExp(`http://demo\\.lvh\\.me:${port}/app`)),
+      page.getByRole("button", { name: "Continue" }).click(),
+    ]);
+
+    await expect(page.getByTestId("billing-summary-section")).toBeVisible();
+    await expect(page.getByTestId("billing-plans-forbidden")).toBeVisible();
+    await expect(page.getByTestId("billing-plan-picker")).toHaveCount(0);
   });
 });
 

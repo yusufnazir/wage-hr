@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m3-billing-usage-aggregate-1" author="wagepayroll">
+        <createTable tableName="billing_usage_aggregate">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metric_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="period_start" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="period_end" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_quantity" type="DECIMAL(19,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_aggregated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_synced" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_synced_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_usage_aggregate" columnNames="tenant_id,metric_key,period_start"
+                             constraintName="ux_billing_usage_aggregate_tenant_metric_period"/>
+        <createIndex tableName="billing_usage_aggregate" indexName="idx_billing_usage_aggregate_tenant_period">
+            <column name="tenant_id"/>
+            <column name="period_start"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="billing_usage_aggregate" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_usage_aggregate_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>

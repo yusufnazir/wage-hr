@@ -14,6 +14,21 @@ public final class AuditActionCodes {
 	/** Platform superadmin replaced {@code tenant_privilege_allowance} for a tenant. */
 	public static final String TENANT_PRIVILEGE_POOL_REPLACED = "TENANT_PRIVILEGE_POOL_REPLACED";
 
+	/** Platform superadmin upserted {@code tenant_subscription} for a tenant. */
+	public static final String TENANT_SUBSCRIPTION_UPSERTED = "TENANT_SUBSCRIPTION_UPSERTED";
+
+	/** Stripe webhook handler reconciled {@code tenant_subscription} (M3 minimal auto-reconcile). */
+	public static final String TENANT_SUBSCRIPTION_STRIPE_RECONCILED = "TENANT_SUBSCRIPTION_STRIPE_RECONCILED";
+
+	/** PayPal webhook handler reconciled {@code tenant_subscription} (M3 minimal auto-reconcile). */
+	public static final String TENANT_SUBSCRIPTION_PAYPAL_RECONCILED = "TENANT_SUBSCRIPTION_PAYPAL_RECONCILED";
+
+	/** Platform superadmin upserted {@code billing_provider_link} for a tenant. */
+	public static final String BILLING_PROVIDER_LINK_UPSERTED = "BILLING_PROVIDER_LINK_UPSERTED";
+
+	/** Platform superadmin deleted an unused {@code commercial_plan}. */
+	public static final String COMMERCIAL_PLAN_DELETED = "COMMERCIAL_PLAN_DELETED";
+
 	/** Authenticated user downloaded {@code GET /api/v1/me/privacy/export}. */
 	public static final String SUBJECT_DATA_EXPORTED = "SUBJECT_DATA_EXPORTED";
 

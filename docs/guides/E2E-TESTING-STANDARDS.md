@@ -9,7 +9,7 @@ Minimum expectations for web UIs built under this methodology. **Web Prompt (5)*
 ### wage-payroll defaults
 
 - Next dev / Playwright app port **3007** (`PLAYWRIGHT_PORT` overrides if 3007 is busy).
-- API-backed browser tests: set **`PLAYWRIGHT_API_BASE_URL`** (e.g. `http://127.0.0.1:8300`) and start the Spring Boot API + DB; configure Next with **`API_BASE_URL`** so `/api/bff/...` can proxy. See `frontend/e2e/m1-platform.spec.ts` and `docs/output/FEATURE-tenant-web-vertical-slice-VERIFICATION.md`.
+- API-backed browser tests: set **`PLAYWRIGHT_API_BASE_URL`** (e.g. `http://127.0.0.1:8300`) and start the Spring Boot API + DB; configure Next with **`API_BASE_URL`** so `/api/bff/...` can proxy. See `frontend/e2e/m1-platform.spec.ts` (includes **M3 billing**: `billing-plan-picker` for admin, `billing-plans-forbidden` for viewer) and `docs/output/FEATURE-tenant-web-vertical-slice-VERIFICATION.md`.
 
 ## Per feature
 

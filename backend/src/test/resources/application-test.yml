@@ -18,3 +18,15 @@ app:
     allowed-origin-patterns: http://localhost:3007,http://auth.lvh.me:3007,http://demo.lvh.me:3007,http://*.lvh.me:3007,http://*.lvh.me:3108
   invitation:
     expose-plain-token: true
+  billing:
+    stripe:
+      webhook-secret: whsec_test_secret
+      # Non-empty placeholder so hosted-checkout paths run; real Stripe calls return 502 unless key is valid test mode.
+      secret-key: sk_test_00000000000000000000000000000000
+      # Allows http://localhost, http://127.0.0.1, and http://*.lvh.me redirect URLs for Stripe/PayPal billing (see BillingRedirectUrlPolicy).
+      allow-insecure-checkout-urls: true
+    paypal:
+      webhook-id: test_paypal_webhook_id_1
+      verify-signature: false
+    usage-aggregation:
+      scheduled-enabled: false

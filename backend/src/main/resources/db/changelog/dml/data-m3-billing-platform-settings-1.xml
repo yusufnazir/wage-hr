@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m3-billing-platform-settings-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM platform_setting WHERE `key` = 'billing.stripe.enabled'</sqlCheck>
+        </preConditions>
+        <insert tableName="platform_setting">
+            <column name="id" value="64000000-0000-0000-0000-000000000001"/>
+            <column name="key" value="billing.stripe.enabled"/>
+            <column name="value_text" value="0"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="64000000-0000-0000-0000-000000000002"/>
+            <column name="key" value="billing.paypal.enabled"/>
+            <column name="value_text" value="0"/>
+            <column name="created_at" valueDate="2026-04-24T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-24T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

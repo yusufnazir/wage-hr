@@ -44,6 +44,28 @@ app:
     trust-proxy: ${TRUST_PROXY:false}
   invitation:
     expose-plain-token: ${APP_INVITATION_EXPOSE_PLAIN_TOKEN:false}
+  billing:
+    stripe:
+      # Secret API key (sk_live_… / sk_test_…). Required for tenant checkout + billing portal; empty → 503 on those routes.
+      secret-key: ${STRIPE_SECRET_KEY:}
+      # Webhook signing secret from Stripe Dashboard (whsec_…). Empty disables POST /billing/webhooks/stripe (503).
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+      # When false, success/cancel/return URLs must use https for Stripe + PayPal billing redirects. When true, http is allowed only for localhost, 127.0.0.1, and *.lvh.me (local multi-tenant dev / Playwright — not for production).
+      allow-insecure-checkout-urls: ${STRIPE_ALLOW_INSECURE_CHECKOUT_URLS:false}
+    paypal:
+      # Webhook id from PayPal Developer dashboard (used when JSON includes webhook_id). Empty disables POST /billing/webhooks/paypal (503).
+      webhook-id: ${PAYPAL_WEBHOOK_ID:}
+      # REST API host (no trailing slash). Sandbox default; production: https://api-m.paypal.com
+      api-base: ${PAYPAL_API_BASE:https://api-m.sandbox.paypal.com}
+      client-id: ${PAYPAL_CLIENT_ID:}
+      client-secret: ${PAYPAL_CLIENT_SECRET:}
+      # When true, POST /billing/webhooks/paypal calls PayPal verify-webhook-signature (needs transmission headers + PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET). 503 if verify on but credentials missing.
+      verify-signature: ${PAYPAL_WEBHOOK_VERIFY:false}
+    usage-aggregation:
+      # Recompute billing_usage_aggregate for the previous UTC day (tenants with events only). Disable for tests.
+      scheduled-enabled: ${BILLING_USAGE_AGGREGATION_SCHEDULED:true}
+      # 6-field cron, zone UTC — default 02:15:00 UTC daily.
+      daily-cron: ${BILLING_USAGE_AGGREGATION_CRON:0 15 2 * * *}
 
 management:
   endpoints:
