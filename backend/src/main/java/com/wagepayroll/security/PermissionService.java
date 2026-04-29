@@ -3,10 +3,12 @@ package com.wagepayroll.security;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import com.wagepayroll.domain.membership.MembershipEntity;
 import com.wagepayroll.domain.membership.MembershipRepository;
 import com.wagepayroll.domain.privilege.PrivilegeEntity;
 import com.wagepayroll.domain.privilege.PrivilegeRepository;
@@ -47,15 +49,24 @@ public class PermissionService {
 
 	@Transactional(readOnly = true)
 	public PrivilegeGrant evaluateTenantPrivilege(UUID userId, UUID tenantId, String privilegeCode) {
-		membershipRepository.findByTenantIdAndUserId(tenantId, userId)
-				.orElseThrow(() -> new AccessDeniedException("No membership for tenant"));
-		if (membershipRolePoolGrants(userId, tenantId, privilegeCode)) {
-			return PrivilegeGrant.NORMAL;
+		Optional<MembershipEntity> membership = membershipRepository.findByTenantIdAndUserId(tenantId, userId);
+		if (membership.isPresent()) {
+			if (membershipRolePoolGrants(userId, tenantId, privilegeCode)) {
+				return PrivilegeGrant.NORMAL;
+			}
+			if (isPlatformSuperadmin(userId) && privilegeRepository.existsByCode(privilegeCode)) {
+				return PrivilegeGrant.SUPERADMIN_ELEVATED;
+			}
+			return PrivilegeGrant.DENIED;
 		}
-		if (isPlatformSuperadmin(userId) && privilegeRepository.existsByCode(privilegeCode)) {
-			return PrivilegeGrant.SUPERADMIN_ELEVATED;
+		if (!isPlatformSuperadmin(userId)) {
+			throw new AccessDeniedException("No membership for tenant");
 		}
-		return PrivilegeGrant.DENIED;
+		PrivilegeEntity priv = privilegeRepository.findByCode(privilegeCode).orElse(null);
+		if (priv == null || !effectivePoolContains(tenantId, priv)) {
+			return PrivilegeGrant.DENIED;
+		}
+		return PrivilegeGrant.SUPERADMIN_ELEVATED;
 	}
 
 	@Transactional(readOnly = true)
@@ -82,8 +93,12 @@ public class PermissionService {
 
 	@Transactional(readOnly = true)
 	public List<String> effectivePrivilegeCodes(UUID userId, UUID tenantId) {
-		membershipRepository.findByTenantIdAndUserId(tenantId, userId)
-				.orElseThrow(() -> new AccessDeniedException("No membership for tenant"));
+		if (membershipRepository.findByTenantIdAndUserId(tenantId, userId).isEmpty()) {
+			if (!isPlatformSuperadmin(userId)) {
+				throw new AccessDeniedException("No membership for tenant");
+			}
+			return tenantPoolPrivilegeCodes(tenantId);
+		}
 		List<UUID> roles = userRoleRepository.findRoleIdsByUserAndTenant(userId, tenantId);
 		List<TenantPrivilegeAllowanceEntity> allowances = tenantPrivilegeAllowanceRepository.findByTenantId(tenantId);
 		Set<String> codes = new LinkedHashSet<>();

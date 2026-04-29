@@ -19,9 +19,9 @@ Prerequisites: MariaDB + Liquibase migrated, backend on **8300**, frontend `npm 
 
 1. Open `http://auth.lvh.me:3007/login`, sign in as **admin@demo.lvh.me** / **ChangeMe!1**.
 2. Expect redirect to `http://demo.lvh.me:3007/app` (after `redirect-check` succeeds).
-3. On `/app`: **Email** `admin@demo.lvh.me`, **Tenant handle** `demo`, **Privileges** includes `USER_VIEW`, demo section shows **USER_VIEW granted** (or equivalent message from API). With second tenant seed: **Your tenants** lists **acme** and **demo**; **acme** `/app` shows fewer nav items (VIEW-only role).
+3. On `/app`: **left sidebar** shows nav from the API (e.g. Dashboard, Documents when entitled); **header** user avatar opens **user menu** (Profile, change password, language, Logout). Dashboard: **Email** `admin@demo.lvh.me`, **Tenant handle** `demo`, **Privileges** includes `USER_VIEW`, demo section shows **USER_VIEW granted** (or equivalent message from API). With second tenant seed: **Your tenants** lists **acme** and **demo**; **acme** `/app` shows fewer sidebar items (VIEW-only role).
 4. Open `http://nosuchtenant.lvh.me:3007/app` while logged in: expect **Unknown tenant** copy (API **404** from `TenantContextFilter`).
-5. Sign out (if implemented) or clear cookies; open `http://demo.lvh.me:3007/app` — expect **Sign in** link to auth login URL.
+5. **Logout** from the header user menu (or clear cookies); open `http://demo.lvh.me:3007/app` — expect **Sign in** link to auth login URL (shell gate, no sidebar).
 
 ## Session relay (local dev)
 

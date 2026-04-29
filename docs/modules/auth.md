@@ -4,11 +4,14 @@
 
 Email/password authentication against `user_account`, HTTP session (cookie) for browser clients, CSRF for state-changing requests when using cookies. **Register** creates a `user_account` only (no tenant membership; invitations / tenant join are separate modules). **Forgot / reset password** uses a dedicated table with **no** raw token persistence.
 
+**Update (Roles templates + tenant bootstrap):** Registration additionally creates a **new tenant** and bootstraps that tenant’s initial roles by copying the platform **role templates** (`ADMIN`, `EMPLOYEE`) into tenant roles. The registering user becomes a member of the new tenant and is assigned the copied tenant **Admin** role. See [`role-admin.md`](./role-admin.md).
+
 ## Backend
 
 - **Login:** `POST /api/v1/auth/login` — JSON `{ "email", "password" }`; establishes session; rate-limited (`app.security.rate-limit.*`).
 - **Logout:** `POST /api/v1/auth/logout` — clears security context / session.
 - **Register:** `POST /api/v1/auth/register` — JSON `{ "email", "password" }` (password min 8 chars); **201** on success; **409** if email exists. No session created automatically (client may call login).
+  - **Tenant bootstrap:** On success, also creates a tenant record and returns enough data for the client to route the user to the new tenant host (exact response contract lives in `role-admin.md` and the backend prompt for this run).
 - **Forgot password:** `POST /api/v1/auth/forgot-password` — JSON `{ "email" }`; always **202** with empty body from enumeration perspective; creates row in `password_reset_token` if user exists; dispatches reset link via `PasswordResetMailPort` (dev: log-only implementation). Rate-limited per IP + email (`app.security.rate-limit.forgot-password-*`).
 - **Reset password:** `POST /api/v1/auth/reset-password` — JSON `{ "token", "newPassword" }` (newPassword min 8); **204** on success; invalid/expired token → **400** with stable error code.
 - **CSRF:** `GET /api/v1/auth/csrf` — returns token + header name for SPA clients.

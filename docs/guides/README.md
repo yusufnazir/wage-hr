@@ -10,7 +10,8 @@ Copy this folder into **each product repository** as `docs/guides/` when bootstr
 | [PRIVILEGE-MODEL.md](./PRIVILEGE-MODEL.md) | Privilege = action + resource, pools, SuperAdmin, enforcement |
 | [MULTI-TENANCY-AND-ROUTING.md](./MULTI-TENANCY-AND-ROUTING.md) | Subdomains, auth vs app host, tenant handle, `lvh.me`, redirects |
 | [CROSS-CUTTING-SECURITY.md](./CROSS-CUTTING-SECURITY.md) | Cookies, CSRF, proxy headers, security headers, rate limits, redirect safety |
-| [WEB-THEMING-AND-DESIGN-SYSTEM.md](./WEB-THEMING-AND-DESIGN-SYSTEM.md) | Light/dark, design tokens, swappable palettes and full themes, scaffold vs feature UI |
+| [WEB-THEMING-AND-DESIGN-SYSTEM.md](./WEB-THEMING-AND-DESIGN-SYSTEM.md) | Light/dark, design tokens, swappable palettes and full themes, scaffold vs feature UI — *product:* tenant **`/app`** chrome + auth split layout cross-ref **`../modules/tenant-web-vertical-slice.md`** §3.6 |
+| [FILTER-FIELD-STANDARDS.md](./FILTER-FIELD-STANDARDS.md) | Application-wide standard for chip-based filter fields + URL-state mapping |
 | [API-CONVENTIONS.md](./API-CONVENTIONS.md) | Public API base URL, versioning, success/error shapes, canonical links |
 | [E2E-TESTING-STANDARDS.md](./E2E-TESTING-STANDARDS.md) | Playwright: subdomain, auth, cookie/CSRF, redirect tests |
 | [MODULE-DOC-CONVENTION.md](./MODULE-DOC-CONVENTION.md) | Per-feature `/docs/modules/{feature}.md` documentation |

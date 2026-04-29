@@ -29,11 +29,29 @@ public final class AuditActionCodes {
 	/** Platform superadmin deleted an unused {@code commercial_plan}. */
 	public static final String COMMERCIAL_PLAN_DELETED = "COMMERCIAL_PLAN_DELETED";
 
+	/** Platform superadmin created a {@code tenant} row. */
+	public static final String PLATFORM_TENANT_CREATED = "PLATFORM_TENANT_CREATED";
+
+	/** Platform superadmin updated a {@code tenant} row (v1: display name only). */
+	public static final String PLATFORM_TENANT_UPDATED = "PLATFORM_TENANT_UPDATED";
+
 	/** Authenticated user downloaded {@code GET /api/v1/me/privacy/export}. */
 	public static final String SUBJECT_DATA_EXPORTED = "SUBJECT_DATA_EXPORTED";
 
 	/** Subject requested account erasure (M1: audit only; fulfillment pipeline TBD). */
 	public static final String SUBJECT_ERASURE_REQUESTED = "SUBJECT_ERASURE_REQUESTED";
+
+	/** Tenant admin updated another user's email (tenant-scoped directory). */
+	public static final String TENANT_USER_EMAIL_UPDATED = "TENANT_USER_EMAIL_UPDATED";
+
+	/** Tenant admin replaced role assignments for a tenant user. */
+	public static final String TENANT_USER_ROLES_REPLACED = "TENANT_USER_ROLES_REPLACED";
+
+	/** Tenant admin created a tenant-scoped role. */
+	public static final String TENANT_ROLE_CREATED = "TENANT_ROLE_CREATED";
+
+	/** Tenant admin updated a tenant-scoped role name and/or privileges. */
+	public static final String TENANT_ROLE_UPDATED = "TENANT_ROLE_UPDATED";
 
 	private AuditActionCodes() {
 	}

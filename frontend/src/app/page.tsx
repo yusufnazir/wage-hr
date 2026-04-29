@@ -1,9 +1,42 @@
-import Link from "next/link";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { AuthShell, authGlassCardClassName } from "@/components/shell/AuthShell";
-import { defaultTenantAppUrl } from "@/lib/web-origins";
+"use client";
 
+import { useEffect } from "react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { AuthShell } from "@/components/shell/AuthShell";
+import { fetchMe, redirectCheck } from "@/lib/api";
+import { authLoginUrlWithReturnTo, defaultTenantAppUrl, getAdminWebOrigin } from "@/lib/web-origins";
+
+/**
+ * Root `/` is not a product surface: resolve session and send users to the app or auth login.
+ * Treat **401**, **403** (e.g. signed-in viewer on `admin.*`), and other `/me` failures like “needs sign-in”
+ * so we never leave a dead-end card here.
+ */
 export default function HomePage() {
+  useEffect(() => {
+    void (async () => {
+      const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const goLogin = () => window.location.replace(authLoginUrlWithReturnTo(returnTo));
+
+      let me: Awaited<ReturnType<typeof fetchMe>>;
+      try {
+        me = await fetchMe();
+      } catch {
+        goLogin();
+        return;
+      }
+      if (!me.ok) {
+        goLogin();
+        return;
+      }
+      const next = me.me.platformSuperadmin ? `${getAdminWebOrigin()}/app` : defaultTenantAppUrl();
+      if (await redirectCheck(next)) {
+        window.location.replace(next);
+        return;
+      }
+      goLogin();
+    })();
+  }, []);
+
   return (
     <AuthShell>
       <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-16">
@@ -11,29 +44,7 @@ export default function HomePage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">wage-payroll</h1>
           <ThemeToggle />
         </div>
-        <div className={`p-6 ${authGlassCardClassName}`}>
-          <p className="text-muted">
-            Minimal auth shell scaffold. Use{" "}
-            <code className="rounded bg-background px-1.5 py-0.5 text-sm text-foreground ring-1 ring-border">
-              auth.lvh.me:3007
-            </code>{" "}
-            for login flows per architecture.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              href="/login"
-              className="inline-flex w-fit items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm ring-offset-background transition hover:opacity-90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Sign in
-            </Link>
-            <a
-              href={defaultTenantAppUrl()}
-              className="inline-flex w-fit items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition hover:opacity-90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Demo tenant app
-            </a>
-          </div>
-        </div>
+        <p className="text-sm text-muted">Loading…</p>
       </main>
     </AuthShell>
   );

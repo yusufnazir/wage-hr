@@ -1,16 +1,15 @@
 import type { ReactNode } from "react";
 
-/** Shared card surface for auth forms (glass on gradient — see WEB-THEMING-AND-DESIGN-SYSTEM.md). */
+/** Shared card surface for auth forms — glass elevation (see WEB-THEMING-AND-DESIGN-SYSTEM.md). */
 export const authGlassCardClassName =
-  "rounded-xl border border-border/60 bg-surface/85 shadow-md backdrop-blur-md dark:border-border/50 dark:bg-surface/70";
+  "rounded-2xl border border-border/50 bg-surface/90 shadow-glass backdrop-blur-xl ring-1 ring-foreground/[0.04] dark:border-border/40 dark:bg-surface/75 dark:ring-white/[0.06]";
 
 type AuthShellProps = {
   children: ReactNode;
 };
 
 /**
- * Auth / marketing-adjacent layout: soft mesh + glass-ready content area.
- * Tenant signed-in shell uses {@code data-layout="app"} instead (see tenant app page).
+ * Auth / marketing-adjacent layout: layered mesh using brand blues (see `public/wage/` marks).
  */
 export function AuthShell({ children }: AuthShellProps) {
   return (
@@ -18,10 +17,20 @@ export function AuthShell({ children }: AuthShellProps) {
       data-layout="auth"
       className="relative min-h-screen overflow-hidden bg-background text-foreground"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-90 dark:opacity-70" aria-hidden>
-        <div className="absolute -left-1/4 top-0 h-[min(28rem,70vw)] w-[min(28rem,70vw)] rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -right-1/4 top-1/3 h-[min(22rem,55vw)] w-[min(22rem,55vw)] rounded-full bg-accent/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-[min(20rem,50vw)] w-[min(20rem,50vw)] rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div
+          className="absolute -left-[20%] -top-[10%] h-[min(36rem,85vw)] w-[min(36rem,85vw)] rounded-full blur-[4.5rem]"
+          style={{ background: "var(--color-mesh-a)" }}
+        />
+        <div
+          className="absolute -right-[15%] top-[20%] h-[min(28rem,70vw)] w-[min(28rem,70vw)] rounded-full blur-[4rem]"
+          style={{ background: "var(--color-mesh-b)" }}
+        />
+        <div
+          className="absolute bottom-[-10%] left-[25%] h-[min(26rem,65vw)] w-[min(26rem,65vw)] rounded-full blur-[3.5rem]"
+          style={{ background: "var(--color-mesh-c)" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background dark:via-background/50" />
       </div>
       <div className="relative">{children}</div>
     </div>

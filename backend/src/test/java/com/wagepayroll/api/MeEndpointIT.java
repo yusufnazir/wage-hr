@@ -32,10 +32,15 @@ class MeEndpointIT {
 		mockMvc.perform(get("/api/v1/me").header("Host", "localhost:8300").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.email").value("admin@demo.lvh.me"))
+				.andExpect(jsonPath("$.data.userId").value(ADMIN_USER_ID))
 				.andExpect(jsonPath("$.data.locale").value("en"))
 				.andExpect(jsonPath("$.data.tenantHandle").value(nullValue()))
+				.andExpect(jsonPath("$.data.tenantId").value(nullValue()))
 				.andExpect(jsonPath("$.data.privileges").isEmpty())
-				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty());
+				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty())
+				.andExpect(jsonPath("$.data.applicationName").doesNotExist())
+				.andExpect(jsonPath("$.data.dateFormat").doesNotExist())
+				.andExpect(jsonPath("$.data.publicBaseUrl").doesNotExist());
 	}
 
 	@Test
@@ -43,10 +48,15 @@ class MeEndpointIT {
 		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.email").value("admin@demo.lvh.me"))
+				.andExpect(jsonPath("$.data.userId").value(ADMIN_USER_ID))
 				.andExpect(jsonPath("$.data.locale").value("en"))
 				.andExpect(jsonPath("$.data.tenantHandle").value("demo"))
+				.andExpect(jsonPath("$.data.tenantId").value("10000000-0000-0000-0000-000000000001"))
 				.andExpect(jsonPath("$.data.privileges", hasItem("USER_VIEW")))
-				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty());
+				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty())
+				.andExpect(jsonPath("$.data.applicationName").value("Wage Payroll"))
+				.andExpect(jsonPath("$.data.dateFormat").value("yyyy-MM-dd"))
+				.andExpect(jsonPath("$.data.publicBaseUrl").value("http://auth.lvh.me:3007"));
 	}
 
 	@Test

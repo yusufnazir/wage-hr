@@ -12,6 +12,7 @@ import {
   mergeSetCookieIntoJar,
   type SpringSessionJar,
 } from "@/lib/server/spring-bff-cookies";
+import { readLensTenantIdFromCookieStore, shouldAttachLensTenantHeader } from "@/lib/server/lens-tenant-cookie";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,10 @@ async function handle(request: NextRequest, segments: string[], method: string):
     const forwardHeaders = new Headers();
     forwardHeaders.set("X-Forwarded-Host", host);
     forwardHeaders.set("X-Forwarded-Proto", proto);
+    const lensId = readLensTenantIdFromCookieStore(cookieStore);
+    if (lensId && shouldAttachLensTenantHeader(upstreamPath)) {
+      forwardHeaders.set("X-Tenant-Id", lensId);
+    }
     const ch1 = cookieHeaderForSpring(jar);
     if (ch1) {
       forwardHeaders.set("Cookie", ch1);
@@ -102,6 +107,10 @@ async function handle(request: NextRequest, segments: string[], method: string):
     const contentType = request.headers.get("content-type");
     if (contentType) {
       forwardHeaders.set("Content-Type", contentType);
+    }
+    const breakGlass = request.headers.get("x-break-glass-reason");
+    if (breakGlass) {
+      forwardHeaders.set("X-Break-Glass-Reason", breakGlass);
     }
     const accept = request.headers.get("accept");
     if (accept) {
@@ -121,6 +130,10 @@ async function handle(request: NextRequest, segments: string[], method: string):
   const forwardHeaders = new Headers();
   forwardHeaders.set("X-Forwarded-Host", host);
   forwardHeaders.set("X-Forwarded-Proto", proto);
+  const lensIdGet = readLensTenantIdFromCookieStore(cookieStore);
+  if (lensIdGet && shouldAttachLensTenantHeader(upstreamPath)) {
+    forwardHeaders.set("X-Tenant-Id", lensIdGet);
+  }
   const ch = cookieHeaderForSpring(jar);
   if (ch) {
     forwardHeaders.set("Cookie", ch);

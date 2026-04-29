@@ -9,7 +9,8 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import com.wagepayroll.config.AppPublicProperties;
+import com.wagepayroll.settings.PlatformBrandingService;
+import com.wagepayroll.settings.PlatformUrlJoin;
 import com.wagepayroll.domain.passwordreset.PasswordResetTokenEntity;
 import com.wagepayroll.domain.passwordreset.PasswordResetTokenRepository;
 import com.wagepayroll.domain.user.UserAccountEntity;
@@ -32,19 +33,19 @@ public class PasswordResetService {
 	private final PasswordEncoder passwordEncoder;
 	private final PasswordResetMailPort mailPort;
 	private final ForgotPasswordRateLimiter forgotLimiter;
-	private final AppPublicProperties publicProps;
+	private final PlatformBrandingService platformBrandingService;
 	private final Clock clock;
 	private final SecureRandom random = new SecureRandom();
 
 	public PasswordResetService(UserAccountRepository users, PasswordResetTokenRepository tokens,
 			PasswordEncoder passwordEncoder, PasswordResetMailPort mailPort,
-			ForgotPasswordRateLimiter forgotLimiter, AppPublicProperties publicProps) {
+			ForgotPasswordRateLimiter forgotLimiter, PlatformBrandingService platformBrandingService) {
 		this.users = users;
 		this.tokens = tokens;
 		this.passwordEncoder = passwordEncoder;
 		this.mailPort = mailPort;
 		this.forgotLimiter = forgotLimiter;
-		this.publicProps = publicProps;
+		this.platformBrandingService = platformBrandingService;
 		this.clock = Clock.systemUTC();
 	}
 
@@ -70,8 +71,8 @@ public class PasswordResetService {
 		row.setExpiresAt(now.plus(1, ChronoUnit.HOURS));
 		row.setCreatedAt(now);
 		tokens.save(row);
-		String origin = publicProps.getFrontendOrigin().replaceAll("/$", "");
-		String resetUrl = origin + "/reset-password?token=" + rawToken;
+		String base = platformBrandingService.publicBaseUrl();
+		String resetUrl = PlatformUrlJoin.joinPublicBaseAndPath(base, "/reset-password?token=" + rawToken);
 		mailPort.sendPasswordResetLink(user.getEmail(), resetUrl);
 	}
 

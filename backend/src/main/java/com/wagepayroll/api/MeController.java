@@ -18,6 +18,7 @@ import com.wagepayroll.domain.user.UserAccountEntity;
 import com.wagepayroll.domain.user.UserAccountRepository;
 import com.wagepayroll.i18n.UserLocaleService;
 import com.wagepayroll.security.PermissionService;
+import com.wagepayroll.settings.PlatformBrandingService;
 import com.wagepayroll.subscription.SubscriptionGatingService;
 import com.wagepayroll.tenant.TenantContext;
 import com.wagepayroll.tenant.TenantDirectoryService;
@@ -41,16 +42,18 @@ public class MeController {
 	private final AuditService auditService;
 	private final TenantDirectoryService tenantDirectoryService;
 	private final SubscriptionGatingService subscriptionGatingService;
+	private final PlatformBrandingService platformBrandingService;
 
 	public MeController(UserAccountRepository userAccountRepository, PermissionService permissionService,
 			UserLocaleService userLocaleService, AuditService auditService, TenantDirectoryService tenantDirectoryService,
-			SubscriptionGatingService subscriptionGatingService) {
+			SubscriptionGatingService subscriptionGatingService, PlatformBrandingService platformBrandingService) {
 		this.userAccountRepository = userAccountRepository;
 		this.permissionService = permissionService;
 		this.userLocaleService = userLocaleService;
 		this.auditService = auditService;
 		this.tenantDirectoryService = tenantDirectoryService;
 		this.subscriptionGatingService = subscriptionGatingService;
+		this.platformBrandingService = platformBrandingService;
 	}
 
 	@GetMapping("/me")
@@ -61,12 +64,14 @@ public class MeController {
 		String rid = RequestIdFilter.currentRequestId(request);
 		var tenant = TenantContext.current();
 		Map<String, Object> payload = new LinkedHashMap<>();
+		payload.put("userId", userId.toString());
 		payload.put("email", user.getEmail());
 		payload.put("locale", user.getPreferredLocale());
 		payload.put("platformSuperadmin", user.isPlatformSuperadmin());
 		if (tenant.isEmpty() || tenant.get().tenantId() == null) {
 			payload.put("privileges", List.of());
 			payload.put("tenantHandle", null);
+			payload.put("tenantId", null);
 			payload.put("planFeatureCodes", List.of());
 			return ApiResponse.of(payload, rid);
 		}
@@ -74,7 +79,12 @@ public class MeController {
 		List<String> privs = permissionService.effectivePrivilegeCodes(userId, tenantId);
 		payload.put("privileges", privs);
 		payload.put("tenantHandle", tenant.get().tenantHandle());
+		payload.put("tenantId", tenantId.toString());
 		payload.put("planFeatureCodes", subscriptionGatingService.activePlanFeatureCodesOrEmpty(tenantId));
+		var branding = platformBrandingService.tenantMeBranding();
+		payload.put("applicationName", branding.applicationName());
+		payload.put("dateFormat", branding.dateFormat());
+		payload.put("publicBaseUrl", branding.publicBaseUrl());
 		return ApiResponse.of(payload, rid);
 	}
 

@@ -10,6 +10,8 @@
 
 When a user opens a **protected** part of the web app **without a valid session**, the browser must **automatically** be sent to the login entry point **`/auth/login`** (or your product’s equivalent path—keep it one canonical URL).
 
+**wage-payroll (Next.js):** canonical login URL is on the **auth host**: **`/login`** (e.g. `http://auth.lvh.me:3007/login`), not `/auth/login`. **Middleware** sends anonymous users (no **`wp_bff_j`** cookie) from **`/`** to that URL and moves auth UI paths from non-auth hosts onto the auth origin (see **`docs/modules/tenancy-routing.md`** § “Anonymous entry, `/`, and login”). **Root `/`** additionally calls **`GET /api/bff/v1/me`**: any failure (**401**, **403** on **admin.*** for non–superadmin, etc.) navigates to **`authLoginUrlWithReturnTo(...)`** so a **stale relay cookie** does not leave a dead-end page. Tenant **`/app`** uses **`TenantAppShell`**: **401** on **`/me`** → **`window.location.replace`** to auth **`/login`** with optional **`returnTo`**. **Login** page: on mount, a successful **`/me`** redirects away (already signed in). **`returnTo`** is validated via **`redirect-check`**; **admin** origin **`returnTo`** is ignored for non–platform-superadmins (see **`web-origins`** `isAdminWebOriginUrl`). **Logout:** **`POST /api/v1/auth/logout`** through the BFF, then client navigates to the auth login URL.
+
 When a user **has** a valid session, protected routes load normally. No redirect loops.
 
 ---
@@ -55,7 +57,7 @@ Examples—**replace** with your real paths:
 - `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`
 - OAuth/callback paths your IdP uses, e.g. `/auth/callback`, `/api/auth/callback` (if applicable)
 - Static/legal: `/terms`, `/privacy`, `/health` (if exposed on this host)
-- Marketing home if it exists on the same app: `/` (only if product requires anonymous access)
+- Marketing home if it exists on the same app: `/` (only if product requires anonymous access). **wage-payroll:** **`/`** is not a public marketing surface; anonymous users are redirected toward auth **`/login`** (middleware + **`/me`** gate—see **`tenancy-routing.md`**).
 
 **Rule:** Any route **not** listed as public is **protected** by default.
 
@@ -116,7 +118,7 @@ Typical patterns (pick what matches your stack; document what you chose):
 
 **Manual**
 
-1. Logged out: open a protected URL → lands on `/auth/login`; address bar shows optional safe `returnTo`.
+1. Logged out: open a protected URL → lands on the product login URL (**wage-payroll:** **`{auth}/login`**); address bar may show optional safe **`returnTo`** (validated server-side).
 2. Log in → redirected to intended path when `returnTo` was set; default when not.
 3. Logged in: open protected URL → no redirect to login.
 4. Public routes: accessible logged out; no redirect loop with `/auth/login`.

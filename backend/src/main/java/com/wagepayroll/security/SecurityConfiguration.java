@@ -50,6 +50,7 @@ public class SecurityConfiguration {
 						"/api/v1/auth/logout", "/api/v1/auth/register", "/api/v1/auth/forgot-password",
 						"/api/v1/auth/reset-password")
 						.permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/v1/platform/public-surface").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/invitations/accept").permitAll()
 				.requestMatchers("/api/**").authenticated()
 				.anyRequest().denyAll());

@@ -31,14 +31,24 @@ class PlatformPrivilegeCatalogIT {
 	@Test
 	void catalogReturnsEntriesForPlatformSuperadmin() throws Exception {
 		mockMvc.perform(get("/api/v1/platform/privileges/catalog").with(user(ADMIN_USER_ID))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.entries.length()").value(4))
-				.andExpect(jsonPath("$.data.entries[0].code").value("TENANT_SETTINGS_EDIT"))
+				.andExpect(jsonPath("$.data.entries.length()").value(8))
+				.andExpect(jsonPath("$.data.entries[0].code").value("DOCUMENT_EDIT"))
 				.andExpect(jsonPath("$.data.entries[0].action").value("EDIT"))
-				.andExpect(jsonPath("$.data.entries[0].resource").value("TENANT_SETTINGS"))
-				.andExpect(jsonPath("$.data.entries[1].code").value("USER_EDIT"))
-				.andExpect(jsonPath("$.data.entries[2].code").value("USER_INVITE"))
-				.andExpect(jsonPath("$.data.entries[2].action").value("CREATE"))
-				.andExpect(jsonPath("$.data.entries[2].resource").value("TENANT_INVITATION"))
-				.andExpect(jsonPath("$.data.entries[3].code").value("USER_VIEW"));
+				.andExpect(jsonPath("$.data.entries[0].resource").value("DOCUMENT"))
+				.andExpect(jsonPath("$.data.entries[1].code").value("DOCUMENT_VIEW"))
+				.andExpect(jsonPath("$.data.entries[1].action").value("VIEW"))
+				.andExpect(jsonPath("$.data.entries[1].resource").value("DOCUMENT"))
+				.andExpect(jsonPath("$.data.entries[2].code").value("ROLE_EDIT"))
+				.andExpect(jsonPath("$.data.entries[2].action").value("EDIT"))
+				.andExpect(jsonPath("$.data.entries[2].resource").value("ROLE"))
+				.andExpect(jsonPath("$.data.entries[3].code").value("ROLE_VIEW"))
+				.andExpect(jsonPath("$.data.entries[3].action").value("VIEW"))
+				.andExpect(jsonPath("$.data.entries[3].resource").value("ROLE"))
+				.andExpect(jsonPath("$.data.entries[4].code").value("TENANT_SETTINGS_EDIT"))
+				.andExpect(jsonPath("$.data.entries[5].code").value("USER_EDIT"))
+				.andExpect(jsonPath("$.data.entries[6].code").value("USER_INVITE"))
+				.andExpect(jsonPath("$.data.entries[6].action").value("CREATE"))
+				.andExpect(jsonPath("$.data.entries[6].resource").value("TENANT_INVITATION"))
+				.andExpect(jsonPath("$.data.entries[7].code").value("USER_VIEW"));
 	}
 }

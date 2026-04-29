@@ -17,8 +17,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "wage-payroll",
-  description: "Multi-tenant payroll SaaS — scaffold",
+  title: "Wage Payroll",
+  description: "Multi-tenant payroll — secure documents, roles, and subscriptions.",
+  icons: {
+    icon: [{ url: "/wage/favicon.png", type: "image/png" }],
+    apple: [{ url: "/wage/favicon.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({

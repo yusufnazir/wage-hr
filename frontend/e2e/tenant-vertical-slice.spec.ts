@@ -3,11 +3,10 @@ import { test, expect } from "@playwright/test";
 const port = process.env.PLAYWRIGHT_PORT ?? "3007";
 
 test.describe("tenant web vertical slice", () => {
-  test("demo tenant /app shows sign-in when unauthenticated", async ({ page }) => {
+  test("demo tenant /app redirects to auth login when unauthenticated", async ({ page }) => {
     await page.goto(`http://demo.lvh.me:${port}/app`);
-    await expect(page.getByTestId("tenant-app-shell")).toBeVisible();
-    await expect(page.getByTestId("sign-in-link")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Tenant app" })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`^http://auth\\.lvh\\.me:${port}/login(\\?.*)?$`));
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   });
 
   test("unknown tenant host shows tenant-not-found after API 404", async ({ page }) => {

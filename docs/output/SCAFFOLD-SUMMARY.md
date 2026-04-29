@@ -32,7 +32,7 @@
 | Path | Purpose |
 |------|---------|
 | `frontend/package.json` | Next **15.1.6**, React 19; `dev` / `start` on port **3007**; `e2e` scripts |
-| `frontend/src/app/` | App Router: `layout.tsx` (theme provider), `page.tsx`, `login/page.tsx` |
+| `frontend/src/app/` | App Router: root `layout.tsx` (theme provider), marketing `page.tsx`, auth routes (`login`, `register`, `forgot-password`, `reset-password`), tenant **`app/`** subtree (`app/layout.tsx` = **`TenantAppShell`**, `app/page.tsx`, `app/documents`, `app/profile`) |
 | `frontend/src/components/theme/` | `AppThemeProvider.tsx` (next-themes), `ThemeToggle.tsx` |
 | `frontend/src/styles/tokens-semantic.css` | Semantic CSS variables (light/dark) |
 | `frontend/src/lib/api.ts` | CSRF + login fetch helpers (`credentials: 'include'`) |

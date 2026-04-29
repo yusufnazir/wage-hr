@@ -18,6 +18,16 @@ app:
     allowed-origin-patterns: http://localhost:3007,http://auth.lvh.me:3007,http://demo.lvh.me:3007,http://*.lvh.me:3007,http://*.lvh.me:3108
   invitation:
     expose-plain-token: true
+  storage:
+    minio:
+      endpoint: http://127.0.0.1:9000
+      access-key: test
+      secret-key: test
+      bucket: wage-documents-test
+      verify-object-before-complete: false
+      delete-object-on-soft-delete: true
+      orphan-cleanup:
+        enabled: false
   billing:
     stripe:
       webhook-secret: whsec_test_secret

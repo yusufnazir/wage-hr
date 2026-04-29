@@ -6,43 +6,31 @@ import {
   createStripeBillingPortalSession,
   createStripeCheckoutSession,
   fetchBillingSummary,
-  fetchDemoUserView,
-  fetchMe,
-  fetchMeTenants,
-  fetchNavigation,
+  fetchTenantUserListProbe,
   fetchPrivacyExport,
   fetchTenantCommercialPlans,
-  patchMeLocale,
   postPrivacyErasureRequest,
   type BillingSummaryFetchResult,
-  type MePayload,
   type NavigationItem,
   type TenantCommercialPlansFetchResult,
-  type TenantSummary,
 } from "@/lib/api";
-import { SetHtmlLang } from "@/components/i18n/SetHtmlLang";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { DemoUserViewBody } from "@/components/demo/DemoUserViewBody";
+import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
 import { navLabel } from "@/messages/nav";
-import { authLoginUrl, tenantWebAppUrlForHandle } from "@/lib/web-origins";
+import { tenantWebAppUrlForHandle } from "@/lib/web-origins";
 
 type ViewState =
   | { kind: "loading" }
-  | { kind: "unauthenticated" }
-  | { kind: "tenant_not_found" }
-  | { kind: "error"; status: number; detail?: string }
   | {
       kind: "ready";
-      me: MePayload;
-      demo?: { ok: true; message: string } | { ok: false; status: number };
-      navigation?: NavigationItem[] | { ok: false; status: number };
-      tenants?: TenantSummary[] | { ok: false; status: number };
+      demo?: { ok: true; totalElements: number } | { ok: false; status: number };
       billingSummary?: BillingSummaryFetchResult;
       commercialPlans?: TenantCommercialPlansFetchResult;
     };
 
 export default function TenantAppShellPage() {
+  const { me, navigation, navigationLoadError, tenants, tenantsLoadError } = useTenantAppSession();
   const [state, setState] = useState<ViewState>({ kind: "loading" });
-  const [localeBusy, setLocaleBusy] = useState(false);
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [privacyMsg, setPrivacyMsg] = useState<string | null>(null);
   const [stripePortalBusy, setStripePortalBusy] = useState(false);
@@ -81,38 +69,17 @@ export default function TenantAppShellPage() {
 
     async function load() {
       try {
-        const meResult = await fetchMe();
-        if (cancelled) return;
-
-        if (!meResult.ok) {
-          if (meResult.status === 401) {
-            setState({ kind: "unauthenticated" });
-            return;
-          }
-          if (meResult.status === 404) {
-            setState({ kind: "tenant_not_found" });
-            return;
-          }
-          setState({ kind: "error", status: meResult.status });
-          return;
-        }
-
-        const [demo, nav, tenantList, billingSummary, commercialPlans] = await Promise.all([
-          fetchDemoUserView(),
-          fetchNavigation(),
-          fetchMeTenants(),
+        const [demo, billingSummary, commercialPlans] = await Promise.all([
+          fetchTenantUserListProbe(),
           fetchBillingSummary(),
           fetchTenantCommercialPlans(),
         ]);
         if (cancelled) return;
 
-        const navigation = nav.ok ? nav.items : nav;
-        const tenants = tenantList.ok ? tenantList.tenants : tenantList;
-        setState({ kind: "ready", me: meResult.me, demo, navigation, tenants, billingSummary, commercialPlans });
-      } catch (e) {
+        setState({ kind: "ready", demo, billingSummary, commercialPlans });
+      } catch {
         if (cancelled) return;
-        const msg = e instanceof Error ? e.message : "Network error";
-        setState({ kind: "error", status: 0, detail: msg });
+        setState({ kind: "ready" });
       }
     }
 
@@ -120,7 +87,7 @@ export default function TenantAppShellPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [me.email]);
 
   useEffect(() => {
     if (state.kind !== "ready" || !state.commercialPlans?.ok) {
@@ -284,83 +251,16 @@ export default function TenantAppShellPage() {
     }
   }
 
-  async function onLocaleChange(next: string) {
-    if (state.kind !== "ready" || next === state.me.locale) {
-      return;
-    }
-    setLocaleBusy(true);
-    try {
-      await patchMeLocale(next);
-      const meResult = await fetchMe();
-      if (meResult.ok) {
-        setState((s) => (s.kind === "ready" ? { ...s, me: meResult.me } : s));
-      }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Locale update failed";
-      window.alert(msg);
-    } finally {
-      setLocaleBusy(false);
-    }
-  }
-
   return (
-    <div data-layout="app" className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border/80 bg-surface/95 shadow-sm backdrop-blur-md dark:bg-surface/90">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-4 px-6 py-3">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">Tenant app</h1>
-          <ThemeToggle />
-        </div>
-      </header>
-      <main className="mx-auto flex max-w-lg flex-col gap-6 px-6 py-8" data-testid="tenant-app-shell">
-      {state.kind === "loading" ? (
-        <p className="text-sm text-muted">Loading session…</p>
-      ) : null}
-
-      {state.kind === "unauthenticated" ? (
-        <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-6 shadow-sm">
-          <p className="text-sm text-foreground">You are not signed in, or the session expired.</p>
-          <a
-            href={authLoginUrl()}
-            className="inline-flex w-fit items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm ring-offset-background hover:opacity-90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary"
-            data-testid="sign-in-link"
-          >
-            Sign in
-          </a>
-        </div>
-      ) : null}
-
-      {state.kind === "tenant_not_found" ? (
-        <p className="text-sm text-muted">
-          Unknown tenant for this host (404 from backend). Check the subdomain matches a tenant handle in the database.
-        </p>
-      ) : null}
-
-      {state.kind === "error" ? (
-        <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-6 shadow-sm">
-          <p className="text-sm text-muted">
-            {state.status === 0 ? (
-              <>
-                Could not load your session ({state.detail ?? "network"}). Is the Spring API running and{" "}
-                <code className="rounded bg-background px-1">API_BASE_URL</code> set for the Next server?
-              </>
-            ) : (
-              <>Request failed (HTTP {state.status}).</>
-            )}
-          </p>
-          <a
-            href={authLoginUrl()}
-            className="inline-flex w-fit items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm hover:opacity-90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary"
-            data-testid="sign-in-link"
-          >
-            Sign in
-          </a>
-        </div>
-      ) : null}
+    <div className="mx-auto flex max-w-5xl flex-col gap-6" data-testid="tenant-app-shell">
+      {state.kind === "loading" ? <p className="text-sm text-muted">Loading dashboard…</p> : null}
 
       {state.kind === "ready" ? (
         <div className="flex flex-col gap-6">
-          <SetHtmlLang locale={state.me.locale} />
-          {Array.isArray(state.tenants) && state.tenants.length > 1 ? (
+          {tenantsLoadError ? (
+            <p className="text-xs text-muted">Could not load tenant list (HTTP {tenantsLoadError}).</p>
+          ) : null}
+          {tenants.length > 1 ? (
             <section
               className="rounded-md border border-border bg-surface p-6 shadow-sm"
               data-testid="tenant-switcher"
@@ -368,7 +268,7 @@ export default function TenantAppShellPage() {
               <h2 className="text-sm font-medium text-foreground">Your tenants</h2>
               <p className="mt-1 text-xs text-muted">Open another tenant in the same browser session (same relay cookies).</p>
               <ul className="mt-3 space-y-2" data-testid="tenant-switcher-list">
-                {state.tenants.map((t) => (
+                {tenants.map((t) => (
                   <li key={t.id}>
                     <a
                       href={tenantWebAppUrlForHandle(t.handle)}
@@ -388,47 +288,34 @@ export default function TenantAppShellPage() {
           ) : null}
           <section className="rounded-md border border-border bg-surface p-6 shadow-sm">
             <h2 className="text-sm font-medium text-foreground">Current user</h2>
+            <p className="mt-1 text-xs text-muted">Change language from the account menu (header).</p>
             <dl className="mt-3 space-y-2 text-sm">
               <div>
                 <dt className="text-muted">Email</dt>
                 <dd className="font-mono text-foreground" data-testid="me-email">
-                  {state.me.email}
+                  {me.email}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted">Locale</dt>
-                <dd className="mt-1">
-                  <label className="sr-only" htmlFor="locale-select">
-                    Interface language
-                  </label>
-                  <select
-                    id="locale-select"
-                    className="rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground"
-                    value={state.me.locale}
-                    disabled={localeBusy}
-                    onChange={(e) => void onLocaleChange(e.target.value)}
-                    data-testid="locale-select"
-                  >
-                    <option value="en">en</option>
-                    <option value="nl">nl</option>
-                    <option value="nl-sr">nl-sr</option>
-                  </select>
+                <dd className="font-mono text-foreground" data-testid="me-locale-display">
+                  {me.locale}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted">Tenant handle</dt>
                 <dd className="font-mono text-foreground" data-testid="me-tenant">
-                  {state.me.tenantHandle ?? "—"}
+                  {me.tenantHandle ?? "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted">Privileges</dt>
                 <dd>
-                  {state.me.privileges.length === 0 ? (
+                  {me.privileges.length === 0 ? (
                     <span className="text-muted">(none in this context)</span>
                   ) : (
                     <ul className="list-inside list-disc font-mono text-foreground" data-testid="me-privileges">
-                      {state.me.privileges.map((p) => (
+                      {me.privileges.map((p) => (
                         <li key={p}>{p}</li>
                       ))}
                     </ul>
@@ -438,17 +325,17 @@ export default function TenantAppShellPage() {
               <div>
                 <dt className="text-muted">Platform operator</dt>
                 <dd className="font-mono text-foreground" data-testid="me-platform-operator">
-                  {state.me.platformSuperadmin ? "yes" : "no"}
+                  {me.platformSuperadmin ? "yes" : "no"}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted">Plan features (subscription)</dt>
                 <dd>
-                  {state.me.planFeatureCodes.length === 0 ? (
+                  {me.planFeatureCodes.length === 0 ? (
                     <span className="text-muted">(none)</span>
                   ) : (
                     <ul className="list-inside list-disc font-mono text-foreground" data-testid="me-plan-features">
-                      {state.me.planFeatureCodes.map((c) => (
+                      {me.planFeatureCodes.map((c) => (
                         <li key={c}>{c}</li>
                       ))}
                     </ul>
@@ -557,7 +444,7 @@ export default function TenantAppShellPage() {
                       {billingRedirectHint()}
                     </p>
                   ) : null}
-                  {state.me.privileges.includes("TENANT_SETTINGS_EDIT") && state.billingSummary?.ok ? (
+                  {me.privileges.includes("TENANT_SETTINGS_EDIT") && state.billingSummary?.ok ? (
                     <div className="flex flex-col gap-2">
                       {state.billingSummary.summary.stripeBillingEnabled &&
                       state.billingSummary.summary.stripeCustomerLinked &&
@@ -608,7 +495,7 @@ export default function TenantAppShellPage() {
             ) : null}
 
             {state.billingSummary?.ok &&
-            state.me.privileges.includes("TENANT_SETTINGS_EDIT") &&
+            me.privileges.includes("TENANT_SETTINGS_EDIT") &&
             state.billingSummary.summary.stripeBillingEnabled &&
             state.billingSummary.summary.stripeCustomerLinked ? (
               <div className="mt-4 flex flex-col gap-2 border-t border-border/80 pt-4">
@@ -668,30 +555,20 @@ export default function TenantAppShellPage() {
 
           <section className="rounded-md border border-border bg-surface p-6 shadow-sm">
             <h2 className="text-sm font-medium text-foreground">Navigation (API)</h2>
-            <p className="mt-2 text-sm text-muted">GET /api/bff/v1/me/navigation — filtered by privileges</p>
-            {Array.isArray(state.navigation) ? (
-              <NavTree items={state.navigation} locale={state.me.locale} />
-            ) : state.navigation ? (
-              <p className="mt-2 text-sm text-muted">Could not load menu (HTTP {state.navigation.status}).</p>
+            <p className="mt-2 text-sm text-muted">GET /api/bff/v1/me/navigation — filtered by privileges (sidebar mirrors this tree).</p>
+            {navigationLoadError ? (
+              <p className="mt-2 text-sm text-muted">Could not load menu (HTTP {navigationLoadError}).</p>
             ) : (
-              <p className="mt-2 text-sm text-muted">No navigation payload.</p>
+              <NavTree items={navigation} locale={me.locale} />
             )}
           </section>
 
           <section className="rounded-md border border-border bg-surface p-6 shadow-sm">
             <h2 className="text-sm font-medium text-foreground">Privilege check</h2>
-            <p className="mt-2 text-sm text-muted">GET /api/bff/v1/demo/user-view (requires USER_VIEW)</p>
-            {state.demo?.ok ? (
-              <p className="mt-2 text-sm text-foreground" data-testid="demo-ok">
-                {state.demo.message}
-              </p>
-            ) : state.demo ? (
-              <p className="mt-2 text-sm text-muted">Denied or failed (HTTP {state.demo.status}).</p>
-            ) : null}
+            <DemoUserViewBody demo={state.demo} />
           </section>
         </div>
       ) : null}
-      </main>
     </div>
   );
 }

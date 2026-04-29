@@ -27,7 +27,7 @@ Minimum expectations for web UIs built under this methodology. **Web Prompt (5)*
 - If **cookie auth**:
   - Assert cookie **domain** and attributes suit subdomains (e.g. domain `.lvh.me`, HttpOnly, SameSite/Secure per policy).
   - After switching from `auth.*` to `{tenant|app}.*`, authenticated requests work **without re-login**.
-  - If CSRF applies server-side (BFF): assert a **state-changing** request still succeeds (e.g. locale **PATCH** returns **204** through `/api/bff/...`).
+  - If CSRF applies server-side (BFF): assert a **state-changing** request still succeeds (e.g. **`PATCH /api/v1/me/locale`** returns **204** through `/api/bff/...`). *wage-payroll:* that flow is exercised from the **tenant app header user menu** (`user-menu-trigger` → `user-menu-locale-toggle` → `user-menu-locale-nl`, etc.) in `frontend/e2e/m1-platform.spec.ts`.*
 
 ## Redirect safety
 

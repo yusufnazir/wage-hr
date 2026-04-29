@@ -42,6 +42,7 @@ public class PlatformSettingsService {
 			SettingsEntryValidator.validateKey(entry.key());
 			SettingsEntryValidator.validateValue(entry.value());
 			BillingIntegrationSettingsValidator.validateIfBillingKey(entry);
+			PlatformIntegrationSettingsValidator.validateIfKnownScope(entry);
 			PlatformSettingEntity e = platformSettingRepository.findByKey(entry.key()).orElse(null);
 			if (e == null) {
 				PlatformSettingEntity n = new PlatformSettingEntity();

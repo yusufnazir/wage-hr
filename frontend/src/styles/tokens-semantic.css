@@ -2,28 +2,48 @@
 @import "./tokens-primitives.css";
 
 :root {
-  --color-bg: var(--p-neutral-50);
+  --color-bg: var(--p-slate-50);
   --color-surface: var(--p-white);
-  --color-text: var(--p-neutral-950);
-  --color-muted: var(--p-neutral-500);
-  --color-border: var(--p-neutral-200);
-  --color-primary: var(--p-green-700);
-  --color-primary-foreground: var(--p-green-50);
-  /* Tenant / white-label hook: defaults to primary; future tenant theme can override on a wrapper */
-  --color-accent: var(--p-green-700);
-  --color-accent-foreground: var(--p-green-50);
-  --radius-md: 0.5rem;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --color-text: var(--p-slate-900);
+  --color-muted: var(--p-slate-500);
+  --color-border: var(--p-slate-200);
+  --color-primary: var(--p-blue-700);
+  --color-primary-foreground: var(--p-white);
+  --color-primary-strong: var(--p-logo-blue);
+  --color-accent: var(--p-sky-500);
+  --color-accent-foreground: var(--p-sky-950);
+  --color-accent-soft: color-mix(in srgb, var(--p-sky-500) 14%, transparent);
+
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --shadow-sm: 0 1px 2px rgb(30 58 138 / 0.06), 0 1px 3px rgb(30 58 138 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(30 58 138 / 0.07), 0 10px 24px -6px rgb(30 58 138 / 0.12);
+  --shadow-glass: 0 8px 32px rgb(30 58 138 / 0.1), 0 2px 8px rgb(30 58 138 / 0.05);
+
+  /* Auth mesh — brand blue + sky */
+  --color-mesh-a: color-mix(in srgb, var(--p-blue-600) 22%, transparent);
+  --color-mesh-b: color-mix(in srgb, var(--p-sky-400) 16%, transparent);
+  --color-mesh-c: color-mix(in srgb, var(--p-blue-400) 12%, transparent);
 }
 
 .dark {
-  --color-bg: var(--p-neutral-950);
-  --color-surface: var(--p-neutral-900);
-  --color-text: var(--p-neutral-50);
-  --color-muted: var(--p-neutral-400);
-  --color-border: var(--p-neutral-800);
-  --color-primary: var(--p-green-500);
-  --color-primary-foreground: var(--p-green-950);
-  --color-accent: var(--p-green-500);
-  --color-accent-foreground: var(--p-green-950);
+  --color-bg: var(--p-slate-950);
+  --color-surface: var(--p-slate-900);
+  --color-text: var(--p-slate-50);
+  --color-muted: var(--p-slate-400);
+  --color-border: var(--p-slate-800);
+  --color-primary: var(--p-blue-400);
+  --color-primary-foreground: var(--p-slate-950);
+  --color-primary-strong: var(--p-blue-600);
+  --color-accent: var(--p-sky-400);
+  --color-accent-foreground: var(--p-slate-950);
+  --color-accent-soft: color-mix(in srgb, var(--p-sky-400) 14%, transparent);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 6px 16px -2px rgb(0 0 0 / 0.45), 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-glass: 0 12px 40px rgb(0 0 0 / 0.45), 0 2px 12px rgb(0 0 0 / 0.25);
+
+  --color-mesh-a: color-mix(in srgb, var(--p-blue-500) 26%, transparent);
+  --color-mesh-b: color-mix(in srgb, var(--p-sky-400) 12%, transparent);
+  --color-mesh-c: color-mix(in srgb, var(--p-blue-400) 14%, transparent);
 }

@@ -50,23 +50,31 @@ class NavigationAndSettingsIT {
 	private ObjectMapper objectMapper;
 
 	@Test
-	void navigationReturns400WhenTenantContextMissing() throws Exception {
-		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "localhost:8300").with(user(ADMIN_USER_ID)))
+	void navigationReturns400WhenTenantContextMissingForNonSuperadmin() throws Exception {
+		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "localhost:8300").with(user(VIEWER_USER_ID)))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void navigationReturnsPlatformOnlyWhenTenantContextMissingForSuperadmin() throws Exception {
+		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "admin.lvh.me").with(user(ADMIN_USER_ID)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.items.length()").value(3))
+				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.platform_tenants"));
 	}
 
 	@Test
 	void navigationReturnsFilteredItemsForViewer() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(VIEWER_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(2));
+				.andExpect(jsonPath("$.data.items.length()").value(4));
 	}
 
 	@Test
 	void navigationReturnsAllSeededRootsForAdmin() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(3));
+				.andExpect(jsonPath("$.data.items.length()").value(8));
 	}
 
 	@Test
@@ -76,7 +84,7 @@ class NavigationAndSettingsIT {
 		navMenuItemRepository.save(dash);
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(2));
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(7));
 
 		UUID billingFeatureId = planFeatureRepository.findByCode("COMMERCIAL_BILLING").orElseThrow().getId();
 		String createPlan = "{\"code\":\"m3_navfeat\",\"sortOrder\":1,\"active\":true,\"planFeatureIds\":[\"%s\"]}"
@@ -91,7 +99,7 @@ class NavigationAndSettingsIT {
 				.content(subBody).with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(3));
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(8));
 	}
 
 	@Test
@@ -102,7 +110,8 @@ class NavigationAndSettingsIT {
 	@Test
 	void platformSettingsOkForSeededPlatformSuperadmin() throws Exception {
 		mockMvc.perform(get("/api/v1/platform/settings").with(user(ADMIN_USER_ID))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.entries[*].key", hasItem("platform.product_name")));
+				.andExpect(jsonPath("$.data.entries[*].key", hasItem("platform.product_name")))
+				.andExpect(jsonPath("$.data.entries[*].key", hasItem("platform.application_name")));
 	}
 
 	@Test
@@ -110,6 +119,31 @@ class NavigationAndSettingsIT {
 		String body = "{\"entries\":[{\"key\":\"billing.stripe.unknown\",\"value\":\"1\"}]}";
 		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(body)
 				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void platformSettingsRejectUnknownNonBillingKey() throws Exception {
+		String body = "{\"entries\":[{\"key\":\"platform.evil\",\"value\":\"x\"}]}";
+		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(body)
+				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void platformSettingsAcceptApplicationNamePatch() throws Exception {
+		String body = "{\"entries\":[{\"key\":\"platform.application_name\",\"value\":\"Wage Payroll Dev\"}]}";
+		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(body)
+				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isNoContent());
+	}
+
+	@Test
+	void platformSettingsAcceptCustomDateFormatAndExposesItInMe() throws Exception {
+		String body = "{\"entries\":[{\"key\":\"platform.date_format\",\"value\":\"dd-MM-yyyy\"}]}";
+		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(body)
+				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.dateFormat").value("dd-MM-yyyy"));
 	}
 
 	@Test

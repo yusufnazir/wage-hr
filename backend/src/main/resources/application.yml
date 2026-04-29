@@ -22,6 +22,12 @@ spring:
 app:
   public:
     frontend-origin: ${PUBLIC_FRONTEND_ORIGIN:http://auth.lvh.me:3007}
+  mail:
+    api:
+      base-url: ${MAIL_API_BASE_URL:}
+      project-key: ${MAIL_API_PROJECT_KEY:}
+      username: ${MAIL_API_USERNAME:}
+      password: ${MAIL_API_PASSWORD:}
   host:
     base-domain: ${BASE_DOMAIN:lvh.me}
     auth-subdomain: ${AUTH_SUBDOMAIN:auth}
@@ -44,6 +50,27 @@ app:
     trust-proxy: ${TRUST_PROXY:false}
   invitation:
     expose-plain-token: ${APP_INVITATION_EXPOSE_PLAIN_TOKEN:false}
+  storage:
+    minio:
+      # S3-compatible API (MinIO). All four must be non-empty or presigned document routes return 503.
+      endpoint: ${MINIO_ENDPOINT:}
+      access-key: ${MINIO_ACCESS_KEY:}
+      secret-key: ${MINIO_SECRET_KEY:}
+      bucket: ${MINIO_BUCKET:}
+      region: ${MINIO_REGION:us-east-1}
+      upload-presign-ttl: ${MINIO_UPLOAD_PRESIGN_TTL:15m}
+      download-presign-ttl: ${MINIO_DOWNLOAD_PRESIGN_TTL:5m}
+      max-upload-bytes: ${MINIO_MAX_UPLOAD_BYTES:52428800}
+      # HEAD object before DB row on complete (requires live MinIO/S3). Default off for local/CI without storage.
+      verify-object-before-complete: ${MINIO_VERIFY_OBJECT_BEFORE_COMPLETE:false}
+      # Best-effort S3 delete after soft-delete (failures logged; DB row still soft-deleted).
+      delete-object-on-soft-delete: ${MINIO_DELETE_OBJECT_ON_SOFT_DELETE:true}
+      orphan-cleanup:
+        enabled: ${MINIO_ORPHAN_CLEANUP_ENABLED:false}
+        cron: ${MINIO_ORPHAN_CLEANUP_CRON:0 30 4 * * *}
+        min-object-age: ${MINIO_ORPHAN_CLEANUP_MIN_OBJECT_AGE:24h}
+        max-keys-per-run: ${MINIO_ORPHAN_CLEANUP_MAX_KEYS_PER_RUN:500}
+        soft-deleted-retry-max: ${MINIO_ORPHAN_CLEANUP_SOFT_DELETED_RETRY_MAX:200}
   billing:
     stripe:
       # Secret API key (sk_live_… / sk_test_…). Required for tenant checkout + billing portal; empty → 503 on those routes.

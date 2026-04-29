@@ -9,7 +9,7 @@
 
 - Allow a privileged tenant admin to **invite by email** a person to join the tenant with a **specific role**.
 - **Accept** creates or reuses a `user_account`, ensures **membership** + `user_role`, marks the invitation **accepted**, clears the pending dedupe key, and emits in-app **`TENANT_JOINED`** (see inbox module; `correlation_id` = this invitation’s `id`).
-- **Outbound email** for the invite link uses **`MailSendPort`** (v1: `LoggingMailSendPort` in dev/test; no persisted email body).
+- **Outbound email** for the invite link uses the **`MailSendPort`** contract, implemented by **`OutboundMailService`** (resolves `mail.api.*` per [`platform-settings.md`](./platform-settings.md)); **no** persisted email body in MariaDB.
 
 ---
 
@@ -85,7 +85,7 @@ Host must resolve tenant (e.g. `demo.lvh.me`) like other tenant APIs.
 
 ## Mail
 
-- **`TenantInvitationService`** calls **`MailSendPort`** with an `InvitationEmailRequest` (to, tenant handle, opaque token for URL building in the adapter).
+- **`TenantInvitationService`** calls **`MailSendPort.sendInvitationEmail`** with an `InvitationEmailRequest` (tenant id, handle, invited email, opaque token). The implementation is **`OutboundMailService`**, which satisfies the port and applies platform mail settings merge rules — **no** separate logging-only or placeholder mail adapters.
 - **No** full message body stored in MariaDB; provider id may later align with `notification.external_message_id` if product unifies outbound tracing (invitation mail is still separate from the `TENANT_JOINED` notification row).
 
 ---

@@ -52,8 +52,8 @@ Cross-cutting requirements (must stay consistent across prompts 1–6):
 - Reverse proxy forwarded header trust; canonical scheme/host; API base `https://api.{BASE_DOMAIN}/v1/`
 - Baseline security headers and auth rate limiting (login, password reset)
 - Web: unique URL per screen for shareable layout; filter/query state for shareable filtered views where specified in module docs
-- Theming: light/dark + swappable custom themes consistent across layouts (`WEB-THEMING-AND-DESIGN-SYSTEM`); modern split login / glassmorphism as presentation layer
-- i18n across web and Flutter; menu structure driven from datamodel API
+- Theming: light/dark + swappable custom themes consistent across layouts (`WEB-THEMING-AND-DESIGN-SYSTEM`); modern **split auth** (marketing + form) + glass surfaces; tenant **`/app`** **shell** (sidebar from `GET /api/v1/me/navigation`, header user menu, shared layout) — `tenant-web-vertical-slice.md` §3.6
+- i18n across web and Flutter; menu structure driven from datamodel API (`GET /api/v1/me/navigation`); locale via `PATCH /api/v1/me/locale` (web: header user menu on tenant routes)
 - Commercial gating: active subscription widens **tenant privilege pool** and **feature flags** (both enforced; order in architecture doc)
 - Inbox: in-app + **system-sent** comms; **minimal PII** in message rows (keys, metadata, provider refs — not full bodies/secrets by default)
 - Retention: **≥10y** default for core business + audit; **controlled deletion** + **anonymization** where policy allows; **export/erasure** paths for legal/subject requests
@@ -185,13 +185,15 @@ Duplicated here for templates that expect a dedicated block; edit to avoid drift
 
 ## Feature work (for `MASTER-FEATURE-END-TO-END` only)
 
-Pick the **active** module from [`docs/product/MODULE-INDEX.md`](../product/MODULE-INDEX.md). Default / current demo slice:
+Pick the **active** module from [`docs/product/MODULE-INDEX.md`](../product/MODULE-INDEX.md).
 
 | Field | Value |
 |-------|--------|
-| **Feature slug / module doc path** | `docs/modules/tenant-web-vertical-slice.md` |
-| **Feature name** | Tenant web vertical slice |
-| **What the feature should do** | After login on the auth host, open the demo tenant host, call `GET /api/v1/me` and `GET /api/v1/demo/user-view` with the same session; show results on `/app`. See module doc for acceptance criteria. |
+| **Feature slug / module doc path** | `docs/modules/role-admin.md` |
+| **Feature name** | Roles admin + role templates + tenant bootstrap (web v1) |
+| **What the feature should do** | **Tenant-scoped** roles list at **`/app/roles`** and separate edit view at **`/app/roles/[roleId]`**. **`ROLE_VIEW`** can list and view role details read-only. **`ROLE_EDIT`** can create roles and edit role **name** + **privilege assignments** (assignable privileges limited to tenant effective pool ceiling). Add tenant nav item **Roles** visible with `ROLE_VIEW`. Add **platform superadmin view-only** page **`/app/platform-role-templates`** on `admin.{BASE_DOMAIN}` that lists the two templates (**ADMIN**, **EMPLOYEE**) and their privilege sets. **Tenant bootstrap:** on `POST /api/v1/auth/register`, create a new tenant, copy templates into tenant roles, create membership, and assign the new user the copied tenant **Admin** role; later tenant-admin edits affect only their tenant’s roles (templates remain unchanged). Out of scope v1: role delete/archive, BU-scoped roles, editing templates, editing global privilege catalog, bulk assignment of roles from the roles screen. |
+
+*Previous default demo slice (still documented):* `docs/modules/tenant-web-vertical-slice.md` (tenant app shell + demo read).
 
 ---
 

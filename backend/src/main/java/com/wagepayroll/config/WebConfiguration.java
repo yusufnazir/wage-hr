@@ -8,12 +8,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.wagepayroll.tenant.MembershipActivityInterceptor;
 
 @Configuration
 @EnableConfigurationProperties({ AppHostProperties.class, AppCorsProperties.class, AppSecurityHeadersProperties.class,
-		AppRateLimitProperties.class, ForwardingProperties.class, AppPublicProperties.class })
+		AppRateLimitProperties.class, ForwardingProperties.class, AppPublicProperties.class, MailApiProperties.class })
 public class WebConfiguration implements WebMvcConfigurer {
+
+	private final MembershipActivityInterceptor membershipActivityInterceptor;
+
+	public WebConfiguration(MembershipActivityInterceptor membershipActivityInterceptor) {
+		this.membershipActivityInterceptor = membershipActivityInterceptor;
+	}
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(membershipActivityInterceptor).addPathPatterns("/api/**");
+	}
 
 	@Bean
 	CorsConfigurationSource corsConfigurationSource(AppCorsProperties cors) {

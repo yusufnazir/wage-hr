@@ -14,6 +14,8 @@ public final class AuditResourceTypes {
 
 	public static final String COMMERCIAL_PLAN = "COMMERCIAL_PLAN";
 
+	public static final String ROLE = "ROLE";
+
 	private AuditResourceTypes() {
 	}
 }

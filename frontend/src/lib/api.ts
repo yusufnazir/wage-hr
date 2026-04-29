@@ -15,11 +15,16 @@ async function readFailureMessage(r: Response): Promise<string> {
   return `Request failed: ${r.status} ${text.slice(0, 200)}`;
 }
 
-export async function postJson(path: string, body: unknown, okStatuses: number[]): Promise<void> {
+export async function postJson(
+  path: string,
+  body: unknown,
+  okStatuses: number[],
+  extraHeaders?: Record<string, string>,
+): Promise<void> {
   const r = await fetch(bffUrl(path), {
     method: "POST",
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(extraHeaders ?? {}) },
     body: JSON.stringify(body),
   });
   if (!okStatuses.includes(r.status)) {
@@ -27,11 +32,16 @@ export async function postJson(path: string, body: unknown, okStatuses: number[]
   }
 }
 
-export async function patchJson(path: string, body: unknown, okStatuses: number[]): Promise<void> {
+export async function patchJson(
+  path: string,
+  body: unknown,
+  okStatuses: number[],
+  extraHeaders?: Record<string, string>,
+): Promise<void> {
   const r = await fetch(bffUrl(path), {
     method: "PATCH",
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(extraHeaders ?? {}) },
     body: JSON.stringify(body),
   });
   if (!okStatuses.includes(r.status)) {
@@ -41,6 +51,134 @@ export async function patchJson(path: string, body: unknown, okStatuses: number[
 
 export async function patchMeLocale(locale: string): Promise<void> {
   await patchJson("/api/v1/me/locale", { locale }, [204]);
+}
+
+export type PlatformSettingEntry = { key: string; value: string };
+
+export type PlatformSettingsFetchResult =
+  | { ok: true; entries: PlatformSettingEntry[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/settings — platform superadmin only. */
+export async function fetchPlatformSettings(): Promise<PlatformSettingsFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/settings"), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ entries: PlatformSettingEntry[] }>;
+  return { ok: true, entries: body.data.entries };
+}
+
+/** PATCH /api/v1/platform/settings — platform superadmin only; CSRF via BFF. */
+export async function patchPlatformSettings(entries: PlatformSettingEntry[]): Promise<void> {
+  await patchJson("/api/v1/platform/settings", { entries }, [204]);
+}
+
+export type PlatformRoleTemplate = {
+  id: string;
+  code: string;
+  displayName: string;
+  privilegeCodes: string[];
+};
+
+export type PlatformRoleTemplatesFetchResult =
+  | { ok: true; items: PlatformRoleTemplate[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/role-templates — platform superadmin only. */
+export async function fetchPlatformRoleTemplates(): Promise<PlatformRoleTemplatesFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/role-templates"), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: PlatformRoleTemplate[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export type PlatformTenantRow = {
+  id: string;
+  handle: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlatformTenantsPageResult =
+  | {
+      ok: true;
+      items: PlatformTenantRow[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/tenants — platform superadmin only. */
+export async function fetchPlatformTenants(page = 0, size = 20): Promise<PlatformTenantsPageResult> {
+  const q = new URLSearchParams({ page: String(page), size: String(size) });
+  const r = await fetch(bffUrl(`/api/v1/platform/tenants?${q}`), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{
+    items: PlatformTenantRow[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
+export type PlatformTenantOneResult = { ok: true; tenant: PlatformTenantRow } | { ok: false; status: number };
+
+export async function fetchPlatformTenant(tenantId: string): Promise<PlatformTenantOneResult> {
+  const r = await fetch(bffUrl(`/api/v1/platform/tenants/${tenantId}`), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ tenant: PlatformTenantRow }>;
+  return { ok: true, tenant: body.data.tenant };
+}
+
+/** POST /api/v1/platform/tenants — returns created row. */
+export async function postPlatformTenant(handle: string, name: string): Promise<PlatformTenantRow> {
+  const r = await fetch(bffUrl("/api/v1/platform/tenants"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ handle, name }),
+  });
+  if (r.status !== 201) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ tenant: PlatformTenantRow }>;
+  return body.data.tenant;
+}
+
+export async function patchPlatformTenantName(tenantId: string, name: string): Promise<PlatformTenantRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/tenants/${tenantId}`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (r.status !== 200) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ tenant: PlatformTenantRow }>;
+  return body.data.tenant;
 }
 
 export type PrivacyExport = {
@@ -65,6 +203,11 @@ export async function fetchPrivacyExport(): Promise<PrivacyExport> {
 /** Erasure request stub — 202; logs `SUBJECT_ERASURE_REQUESTED`; optional `note` ≤ 500 chars. */
 export async function postPrivacyErasureRequest(note?: string): Promise<void> {
   await postJson("/api/v1/me/privacy/erasure-request", note ? { note } : {}, [202]);
+}
+
+/** Ends server session and clears relay cookies (BFF mirrors Set-Cookie). */
+export async function postLogout(): Promise<void> {
+  await postJson("/api/v1/auth/logout", {}, [200]);
 }
 
 export async function loginJson(email: string, password: string): Promise<void> {
@@ -94,14 +237,44 @@ export async function resetPasswordJson(token: string, newPassword: string): Pro
 export type ApiEnvelope<T> = { data: T; meta: { requestId: string } };
 
 export type MePayload = {
+  /** Authenticated principal {@code user_account.id}. */
+  userId: string;
   email: string;
   locale: string;
   privileges: string[];
   /** Active commercial plan feature codes for the current tenant host; empty when none or not subscribed. */
   planFeatureCodes: string[];
   tenantHandle: string | null;
+  /** Resolved tenant id when host or BFF lens supplies tenant context; null otherwise. */
+  tenantId: string | null;
   platformSuperadmin: boolean;
+  /** From platform settings when tenant context is present; defaults applied client-side when absent. */
+  applicationName: string;
+  dateFormat: string;
+  publicBaseUrl: string;
 };
+
+export type PublicSurfacePayload = {
+  applicationName: string;
+  publicBaseUrl: string;
+  dateFormat: string;
+};
+
+export type PublicSurfaceFetchResult =
+  | { ok: true; surface: PublicSurfacePayload }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/public-surface — permitAll; no session. */
+export async function fetchPublicSurface(): Promise<PublicSurfaceFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/public-surface"), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<PublicSurfacePayload>;
+  return { ok: true, surface: body.data };
+}
 
 export type NavigationItem = {
   id: string;
@@ -271,14 +444,43 @@ export async function fetchMe(): Promise<MeFetchResult> {
   >;
   const raw = body.data;
   const me: MePayload = {
+    userId: (raw as { userId?: string }).userId ?? "",
     email: raw.email,
     locale: raw.locale ?? "en",
     privileges: raw.privileges,
     planFeatureCodes: raw.planFeatureCodes ?? [],
     tenantHandle: raw.tenantHandle,
+    tenantId: (raw as { tenantId?: string | null }).tenantId ?? null,
     platformSuperadmin: raw.platformSuperadmin ?? false,
+    applicationName: (raw as { applicationName?: string }).applicationName ?? "Wage Payroll",
+    dateFormat: (raw as { dateFormat?: string }).dateFormat ?? "yyyy-MM-dd",
+    publicBaseUrl: (raw as { publicBaseUrl?: string }).publicBaseUrl ?? "",
   };
   return { ok: true, me };
+}
+
+/** Set HttpOnly lens cookie; next BFF calls send {@code X-Tenant-Id} to Spring (superadmin tenant lens). */
+export async function postLensTenant(tenantId: string): Promise<void> {
+  const r = await fetch("/api/bff/lens-tenant", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tenantId }),
+  });
+  if (!r.ok) {
+    throw new Error(await readFailureMessage(r));
+  }
+}
+
+/** Clear lens cookie. */
+export async function clearLensTenant(): Promise<void> {
+  const r = await fetch("/api/bff/lens-tenant", {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    throw new Error(await readFailureMessage(r));
+  }
 }
 
 /** All tenant memberships for the signed-in user (no tenant host required). */
@@ -305,20 +507,210 @@ export async function fetchNavigation(): Promise<NavigationFetchResult> {
   return { ok: true, items: body.data.items };
 }
 
-export type DemoUserViewResult =
-  | { ok: true; message: string }
+export type TenantUserListProbeResult =
+  | { ok: true; totalElements: number }
   | { ok: false; status: number };
 
-/** Requires {@code USER_VIEW} in current tenant context. */
-export async function fetchDemoUserView(): Promise<DemoUserViewResult> {
-  const r = await fetch(bffUrl("/api/v1/demo/user-view"), {
+/** GET /api/v1/tenant/users — requires {@code USER_VIEW} in current tenant context (first page probe). */
+export async function fetchTenantUserListProbe(): Promise<TenantUserListProbeResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/users?page=0&size=1"), {
     credentials: "same-origin",
   });
   if (!r.ok) {
     return { ok: false, status: r.status };
   }
-  const body = (await r.json()) as ApiEnvelope<{ message: string }>;
-  return { ok: true, message: body.data.message };
+  const body = (await r.json()) as ApiEnvelope<{
+    totalElements: number;
+  }>;
+  return { ok: true, totalElements: body.data.totalElements };
+}
+
+export type TenantUserListItem = {
+  userId: string;
+  email: string;
+  status: string;
+  lastActiveAt: string | null;
+  roleNames: string[];
+};
+
+export type TenantUsersPageResult =
+  | {
+      ok: true;
+      items: TenantUserListItem[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+export async function fetchTenantUsersPage(params: {
+  page?: number;
+  size?: number;
+  sort?: string;
+  email?: string;
+  status?: string;
+  role?: string;
+}): Promise<TenantUsersPageResult> {
+  const q = new URLSearchParams();
+  q.set("page", String(params.page ?? 0));
+  q.set("size", String(params.size ?? 20));
+  if (params.sort) q.set("sort", params.sort);
+  if (params.email?.trim()) q.set("email", params.email.trim());
+  if (params.status?.trim()) q.set("status", params.status.trim());
+  if (params.role?.trim()) q.set("role", params.role.trim());
+  const r = await fetch(bffUrl(`/api/v1/tenant/users?${q}`), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{
+    items: TenantUserListItem[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
+export type TenantRoleOption = { id: string; name: string };
+export type TenantRoleOptionsResult = { ok: true; roles: TenantRoleOption[] } | { ok: false; status: number };
+
+/** GET /api/v1/tenant/users/role-options — requires USER_VIEW. */
+export async function fetchTenantUserRoleOptions(): Promise<TenantRoleOptionsResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/users/role-options"), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ roles: TenantRoleOption[] }>;
+  return { ok: true, roles: body.data.roles };
+}
+
+export type TenantUserDetail = {
+  userId: string;
+  email: string;
+  status: string;
+  lastActiveAt: string | null;
+  roleNames: string[];
+  roleAssignments: { roleId: string; roleName: string }[];
+  assignableRoles: { id: string; name: string }[];
+};
+
+export type TenantUserDetailResult = { ok: true; user: TenantUserDetail } | { ok: false; status: number };
+
+export async function fetchTenantUserDetail(userId: string): Promise<TenantUserDetailResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/users/${encodeURIComponent(userId)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ user: TenantUserDetail }>;
+  return { ok: true, user: body.data.user };
+}
+
+export async function patchTenantUser(
+  userId: string,
+  body: { email?: string | null; roleIds?: string[] | null },
+): Promise<void> {
+  await patchJson(`/api/v1/tenant/users/${encodeURIComponent(userId)}`, body, [204]);
+}
+
+export type TenantRoleListItem = {
+  id: string;
+  name: string;
+  privilegeCodes: string[];
+};
+
+export type TenantRolesListResult = { ok: true; items: TenantRoleListItem[] } | { ok: false; status: number };
+
+/** GET /api/v1/tenant/roles — requires ROLE_VIEW. */
+export async function fetchTenantRoles(params?: {
+  q?: string;
+  sort?: string;
+}): Promise<TenantRolesListResult> {
+  const q = new URLSearchParams();
+  if (params?.q?.trim()) q.set("q", params.q.trim());
+  if (params?.sort?.trim()) q.set("sort", params.sort.trim());
+  const qs = q.toString();
+  const r = await fetch(bffUrl(`/api/v1/tenant/roles${qs ? `?${qs}` : ""}`), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: TenantRoleListItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export type TenantRoleDetail = {
+  role: TenantRoleListItem;
+  assignablePrivilegeCodes: string[];
+};
+
+export type TenantRoleDetailResult = { ok: true; data: TenantRoleDetail } | { ok: false; status: number };
+
+/** GET /api/v1/tenant/roles/{roleId} — requires ROLE_VIEW. */
+export async function fetchTenantRoleDetail(roleId: string): Promise<TenantRoleDetailResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/roles/${encodeURIComponent(roleId)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<TenantRoleDetail>;
+  return { ok: true, data: body.data };
+}
+
+export async function createTenantRole(args: {
+  name: string;
+  privilegeCodes?: string[];
+  breakGlassReason?: string;
+}): Promise<TenantRoleListItem> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (args.breakGlassReason?.trim()) {
+    headers["X-Break-Glass-Reason"] = args.breakGlassReason.trim();
+  }
+  const r = await fetch(bffUrl("/api/v1/tenant/roles"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers,
+    body: JSON.stringify({ name: args.name, privilegeCodes: args.privilegeCodes ?? [] }),
+  });
+  if (r.status !== 201) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ role: TenantRoleListItem }>;
+  return body.data.role;
+}
+
+export async function patchTenantRole(args: {
+  roleId: string;
+  name?: string;
+  privilegeCodes?: string[];
+  breakGlassReason?: string;
+}): Promise<TenantRoleListItem> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (args.breakGlassReason?.trim()) {
+    headers["X-Break-Glass-Reason"] = args.breakGlassReason.trim();
+  }
+  const r = await fetch(bffUrl(`/api/v1/tenant/roles/${encodeURIComponent(args.roleId)}`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers,
+    body: JSON.stringify({ name: args.name, privilegeCodes: args.privilegeCodes }),
+  });
+  if (r.status !== 200) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ role: TenantRoleListItem }>;
+  return body.data.role;
 }
 
 /**
@@ -330,4 +722,229 @@ export async function redirectCheck(returnTo: string): Promise<boolean> {
   const q = new URLSearchParams({ returnTo });
   const r = await fetch(`${path}?${q}`, { credentials: "same-origin" });
   return r.status === 204;
+}
+
+export type DocumentHubItem = {
+  id: string;
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: number;
+  createdAt: string;
+  hubSource: string;
+};
+
+export type DocumentsHubFetchResult = { ok: true; items: DocumentHubItem[] } | { ok: false; status: number };
+
+/** GET /api/v1/tenant/documents — requires DOCUMENT_VIEW. */
+export async function fetchTenantDocumentsHub(): Promise<DocumentsHubFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/documents"), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: DocumentHubItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export type DocumentDownloadUrlResult =
+  | { ok: true; downloadUrl: string; expiresAt: string }
+  | { ok: false; status: number };
+
+/** GET /api/v1/tenant/documents/{id}/download-url — DOCUMENT_VIEW + readable document. */
+export async function fetchDocumentDownloadUrl(documentId: string): Promise<DocumentDownloadUrlResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/download-url`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ downloadUrl: string; expiresAt: string }>;
+  return { ok: true, downloadUrl: body.data.downloadUrl, expiresAt: body.data.expiresAt };
+}
+
+export type DocumentUploadSession = {
+  documentId: string;
+  storageKey: string;
+  uploadUrl: string;
+  uploadMethod: string;
+  expiresAt: string;
+  requiredHeaders: Record<string, string>;
+};
+
+export type DocumentUploadSessionResult =
+  | { ok: true; session: DocumentUploadSession }
+  | { ok: false; status: number };
+
+/** POST /api/v1/tenant/documents/upload-sessions — DOCUMENT_EDIT; 503 when MinIO not configured. */
+export async function createDocumentUploadSession(args: {
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: number;
+}): Promise<DocumentUploadSessionResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/documents/upload-sessions"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      originalFilename: args.originalFilename,
+      contentType: args.contentType,
+      sizeBytes: args.sizeBytes,
+    }),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<DocumentUploadSession>;
+  return { ok: true, session: body.data };
+}
+
+/** POST /api/v1/tenant/documents/complete — DOCUMENT_EDIT after successful PUT to presigned URL. */
+export async function completeDocumentUpload(args: {
+  documentId: string;
+  storageKey: string;
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: number;
+}): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl("/api/v1/tenant/documents/complete"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
+}
+
+/** Browser PUT to MinIO/S3 presigned URL (requires bucket CORS for your app origin). */
+export async function putToDocumentUploadUrl(
+  uploadUrl: string,
+  file: Blob,
+  requiredHeaders: Record<string, string>,
+): Promise<void> {
+  const r = await fetch(uploadUrl, { method: "PUT", body: file, headers: requiredHeaders, mode: "cors" });
+  if (!r.ok) {
+    throw new Error(`PUT to storage failed: ${r.status}`);
+  }
+}
+
+export type DocumentShareListItem = {
+  id: string;
+  granteeUserId: string | null;
+  granteeRoleId: string | null;
+  createdByUserId: string;
+  createdAt: string;
+};
+
+export type DocumentSharesFetchResult = { ok: true; items: DocumentShareListItem[] } | { ok: false; status: number };
+
+/** GET …/documents/{id}/shares — DOCUMENT_EDIT + uploader. */
+export async function fetchDocumentShares(documentId: string): Promise<DocumentSharesFetchResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/shares`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: DocumentShareListItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export async function createDocumentShare(
+  documentId: string,
+  body: { granteeUserId: string | null; granteeRoleId: string | null },
+): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/shares`), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
+}
+
+export async function deleteDocumentShare(
+  documentId: string,
+  shareId: string,
+): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(
+    bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/shares/${encodeURIComponent(shareId)}`),
+    { method: "DELETE", credentials: "same-origin" },
+  );
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
+}
+
+export type DocumentAttachmentListItem = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  createdByUserId: string;
+  createdAt: string;
+};
+
+export type DocumentAttachmentsFetchResult =
+  | { ok: true; items: DocumentAttachmentListItem[] }
+  | { ok: false; status: number };
+
+/** GET …/documents/{id}/attachments — DOCUMENT_VIEW + readable doc. */
+export async function fetchDocumentAttachments(documentId: string): Promise<DocumentAttachmentsFetchResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/attachments`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: DocumentAttachmentListItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export async function createDocumentAttachment(
+  documentId: string,
+  body: { entityType: string; entityId: string },
+): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/attachments`), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
+}
+
+export async function deleteDocumentAttachment(
+  documentId: string,
+  attachmentId: string,
+): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(
+    bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}/attachments/${encodeURIComponent(attachmentId)}`),
+    { method: "DELETE", credentials: "same-origin" },
+  );
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
+}
+
+/** DELETE …/documents/{id} — DOCUMENT_EDIT + soft-delete (uploader only). */
+export async function softDeleteTenantDocument(documentId: string): Promise<{ ok: true } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/${encodeURIComponent(documentId)}`), {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  return { ok: true };
 }

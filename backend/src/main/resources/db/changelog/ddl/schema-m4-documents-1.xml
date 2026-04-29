@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m4-documents-1" author="wagepayroll">
+        <createTable tableName="tenant_document">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="storage_key" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_filename" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_type" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="size_bytes" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_by_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tenant_document" columnNames="tenant_id, storage_key"
+                             constraintName="ux_tenant_document_tenant_storage_key"/>
+        <createIndex indexName="idx_tenant_document_tenant_uploader_created" tableName="tenant_document">
+            <column name="tenant_id"/>
+            <column name="uploaded_by_user_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_tenant_document_tenant_deleted" tableName="tenant_document">
+            <column name="tenant_id"/>
+            <column name="deleted_at"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="tenant_document" baseColumnNames="tenant_id"
+                                 constraintName="fk_tenant_document_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="tenant_document" baseColumnNames="uploaded_by_user_id"
+                                 constraintName="fk_tenant_document_uploaded_by" referencedTableName="user_account"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+
+        <createTable tableName="document_share">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grantee_user_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="grantee_role_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_by_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_document_share_tenant_document" tableName="document_share">
+            <column name="tenant_id"/>
+            <column name="document_id"/>
+        </createIndex>
+        <createIndex indexName="idx_document_share_tenant_grantee_user" tableName="document_share">
+            <column name="tenant_id"/>
+            <column name="grantee_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_document_share_tenant_grantee_role" tableName="document_share">
+            <column name="tenant_id"/>
+            <column name="grantee_role_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="document_share" baseColumnNames="tenant_id"
+                                 constraintName="fk_document_share_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_share" baseColumnNames="document_id"
+                                 constraintName="fk_document_share_document" referencedTableName="tenant_document"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_share" baseColumnNames="grantee_user_id"
+                                 constraintName="fk_document_share_grantee_user" referencedTableName="user_account"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_share" baseColumnNames="grantee_role_id"
+                                 constraintName="fk_document_share_grantee_role" referencedTableName="role"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_share" baseColumnNames="created_by_user_id"
+                                 constraintName="fk_document_share_created_by" referencedTableName="user_account"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+
+        <createTable tableName="document_attachment">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_type" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="document_attachment"
+                             columnNames="tenant_id, document_id, entity_type, entity_id"
+                             constraintName="ux_document_attachment_tenant_doc_entity"/>
+        <createIndex indexName="idx_document_attachment_tenant_entity" tableName="document_attachment">
+            <column name="tenant_id"/>
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="document_attachment" baseColumnNames="tenant_id"
+                                 constraintName="fk_document_attachment_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_attachment" baseColumnNames="document_id"
+                                 constraintName="fk_document_attachment_document" referencedTableName="tenant_document"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="document_attachment" baseColumnNames="created_by_user_id"
+                                 constraintName="fk_document_attachment_created_by" referencedTableName="user_account"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+    </changeSet>
+</databaseChangeLog>

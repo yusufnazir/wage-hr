@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Privilege-gated endpoint: USER_VIEW. Seeded users from {@code DataScaffoldSeed1}.
+ * Tenant user directory list requires {@code USER_VIEW} on tenant host. Seeded users from {@code DataScaffoldSeed1}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -27,20 +27,19 @@ class DemoPrivilegedEndpointIT {
 
 	@Test
 	void returns403WhenTenantContextMissing() throws Exception {
-		mockMvc.perform(get("/api/v1/demo/user-view").header("Host", "localhost:8300").with(user(ADMIN_USER_ID)))
+		mockMvc.perform(get("/api/v1/tenant/users").header("Host", "localhost:8300").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void returns403WhenUserLacksPrivilege() throws Exception {
-		mockMvc.perform(
-				get("/api/v1/demo/user-view").header("Host", "demo.lvh.me").with(user(NOCODE_USER_ID)))
+		mockMvc.perform(get("/api/v1/tenant/users").header("Host", "demo.lvh.me").with(user(NOCODE_USER_ID)))
 				.andExpect(status().isForbidden());
 	}
 
 	@Test
 	void returns200WhenUserHasPrivilegeInTenant() throws Exception {
-		mockMvc.perform(get("/api/v1/demo/user-view").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
+		mockMvc.perform(get("/api/v1/tenant/users").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk());
 	}
 }

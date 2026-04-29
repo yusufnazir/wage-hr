@@ -1,22 +1,45 @@
 /**
- * Raw palette — swap here for rebrand (see docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md).
- * UI must not reference these directly; use semantic tokens in tokens-semantic.css + Tailwind theme keys.
+ * Raw palette — aligned to brand marks in `public/wage/` (royal blue + white).
+ * Map through tokens-semantic.css only; components use semantic Tailwind keys.
  */
 :root {
   --p-white: #ffffff;
-  --p-neutral-50: #fafafa;
-  --p-neutral-100: #f5f5f5;
-  --p-neutral-200: #e5e5e5;
-  --p-neutral-400: #a3a3a3;
-  --p-neutral-500: #737373;
-  --p-neutral-700: #404040;
-  --p-neutral-800: #262626;
-  --p-neutral-900: #171717;
-  --p-neutral-950: #0a0a0a;
-  --p-green-950: #052e16;
-  --p-green-800: #166534;
-  --p-green-700: #15803d;
-  --p-green-500: #22c55e;
-  --p-green-100: #dcfce7;
+
+  /* Cool slate neutrals */
+  --p-slate-50: #f8fafc;
+  --p-slate-100: #f1f5f9;
+  --p-slate-200: #e2e8f0;
+  --p-slate-300: #cbd5e1;
+  --p-slate-400: #94a3b8;
+  --p-slate-500: #64748b;
+  --p-slate-600: #475569;
+  --p-slate-700: #334155;
+  --p-slate-800: #1e293b;
+  --p-slate-900: #0f172a;
+  --p-slate-950: #020617;
+
+  /* Brand blue (WAGE PAYROLL wordmark + favicon WP mark) */
+  --p-blue-50: #eff6ff;
+  --p-blue-100: #dbeafe;
+  --p-blue-200: #bfdbfe;
+  --p-blue-300: #93c5fd;
+  --p-blue-400: #60a5fa;
+  --p-blue-500: #3b82f6;
+  --p-blue-600: #2563eb;
+  --p-blue-700: #1d4ed8;
+  --p-blue-800: #1e40af;
+  --p-blue-900: #1e3a8a;
+  --p-blue-950: #172554;
+  /** Deep frame blue from favicon squircle */
+  --p-logo-blue: #0041b2;
+
+  /* Sky — secondary accent (charts, mesh; pairs with brand blue) */
+  --p-sky-300: #7dd3fc;
+  --p-sky-400: #38bdf8;
+  --p-sky-500: #0ea5e9;
+  --p-sky-950: #082f49;
+
+  /* Legacy greens (unused by current semantic layer) */
   --p-green-50: #f0fdf4;
+  --p-green-700: #15803d;
 }

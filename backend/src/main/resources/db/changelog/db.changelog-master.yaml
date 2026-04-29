@@ -86,3 +86,30 @@ databaseChangeLog:
   - include:
       file: dml/data-m3-commercial-plan-seed-demo-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m4-documents-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m4-document-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m4-nav-documents-demo-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m5-platform-integration-settings-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m6-membership-status-last-active-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m6-role-templates-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m6-role-admin-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m6-nav-roles-demo-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m6-role-templates-1.xml
+      relativeToChangelogFile: true

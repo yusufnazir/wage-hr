@@ -30,6 +30,7 @@ Host-based routing, tenant identity, and login flows. Keep environment-driven co
 
 - User visits `{tenant}.{BASE_DOMAIN}` while **logged out** → redirect to **auth** with a safe **return URL** (validated).
 - User visits **auth** while **already logged in** → redirect to tenant or app host as appropriate.
+- **wage-payroll (Next.js):** anonymous users are steered to the **auth** host for **`/`** and auth UI paths; **`GET /me`** on the client decides redirects for **`/`** and **401** on **`/app`** (cookie presence alone is insufficient for stale relay cookies or **403** on **admin.***). See [`docs/modules/tenancy-routing.md`](../modules/tenancy-routing.md) (section **Web** → **Anonymous entry, `/`, and login**).
 
 ## Unknown or invalid tenant handle
 

@@ -52,8 +52,8 @@ public class TenantContextFilter extends OncePerRequestFilter {
 			UUID tenantId = null;
 			String handle = null;
 			if (parsed.mode() == HostMode.TENANT && parsed.tenantHandle() != null) {
-				handle = parsed.tenantHandle();
-				Optional<TenantEntity> t = tenantRepository.findByHandle(handle);
+				String hostHandle = parsed.tenantHandle();
+				Optional<TenantEntity> t = tenantRepository.findByHandle(hostHandle);
 				if (t.isEmpty()) {
 					if (isApiRequest(request)) {
 						writeProblem(response, HttpStatus.NOT_FOUND, "Unknown tenant", "UNKNOWN_TENANT");
@@ -64,34 +64,34 @@ public class TenantContextFilter extends OncePerRequestFilter {
 					return;
 				}
 				tenantId = t.get().getId();
+				handle = t.get().getHandle();
 			}
-			else if (parsed.mode() == HostMode.API) {
+
+			/*
+			 * Explicit X-Tenant-Id (e.g. BFF superadmin lens cookie) wins over host-derived tenant when it resolves to
+			 * an existing row — including on TENANT subdomains so app.lvh.me is not required to switch lens.
+			 */
+			if (parsed.mode() != HostMode.AUTH) {
 				String tid = request.getHeader("X-Tenant-Id");
 				if (StringUtils.hasText(tid)) {
 					try {
 						UUID u = UUID.fromString(tid.trim());
 						Optional<TenantEntity> t = tenantRepository.findById(u);
-						if (t.isEmpty()) {
-							if (isApiRequest(request)) {
-								writeProblem(response, HttpStatus.NOT_FOUND, "Unknown tenant id", "UNKNOWN_TENANT_ID");
-							}
-							else {
-								response.sendError(HttpStatus.NOT_FOUND.value(), "Unknown tenant");
-							}
+						if (t.isPresent()) {
+							tenantId = t.get().getId();
+							handle = t.get().getHandle();
+						}
+						else if (isApiRequest(request)) {
+							writeProblem(response, HttpStatus.NOT_FOUND, "Unknown tenant id", "UNKNOWN_TENANT_ID");
 							return;
 						}
-						tenantId = t.get().getId();
-						handle = t.get().getHandle();
 					}
 					catch (IllegalArgumentException ex) {
 						if (isApiRequest(request)) {
 							writeProblem(response, HttpStatus.BAD_REQUEST, "Invalid X-Tenant-Id header",
 									"INVALID_TENANT_ID_HEADER");
+							return;
 						}
-						else {
-							response.sendError(HttpStatus.BAD_REQUEST.value(), "Invalid X-Tenant-Id");
-						}
-						return;
 					}
 				}
 			}

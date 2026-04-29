@@ -9,7 +9,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -38,7 +37,8 @@ public class BillingWebhookReceiptEntity extends AbstractUuidEntity {
 	@Column(name = "tenant_id", length = 36, nullable = true)
 	private UUID tenantId;
 
-	@Lob
+	/** Matches Liquibase {@code CLOB} → MariaDB {@code LONGTEXT}; {@code @Lob} would validate as {@code TINYTEXT}. */
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "raw_payload", nullable = true)
 	private String rawPayload;
 

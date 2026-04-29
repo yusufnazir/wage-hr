@@ -173,6 +173,7 @@ public class TenantInvitationService {
 			m.setUserId(userId);
 			m.setCreatedAt(now);
 			m.setUpdatedAt(now);
+			m.setStatus("ACTIVE");
 			membershipRepository.save(m);
 		}
 		if (userRoleRepository.findRoleIdsByUserAndTenant(userId, tenantId).stream().noneMatch(r -> r.equals(inv.getRoleId()))) {

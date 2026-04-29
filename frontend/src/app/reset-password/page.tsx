@@ -3,8 +3,8 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { AuthShell, authGlassCardClassName } from "@/components/shell/AuthShell";
+import { AuthSplitLayout } from "@/components/shell/AuthSplitLayout";
+import { authGlassCardClassName } from "@/components/shell/AuthShell";
 import { resetPasswordJson } from "@/lib/api";
 
 function ResetPasswordForm() {
@@ -68,21 +68,15 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <AuthShell>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-8 px-6 py-16">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-foreground">Reset password</h1>
-          <ThemeToggle />
-        </div>
-        <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
-          <ResetPasswordForm />
-        </Suspense>
-        <p className="text-center text-sm text-muted">
-          <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-            Back to sign in
-          </Link>
-        </p>
-      </main>
-    </AuthShell>
+    <AuthSplitLayout title="Reset password" subtitle="Paste the token from the reset email.">
+      <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
+        <ResetPasswordForm />
+      </Suspense>
+      <p className="text-center text-sm text-muted">
+        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+          Back to sign in
+        </Link>
+      </p>
+    </AuthSplitLayout>
   );
 }

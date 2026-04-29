@@ -44,6 +44,9 @@ public final class SubdomainParser {
 			if ("api".equals(sub)) {
 				return new ParsedHost(HostMode.API, null, hostHeader);
 			}
+			if ("admin".equals(sub)) {
+				return new ParsedHost(HostMode.ADMIN, null, hostHeader);
+			}
 			return new ParsedHost(HostMode.UNKNOWN, null, hostHeader);
 		}
 		return new ParsedHost(HostMode.TENANT, sub, hostHeader);

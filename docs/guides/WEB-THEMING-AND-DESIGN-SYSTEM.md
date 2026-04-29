@@ -39,6 +39,8 @@ Copy this file into **`docs/guides/`** in each product repo. Architecture summar
 
 Document the **chosen stack** in architecture and in the repo `README` snippet for new devs.
 
+**wage-payroll (current):** primitives are **cool slate** neutrals + **indigo** primary + **cyan** accent (`frontend/src/styles/tokens-primitives.css`); semantic layer maps to app background, surfaces, borders, and shadows (`tokens-semantic.css`). Auth marketing mesh uses CSS variables `--color-mesh-*` (indigo / cyan / violet washes). Rebrand by editing primitives + semantic mappings only — components stay on Tailwind semantic keys (`bg-primary`, `text-muted`, etc.).
+
 ---
 
 ## 4. Where files live (suggested layout)
@@ -65,7 +67,7 @@ Feature screens **must not** define one-off colors; they consume shared utilitie
 
 | Phase | Theming expectation |
 |-------|---------------------|
-| **Scaffold** | Wire **ThemeProvider**, **semantic tokens**, **light/dark**, and a **polished minimal auth shell** (login + post-login redirect pages). Still **not** a full product UI — but it should **not** look like unstyled HTML. |
+| **Scaffold** | Wire **ThemeProvider**, **semantic tokens**, **light/dark**, and a **polished minimal auth shell** (login + post-login redirect pages). Still **not** a full product UI — but it should **not** look like unstyled HTML. *wage-payroll:* auth pages also use **`AuthSplitLayout`** (marketing + form columns); tenant **`/app`** uses **`TenantAppShell`** (sidebar + header + user menu) — see **`docs/modules/tenant-web-vertical-slice.md`** §3.6. |
 | **Features (Prompt 5+)** | Reuse tokens only; add **layout** and **components** that match the established system. |
 
 The scaffold **non-goal** is still “no full business UI” — it is **not** “no CSS.”

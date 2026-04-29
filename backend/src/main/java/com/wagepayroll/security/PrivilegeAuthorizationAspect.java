@@ -22,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Aspect
 @Component
@@ -76,11 +78,11 @@ public class PrivilegeAuthorizationAspect {
 		}
 		String raw = req.getHeader(BreakGlassHeaders.REASON);
 		if (raw == null) {
-			throw new AccessDeniedException("BREAK_GLASS_REASON_REQUIRED");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "BREAK_GLASS_REASON_REQUIRED");
 		}
 		String reason = raw.trim();
 		if (reason.length() < BreakGlassHeaders.REASON_MIN_LEN || reason.length() > BreakGlassHeaders.REASON_MAX_LEN) {
-			throw new AccessDeniedException("BREAK_GLASS_REASON_LENGTH");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "BREAK_GLASS_REASON_LENGTH");
 		}
 	}
 

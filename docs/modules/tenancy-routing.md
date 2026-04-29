@@ -14,9 +14,10 @@ Configuration: `app.host.base-domain`, `app.host.auth-subdomain`, `app.host.app-
 | Mode | Typical host (local) | Tenant context |
 |------|----------------------|----------------|
 | **AUTH** | `{auth}.{base}` e.g. `auth.lvh.me` | None |
-| **APP** | `{app}.{base}` e.g. `app.lvh.me` | None |
+| **APP** | `{app}.{base}` e.g. `app.lvh.me` | None **unless** optional `X-Tenant-Id` (same resolution rules as API) |
+| **ADMIN** | `admin.{base}` e.g. `admin.lvh.me` | None from host; optional `X-Tenant-Id` for platform operator **tenant lens**. **API:** authenticated users who are **not** platform superadmins receive **403** on `/api/**` (permitAll auth/public routes unchanged). |
 | **API** | `api.{base}` (reserved subdomain) | Optional via `X-Tenant-Id` (see below) |
-| **TENANT** | `{handle}.{base}` e.g. `demo.lvh.me` | Resolved from **handle** → `tenant` row |
+| **TENANT** | `{handle}.{base}` e.g. `demo.lvh.me` | Resolved from **handle** → `tenant` row; if **`X-Tenant-Id`** is also present and valid, it **overrides** host handle (superadmin BFF lens on a tenant subdomain). |
 | **UNKNOWN** | Bare base, wrong TLD, etc. | None |
 
 Port suffixes on `Host` are ignored for parsing (`demo.lvh.me:3007` → handle `demo`).
@@ -66,6 +67,27 @@ A **valid** tenant handle with **no membership** for the signed-in user is **not
 - **Tenant app** pages call the API with `credentials: "include"`.
 - When the **browser** called the API directly with a base URL like **`http://localhost:8300`**, the HTTP **`Host`** header on the API request was **`localhost`**, so the filter did **not** see `{tenant}.lvh.me`. **Current product default:** the Next.js **BFF** (`/api/bff/...`) forwards the browser **`Host`** as **`X-Forwarded-Host`**, and `TenantContextFilter` prefers that header—so tenant resolution matches the page origin without exposing the API origin to the client. **Other mitigations:** run the API behind a reverse proxy that forwards `Forwarded` / `X-Forwarded-*` with **`app.forwarding.trust-proxy=true`**, or use **API** host mode with a valid **`X-Tenant-Id`** header. **Integration tests** set `Host: demo.lvh.me` on MockMvc requests to mirror production-like routing.
 - **`GET /api/v1/me`** returning **404** `UNKNOWN_TENANT` on a tenant host → treat as **unknown tenant** (show a dedicated message; do not loop login).
+
+### Anonymous entry, `/`, and login (authoritative for `frontend/`)
+
+Implementation lives in **`frontend/src/middleware.ts`**, **`frontend/src/app/page.tsx`**, **`frontend/src/app/login/page.tsx`**, **`frontend/src/components/shell/TenantAppShell.tsx`**, **`frontend/src/lib/web-origins.ts`**.
+
+1. **Middleware (cookie hint only)**  
+   - If there is **no** **`wp_bff_j`** BFF relay cookie: **`/`** redirects to **`{NEXT_PUBLIC_AUTH_WEB_ORIGIN}/login`** (on **non-auth** hosts and on the **auth** host, so `/` is never a static anonymous “home” for first paint).  
+   - If **`wp_bff_j`** is present, **`/`** is not redirected here (the cookie may be **stale** or the user may be **forbidden** on **ADMIN** host—see (2)).  
+   - **`/login`**, **`/register`**, **`/forgot-password`**, **`/reset-password`** on a **non-auth** host redirect to the same path on **`NEXT_PUBLIC_AUTH_WEB_ORIGIN`**.  
+   - **`x-wage-host`** is set on all matched requests.
+
+2. **Root `/` (`app/page.tsx`)** — client **`GET /api/bff/v1/me`**  
+   - **Any failure** (`401`, **`403`** on **admin.*** for non–platform-superadmin, other status, network error) → **`window.location.replace(authLoginUrlWithReturnTo(current URL))`** so the user always gets the **real login** on the auth host (no intermediate “access denied” card on `/`).  
+   - **Success** → platform superadmin → **`{NEXT_PUBLIC_ADMIN_WEB_ORIGIN}/app`**, else **`defaultTenantAppUrl()`**, each gated by **`GET /api/v1/auth/redirect-check`**; if the check fails, fall back to auth login with **`returnTo`**.
+
+3. **Tenant app shell (`/app` layout)**  
+   - **`GET /me`** **401** → **`window.location.replace`** to **`{auth}/login`** with optional **`returnTo`** (validated after sign-in). Brief “Redirecting…” only if an edge case leaves internal phase `unauthenticated`.
+
+4. **Login page**  
+   - **Mount:** if **`/me`** already succeeds, redirect using the same post-login rules as submit (so a **viewer** who hit **`admin.`** → auth login with **`returnTo`** is sent to **demo `/app`**, not stuck on the form).  
+   - **`returnTo`:** use when **`redirect-check`** allows it, **except** when **`returnTo`** targets the **admin** web origin and the user is **not** a platform superadmin → use **`defaultTenantAppUrl()`** instead (prevents redirect loops).
 
 ---
 

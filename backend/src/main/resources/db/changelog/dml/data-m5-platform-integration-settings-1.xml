@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m5-platform-integration-settings-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM platform_setting WHERE `key` = 'platform.application_name'</sqlCheck>
+        </preConditions>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000001"/>
+            <column name="key" value="platform.application_name"/>
+            <column name="value_text" value="Wage Payroll"/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000002"/>
+            <column name="key" value="platform.base_url"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000003"/>
+            <column name="key" value="platform.date_format"/>
+            <column name="value_text" value="yyyy-MM-dd"/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000004"/>
+            <column name="key" value="storage.minio.endpoint"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000005"/>
+            <column name="key" value="storage.minio.access_key"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000006"/>
+            <column name="key" value="storage.minio.secret_key"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000007"/>
+            <column name="key" value="storage.minio.bucket"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000008"/>
+            <column name="key" value="mail.api.base_url"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000009"/>
+            <column name="key" value="mail.api.project_key"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000010"/>
+            <column name="key" value="mail.api.username"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+        <insert tableName="platform_setting">
+            <column name="id" value="65000000-0000-0000-0000-000000000011"/>
+            <column name="key" value="mail.api.password"/>
+            <column name="value_text" value=""/>
+            <column name="created_at" valueDate="2026-04-27T00:00:00"/>
+            <column name="updated_at" valueDate="2026-04-27T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -56,10 +56,10 @@ Use this as the **single progress tracker** for greenfield work. Check items whe
 - [x] **Global platform settings** (SuperAdmin) + **tenant settings** (tenant admin) — minimal schema + APIs — *`platform_setting`, `tenant_setting`, `user_account.platform_superadmin`; `GET`/`PATCH` `/api/v1/platform/settings`, `GET`/`PATCH` `/api/v1/tenant/settings`; see `platform-settings.md` + `tenant-settings.md`*.
 - [x] **i18n plumbing:** locale resolution, message key strategy, shared contract for web + Flutter — *`user_account.preferred_locale`, `GET /api/v1/me` → `locale`, `PATCH /api/v1/me/locale`; web `messages/nav` + `SetHtmlLang`; see [`docs/modules/i18n.md`](../modules/i18n.md)*.
 - [x] **Application menu structure** stored in datamodel; API returns effective menu for principal + tenant + entitlements placeholder — *`nav_menu_item`, `GET /api/v1/me/navigation`; feature-flag column deferred — `navigation-menu.md`*.
-- [x] **Web:** unique URL per layout; deep-linkable routes; **light/dark** + **custom theme** tokens (`WEB-THEMING-AND-DESIGN-SYSTEM`); split login / glass styling as UX layer — *primitives + semantic CSS vars + Tailwind map; `next-themes` + FOUC script; `AuthShell` + glass cards vs `data-layout="app"` chrome; accent token hook; `tenant-web-vertical-slice.md` §3.6*.
+- [x] **Web:** unique URL per layout; deep-linkable routes; **light/dark** + **custom theme** tokens (`WEB-THEMING-AND-DESIGN-SYSTEM`); **app shell v1** + split auth marketing layout — *primitives + semantic CSS vars + Tailwind map; `next-themes` + FOUC script; `AuthShell` / `AuthSplitLayout` / `AuthMarketingPanel`; **`TenantAppShell`** at `src/app/app/layout.tsx` (sidebar from `GET .../me/navigation`, collapse + mobile drawer, header + user menu with Profile `/app/profile`, forgot-password for password change, locale PATCH, `POST .../auth/logout`); accent token hook; `tenant-web-vertical-slice.md` §3.6*.
 - [x] **Audit:** append-only events for sensitive mutations; correlation id; **deletion/anonymization** of other data must **not** remove required audit facts (reference anonymized ids where applicable) — *`audit_event` + `AuditService`; `USER_LOCALE_CHANGED`, `TENANT_SETTINGS_PATCHED`, `PLATFORM_SETTINGS_PATCHED` on successful PATCHes; `docs/modules/audit.md`; FK hardening deferred*.
 - [x] **Data lifecycle (privacy by design):** schema and APIs support **controlled deletion**, **anonymization**, and **export**; document entity-level rules; **PII inventory** for high-risk tables (esp. messaging) in module docs — *[`docs/modules/data-lifecycle.md`](../modules/data-lifecycle.md) (inventory + policy matrix); `GET /api/v1/me/privacy/export` + `POST /api/v1/me/privacy/erasure-request` (202 stub + audits); web hooks in `api.ts` + `/app`; `MePrivacyIT`; automated erasure/deletion execution deferred*.
-- [x] **E2E:** Playwright covers auth host + tenant host + BFF session relay (`E2E-TESTING-STANDARDS`) — *`frontend/e2e/m1-platform.spec.ts` (login → `demo.*` `/app`, `PATCH /api/bff/v1/me/locale` + nav assertion, unknown-tenant host); `tenant-vertical-slice.spec.ts` + `smoke.spec`; set **`PLAYWRIGHT_API_BASE_URL`** and **`API_BASE_URL`** on Next, run API + DB for full suite*.
+- [x] **E2E:** Playwright covers auth host + tenant host + BFF session relay (`E2E-TESTING-STANDARDS`) — *`frontend/e2e/m1-platform.spec.ts` (login → `demo.*` `/app`, **`PATCH /api/bff/v1/me/locale`** via **header user menu** + nav label assertion, unknown-tenant host); `tenant-vertical-slice.spec.ts` + `smoke.spec`; set **`PLAYWRIGHT_API_BASE_URL`** and **`API_BASE_URL`** on Next, run API + DB for full suite*.
 
 ---
 
@@ -105,10 +105,12 @@ Use this as the **single progress tracker** for greenfield work. Check items whe
 
 ## Milestone M4 — Documents (MinIO)
 
-- [ ] **MinIO** (or S3-compatible) integration; upload/download; virus scan hook TBD optional.
-- [ ] **Metadata + tenant ACL**; versioning policy if required.
-- [ ] **Sharing (no real-time collab):** grant access by **user** and/or **role**; **document list** = owned + shared-with-me.
-- [ ] **Attachments:** generic **link document ↔ arbitrary business record** (entity type + id or equivalent); enforce tenant + privilege on resolve.
+- [x] **MinIO** (or S3-compatible) **presigned** upload (`POST .../upload-sessions` + `POST .../complete`) and download (`GET .../{id}/download-url`); **503** when `MINIO_*` / `app.storage.minio.*` incomplete. Virus scan hook TBD optional.
+- [x] **Metadata + tenant ACL (v1 slice):** Liquibase **`tenant_document`**, **`document_share`**, **`document_attachment`**; privileges **`DOCUMENT_VIEW`** / **`DOCUMENT_EDIT`**; **`GET /api/v1/tenant/documents`** hub (**`DOCUMENT_VIEW`**) = owned ∪ shared (user + role shares); module specs [`documents-minio.md`](../modules/documents-minio.md), [`document-sharing.md`](../modules/document-sharing.md).
+- [x] **Sharing (no real-time collab):** **`GET/POST .../tenant/documents/{id}/shares`**, **`DELETE .../shares/{shareId}`**; v1 **uploader-only** mutation; hub unchanged.
+- [x] **Attachments:** **`GET .../attachments`**, **`POST/DELETE .../attachments/{attachmentId}`**; `entity_type` + `entity_id`; unique per document+entity; list requires document read access.
+- [x] **Tenant web:** Next.js **`/app/documents`** (BFF); demo nav row **`/app/documents`** + **`nav.documents`** (**`DOCUMENT_VIEW`**); hub + upload + **soft delete** + shares/attachments panel for uploaders.
+- [x] **M4 cleanup:** Optional **scheduled orphan S3 job** (`MINIO_ORPHAN_CLEANUP_ENABLED`, UTC cron, **`min-object-age`**, list cap + **soft-deleted S3 delete retry**). Covers failed **`complete`** (object without row) and **soft-delete** paths where S3 delete was off or failed. **Also shipped:** optional **HeadObject** on **`complete`** (`MINIO_VERIFY_OBJECT_BEFORE_COMPLETE`); **best-effort S3 delete** on soft-delete (`MINIO_DELETE_OBJECT_ON_SOFT_DELETE`, default on).
 
 ---
 

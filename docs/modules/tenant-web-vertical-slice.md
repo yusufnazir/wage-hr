@@ -67,7 +67,10 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 
 - **Tokens:** `frontend/src/styles/tokens-primitives.css` (raw palette) → `tokens-semantic.css` (semantic CSS variables, including **`--color-accent`** for future tenant/white-label overrides) → Tailwind `theme.extend` maps utilities to `var(--…)`.
 - **Mode:** `next-themes` (`AppThemeProvider`) + **`beforeInteractive`** script in `src/app/layout.tsx` to reduce flash of wrong theme from `localStorage` / `prefers-color-scheme`.
-- **Layouts:** **`data-layout="auth"`** — `AuthShell` + glass cards on home, login, register, forgot/reset password. **`data-layout="app"`** — tenant `/app` uses a **sticky opaque header** (app chrome), not the auth glass treatment.
+- **Layouts:** **`data-layout="auth"`** — `AuthShell` + glass cards on login, register, forgot/reset password; **root `/`** is a short loading shell while it resolves **`/me`** (see **`tenancy-routing.md`**). **`data-layout="app"`** — tenant `/app` uses **`TenantAppShell`** (`src/app/app/layout.tsx`): **left sidebar** (nav from **`GET /api/v1/me/navigation`**, icons, active route, **desktop collapse** via `localStorage` key `wp_app_sidebar_collapsed`, **mobile drawer** + backdrop), **top header** (product title, tenant handle, `ThemeToggle`, **user menu**), **main** as the route outlet. **401** on shell load → redirect to auth **`/login`** (not an in-app gate). **Unknown tenant / non-auth errors** still use a **gate** layout (no sidebar) with sign-in link where applicable.
+- **Auth marketing split:** **`AuthSplitLayout`** + **`AuthMarketingPanel`** — login, register, forgot-password, reset-password use a **two-column** (stacked on small screens) layout: glass marketing/value column + form column (see UX contract in checklist / product notes).
+- **User menu:** Avatar initials from **`/api/v1/me`** email; **Profile** → **`/app/profile`**; **Change password** → **`/forgot-password`** (email reset); **Language** → **`PATCH /api/v1/me/locale`**; **Logout** → **`POST /api/v1/auth/logout`** then redirect to auth **`/login`**.
+- **Tenant branding (v1):** Sidebar and header show **tenant display name** when **`GET /api/v1/me/tenants`** includes the current handle; otherwise **handle** or **Wage Payroll** fallback. **No tenant logo URL** in API yet — **WP** monogram placeholder until a future field exists.
 - **Toggle:** `ThemeToggle` cycles **Light → Dark → System** (`data-testid="theme-toggle"`).
 
 ---
@@ -105,16 +108,17 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 
 | Flow | Behavior |
 |------|----------|
-| Auth login | `http://auth.lvh.me:3007/login` → POST login → **`redirect-check`** on `http://demo.lvh.me:3007/app` → **`window.location.assign`** if **204**; else message with manual link. |
-| Tenant shell | `http://{tenant}.lvh.me:3007/app` loads **`/app`**, fetches **`/api/bff/v1/me`**, tenants, billing summary + catalog (M3), demo user-view (+ navigation); **tenant switcher** when the user has more than one tenant; **locale** `<select>` calls **`PATCH /api/bff/v1/me/locale`**. |
-| Unauthenticated | **`/api/bff/v1/me`** returns **401** → show **Sign in** `<a href={authLoginUrl()}>` (cross-host). |
+| Auth login | `http://auth.lvh.me:3007/login` — on mount, if **`/me`** OK, **redirect** to post-login target (same rules as submit). Submit → POST login → **`resolvePostLoginNext`** (`returnTo` if **`redirect-check`** OK and not admin-for-non-superadmin, else admin **`/app`** or **`defaultTenantAppUrl()`**) → **`window.location.assign`** if **204** on check; else message with manual link. |
+| Tenant shell | `http://{tenant}.lvh.me:3007/app` loads **`TenantAppShell`** (`src/app/app/layout.tsx`): **`/api/bff/v1/me`** + nav + tenants in the shell; child routes (e.g. dashboard **`/app`**) load billing summary + catalog (M3), demo user-view, etc.; **sidebar** mirrors **`GET /api/v1/me/navigation`**; **tenant switcher** when **`GET /api/v1/me/tenants`** returns **>1** row; **locale** changes via **header user menu** → **`PATCH /api/bff/v1/me/locale`** (BFF CSRF). |
+| Unauthenticated | **`/api/bff/v1/me`** returns **401** → **`window.location.replace`** to **`authLoginUrlWithReturnTo(current)`** (auth host **`/login`**). |
 | Unknown tenant | **`/api/bff/v1/me`** returns **404** → unknown-tenant copy. |
 | Backend unreachable / other errors | Message plus **Sign in** link so users are not stuck off-host. |
-| Home | Link **Demo tenant app** → `defaultTenantAppUrl()` (`NEXT_PUBLIC_DEFAULT_TENANT_WEB_ORIGIN` / `http://demo.lvh.me:3007/app`). |
+| Root `/` | **`/me`** drives navigation: failure → auth login with **`returnTo`**; success → admin **`/app`** (superadmin) or **`defaultTenantAppUrl()`**. No marketing scaffold. |
+| Demo `/app` logged out | Playwright: unauthenticated **`demo…/app`** → expect URL on **auth** **`/login`** (see **`tenant-vertical-slice.spec.ts`**). |
 
 **Env:** see `frontend/.env.example` — **`API_BASE_URL`** (server-only), optional **`BFF_SESSION_COOKIE_DOMAIN`**, and **`NEXT_PUBLIC_AUTH_WEB_ORIGIN`**, **`NEXT_PUBLIC_DEFAULT_TENANT_WEB_ORIGIN`** for multi-host URLs in the client.
 
-**Code:** `frontend/src/app/api/bff/[...path]/route.ts`, `frontend/src/lib/server/*`, `frontend/src/app/app/page.tsx`, `frontend/src/lib/api.ts`, `frontend/src/lib/web-origins.ts`, `frontend/src/app/login/page.tsx`, `frontend/src/app/page.tsx`, `frontend/src/components/shell/AuthShell.tsx`, `frontend/src/components/theme/*`, `frontend/src/styles/tokens-*.css`.
+**Code:** `frontend/src/app/api/bff/[...path]/route.ts`, `frontend/src/lib/server/*`, `frontend/src/app/app/layout.tsx` (**`TenantAppShell`**), `frontend/src/app/app/page.tsx`, `frontend/src/app/app/profile/page.tsx`, `frontend/src/app/app/documents/page.tsx`, `frontend/src/lib/api.ts`, `frontend/src/lib/web-origins.ts`, `frontend/src/app/login/page.tsx`, `frontend/src/app/page.tsx`, `frontend/src/components/shell/AuthShell.tsx`, `frontend/src/components/shell/AuthSplitLayout.tsx`, `frontend/src/components/shell/AuthMarketingPanel.tsx`, `frontend/src/components/shell/TenantAppShell.tsx`, `frontend/src/components/shell/AppSidebar.tsx`, `frontend/src/components/shell/UserMenu.tsx`, `frontend/src/components/shell/TenantAppSessionContext.tsx`, `frontend/src/components/theme/*`, `frontend/src/styles/tokens-*.css`.
 
 ---
 
@@ -141,6 +145,8 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 |------|--------|
 | 2026-04-22 | Implemented `/app` shell, `web-origins` + API helpers, post-login `redirect-check`, `MeEndpointIT`, Playwright `tenant-vertical-slice.spec.ts`, verification doc, README + PROJECT-CONTEXT updates; later same day: **BFF** (`/api/bff/...`), **`API_BASE_URL`** server-only, relay cookies, **`X-Forwarded-Host`** for tenants. |
 | 2026-04-22 | **M3:** `/app` billing integration + API table rows (`/tenant/billing/summary`, `/tenant/billing/commercial-plans`); Playwright billing privilege coverage. |
+| 2026-04-26 | **App shell v1:** `TenantAppShell` + sidebar nav, mobile drawer, user menu (profile, forgot-password for password change, locale, logout), `AuthSplitLayout` on auth pages, `/app/profile`; dashboard locale `<select>` removed (menu + `me-locale-display` only). |
+| 2026-04-29 | **Auth-first web:** Next middleware + root **`/`** **`/me`** gate + tenant shell **401** redirect to auth **`/login`** with **`returnTo`**; login mount redirect + **admin** **`returnTo`** stripped for non-superadmin (`isAdminWebOriginUrl`). Docs: **`tenancy-routing.md`**, **`web-auth-session.md`**, this file §3.6 / §6. |
 
 ---
 
@@ -183,7 +189,7 @@ Manually: npm run dev on frontend, backend running with DB + Liquibase migrated;
 | BFF proxy + relay cookies | `frontend/src/app/api/bff/[...path]/route.ts`, `frontend/src/lib/server/spring-bff-cookies.ts`, `frontend/src/lib/server/upstream-base.ts` |
 | Login + API client | `frontend/src/lib/api.ts`, `frontend/src/app/login/page.tsx` |
 | Web origins | `frontend/src/lib/web-origins.ts` (`tenantWebAppUrlForHandle`) |
-| Tenant shell | `frontend/src/app/app/page.tsx` |
+| Tenant shell | `frontend/src/app/app/layout.tsx`, `frontend/src/components/shell/TenantAppShell.tsx`, `frontend/src/app/app/page.tsx` |
 | Me API | `backend/src/main/java/com/wagepayroll/api/MeController.java`, `com.wagepayroll.tenant.TenantDirectoryService.java` |
 | Demo API | `backend/src/main/java/com/wagepayroll/api/DemoController.java` |
 | Me IT | `backend/src/test/java/com/wagepayroll/api/MeEndpointIT.java` |
