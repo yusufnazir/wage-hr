@@ -466,15 +466,27 @@ export type PlatformCurrencyRow = {
 };
 
 export type PlatformCurrenciesResult =
-  | { ok: true; items: PlatformCurrencyRow[] }
+  | { ok: true; items: PlatformCurrencyRow[]; totalElements: number; page: number; size: number; totalPages: number }
   | { ok: false; status: number };
 
 /** GET /api/v1/platform/currencies — platform superadmin only. */
-export async function fetchPlatformCurrencies(): Promise<PlatformCurrenciesResult> {
-  const r = await fetch(bffUrl("/api/v1/platform/currencies"), { credentials: "same-origin" });
+export async function fetchPlatformCurrencies(page = 0, size = 50): Promise<PlatformCurrenciesResult> {
+  const q = new URLSearchParams({ page: String(page), size: String(size) });
+  const r = await fetch(bffUrl(`/api/v1/platform/currencies?${q}`), { credentials: "same-origin" });
   if (!r.ok) return { ok: false, status: r.status };
-  const body = (await r.json()) as ApiEnvelope<{ items: PlatformCurrencyRow[] }>;
-  return { ok: true, items: body.data.items };
+  const body = (await r.json()) as ApiEnvelope<{ items: PlatformCurrencyRow[]; totalElements: number; page: number; size: number; totalPages: number }>;
+  const d = body.data;
+  return { ok: true, items: d.items, totalElements: d.totalElements, page: d.page, size: d.size, totalPages: d.totalPages };
+}
+
+/** GET /api/v1/platform/currencies/{id} — platform superadmin only. */
+export async function fetchPlatformCurrency(
+  id: string,
+): Promise<{ ok: true; item: PlatformCurrencyRow } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/platform/currencies/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCurrencyRow }>;
+  return { ok: true, item: body.data.item };
 }
 
 /** POST /api/v1/platform/currencies — platform superadmin only. */

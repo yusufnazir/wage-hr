@@ -96,7 +96,33 @@ Product-specific **brand illustration / marketing polish** can still wait for de
 
 ---
 
-## 8. Where this is decided in your methodology
+## 8. Page routing conventions for CRUD views
+
+All resource management UIs follow a consistent routing shape:
+
+| Route                          | Purpose                                     |
+|-------------------------------|---------------------------------------------|
+| `/app/{resource}`             | List page — table/grid + pagination controls |
+| `/app/{resource}/new`         | **Separate create page** — full-page form   |
+| `/app/{resource}/{id}/edit`   | **Separate edit page** — full-page form     |
+
+**Rules:**
+- Create and edit forms are **always separate routes/pages** — never modals, drawers, or inline-expanded rows on the list page.
+- The list page is **read-only**: it shows data, pagination, and action buttons that navigate to the create/edit routes.
+- After a successful create or edit, redirect back to the list page (`router.push("/app/{resource}")`).
+- After a successful create, the list resets to page `0` so the new record is visible.
+- After a successful edit, the list restores the same page the user was on.
+- The `new` and `edit` pages share the same form component where possible; the edit page pre-populates via the resource id from the URL.
+
+**Why separate pages (not modals):**
+- Supports deep-linking and browser back/forward correctly.
+- Avoids state conflicts between list data and form state.
+- Keeps the list page simple and focused.
+- Forms that grow (e.g. multi-section, file upload, rich text) have space without workarounds.
+
+---
+
+## 9. Where this is decided in your methodology
 
 | Artifact | What to capture |
 |----------|-----------------|

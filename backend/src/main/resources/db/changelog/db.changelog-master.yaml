@@ -141,6 +141,9 @@ databaseChangeLog:
       file: dml/data-m7-platform-currencies-seed-1.xml
       relativeToChangelogFile: true
   - include:
+      file: dml/data-m7-platform-currencies-full-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-m7-currency-privileges-1.xml
       relativeToChangelogFile: true
   - include:
@@ -148,4 +151,7 @@ databaseChangeLog:
       relativeToChangelogFile: true
   - include:
       file: dml/data-m7-nav-tenant-currencies-demo-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-backfill-tenant-currency-visibility-1.xml
       relativeToChangelogFile: true

@@ -27,7 +27,7 @@ Convention: one file per vertical slice — [`../guides/MODULE-DOC-CONVENTION.md
 | `commercial-plans.md` | M3 | Complete (M3 v1) | Catalog + **commercial plan** create/replace/**delete unused** (compose from `plan_feature` only); optional Stripe price id on plan — [`../modules/commercial-plans.md`](../modules/commercial-plans.md) |
 | `commercial-subscriptions.md` | M3 | Complete (M3 v1) | v1: `tenant_subscription` + platform assign + `GET /me/subscription`; pool/flag materialization **deferred** — [`../modules/commercial-subscriptions.md`](../modules/commercial-subscriptions.md) |
 | `commercial-billing.md` | M3 | Complete (M3 v1) | Webhooks; tenant **`GET .../billing/summary`** (**`USER_VIEW`**) + **`GET .../billing/commercial-plans`** (**`TENANT_SETTINGS_EDIT`**); Stripe/PayPal sessions; Next.js **`/app`** billing card; **`billing_usage_event`** POST + **`billing_usage_aggregate`** + **`GET .../usage-aggregates`**; `billing_provider_link`; minimal **`tenant_subscription`** webhook reconcile; dev redirect rules + **`DEMO_STARTER`** seed; **post-M3:** meter push, full B3 reconcile — [`../modules/commercial-billing.md`](../modules/commercial-billing.md) |
-| `payroll-reference-data.md` | M5 | Planned | Countries, currencies, business units, BU-scoped roles |
+| `payroll-reference-data.md` | M5 | Exists | Exchange rates (full spec — see [`../modules/payroll-reference-data.md`](../modules/payroll-reference-data.md)); countries, BUs, BU-scoped roles are stubs |
 | `organization-employment.md` | M5 | Planned | Org structure, employment + compensation history |
 | `employee-master-dependents.md` | M5 | Planned | Employee, partners, children; country-specific legal enums |
 | `leave-management.md` | M5 | Planned | Leave policies, requests, approvals |

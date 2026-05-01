@@ -1,6 +1,5 @@
 package com.wagepayroll.api;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,10 +45,21 @@ public class PlatformCurrenciesController {
 	}
 
 	@GetMapping
-	public ApiResponse<Map<String, List<PlatformCurrencyDto>>> list(HttpServletRequest request) {
+	public ApiResponse<Map<String, Object>> list(
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "50") int size,
+			HttpServletRequest request) {
 		requirePlatformSuperadmin();
 		String rid = RequestIdFilter.currentRequestId(request);
-		return ApiResponse.of(Map.of("items", platformCurrencyService.list()), rid);
+		return ApiResponse.of(platformCurrencyService.list(page, size), rid);
+	}
+
+	@GetMapping("/{id}")
+	public ApiResponse<Map<String, PlatformCurrencyDto>> get(@PathVariable("id") UUID id,
+			HttpServletRequest request) {
+		requirePlatformSuperadmin();
+		PlatformCurrencyDto dto = platformCurrencyService.get(id);
+		return ApiResponse.of(Map.of("item", dto), RequestIdFilter.currentRequestId(request));
 	}
 
 	@PostMapping

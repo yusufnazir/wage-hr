@@ -15,6 +15,8 @@ import com.wagepayroll.domain.navmenu.NavMenuItemRepository;
 import com.wagepayroll.security.PermissionService;
 import com.wagepayroll.subscription.SubscriptionGatingService;
 
+import com.wagepayroll.domain.user.UserAccountRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,17 +27,23 @@ public class NavigationMenuService {
 	private final NavMenuItemRepository navMenuItemRepository;
 	private final PermissionService permissionService;
 	private final SubscriptionGatingService subscriptionGatingService;
+	private final UserAccountRepository userAccountRepository;
 
 	public NavigationMenuService(NavMenuItemRepository navMenuItemRepository, PermissionService permissionService,
-			SubscriptionGatingService subscriptionGatingService) {
+			SubscriptionGatingService subscriptionGatingService, UserAccountRepository userAccountRepository) {
 		this.navMenuItemRepository = navMenuItemRepository;
 		this.permissionService = permissionService;
 		this.subscriptionGatingService = subscriptionGatingService;
+		this.userAccountRepository = userAccountRepository;
 	}
 
 	@Transactional(readOnly = true)
 	public List<NavigationItemDto> effectiveMenu(UUID userId, UUID tenantId) {
-		List<String> privCodes = permissionService.effectivePrivilegeCodes(userId, tenantId);
+		// Platform superadmins see all nav items whose privilege is in the tenant's pool ceiling,
+		// regardless of their personal role grants in that tenant.
+		List<String> privCodes = userAccountRepository.findById(userId).map(u -> u.isPlatformSuperadmin()).orElse(false)
+				? permissionService.tenantPoolPrivilegeCodes(tenantId)
+				: permissionService.effectivePrivilegeCodes(userId, tenantId);
 		Set<String> privSet = new HashSet<>(privCodes);
 		Set<String> activePlanFeatureCodes = new HashSet<>(subscriptionGatingService.activePlanFeatureCodesOrEmpty(tenantId));
 

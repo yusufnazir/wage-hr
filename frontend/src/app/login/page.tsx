@@ -8,12 +8,54 @@ import { EmailNotVerifiedError, fetchMe, fetchMeTenants, loginJson, redirectChec
 import { defaultTenantAppUrl, getAdminWebOrigin, isAdminWebOriginUrl, tenantWebAppUrlForHandle } from "@/lib/web-origins";
 import type { MePayload } from "@/lib/api";
 
+function tenantHandleFromAbsoluteUrl(absoluteUrl: string): string | null {
+  try {
+    const host = new URL(absoluteUrl).hostname.trim().toLowerCase();
+    const labels = host.split(".");
+    if (labels.length < 3) {
+      return null;
+    }
+    const first = labels[0]?.trim();
+    return first ? first : null;
+  } catch {
+    return null;
+  }
+}
+
 async function resolvePostLoginNext(me: MePayload): Promise<string> {
+  let memberships: Awaited<ReturnType<typeof fetchMeTenants>> | null = null;
+  async function loadMemberships() {
+    if (!memberships) {
+      memberships = await fetchMeTenants();
+    }
+    return memberships;
+  }
+
   const returnToParam = new URLSearchParams(window.location.search).get("returnTo");
   if (returnToParam && (await redirectCheck(returnToParam))) {
     if (!me.platformSuperadmin && isAdminWebOriginUrl(returnToParam)) {
       return defaultTenantAppUrl();
     }
+
+    // Avoid landing on a tenant host where this principal has no membership.
+    if (!me.platformSuperadmin) {
+      const requestedHandle = tenantHandleFromAbsoluteUrl(returnToParam);
+      if (requestedHandle) {
+        const inCurrentContext = me.tenantHandle?.toLowerCase() === requestedHandle;
+        if (!inCurrentContext) {
+          const tenantsRes = await loadMemberships();
+          const hasMembership =
+            tenantsRes.ok && tenantsRes.tenants.some((t) => t.handle.toLowerCase() === requestedHandle);
+          if (!hasMembership) {
+            if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
+              return tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
+            }
+            return defaultTenantAppUrl();
+          }
+        }
+      }
+    }
+
     return returnToParam;
   }
   if (me.platformSuperadmin) {
@@ -23,7 +65,7 @@ async function resolvePostLoginNext(me: MePayload): Promise<string> {
     return tenantWebAppUrlForHandle(me.tenantHandle);
   }
   // Auth host has no tenant context — look up the user's first tenant membership.
-  const tenantsRes = await fetchMeTenants();
+  const tenantsRes = await loadMemberships();
   if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
     return tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
   }

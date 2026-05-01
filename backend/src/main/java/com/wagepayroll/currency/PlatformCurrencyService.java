@@ -2,7 +2,9 @@ package com.wagepayroll.currency;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,8 @@ import com.wagepayroll.api.dto.PlatformCurrencyPatchRequest;
 import com.wagepayroll.domain.currency.PlatformCurrencyEntity;
 import com.wagepayroll.domain.currency.PlatformCurrencyRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +32,22 @@ public class PlatformCurrencyService {
 		this.platformCurrencyRepository = platformCurrencyRepository;
 	}
 
+	private static final int MAX_PAGE_SIZE = 100;
+
 	@Transactional(readOnly = true)
-	public List<PlatformCurrencyDto> list() {
-		return platformCurrencyRepository.findAllByOrderBySortOrderAscCodeAsc().stream().map(this::toDto).toList();
+	public Map<String, Object> list(int page, int size) {
+		int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+		int safePage = Math.max(page, 0);
+		Page<PlatformCurrencyEntity> p = platformCurrencyRepository
+				.findAllByOrderBySortOrderAscCodeAsc(PageRequest.of(safePage, safeSize));
+		List<PlatformCurrencyDto> items = p.getContent().stream().map(this::toDto).toList();
+		Map<String, Object> out = new HashMap<>();
+		out.put("items", items);
+		out.put("totalElements", p.getTotalElements());
+		out.put("page", p.getNumber());
+		out.put("size", p.getSize());
+		out.put("totalPages", p.getTotalPages());
+		return out;
 	}
 
 	@Transactional
@@ -59,6 +76,13 @@ public class PlatformCurrencyService {
 		row.setCreatedAt(now);
 		row.setUpdatedAt(now);
 		platformCurrencyRepository.save(row);
+		return toDto(row);
+	}
+
+	@Transactional(readOnly = true)
+	public PlatformCurrencyDto get(UUID id) {
+		PlatformCurrencyEntity row = platformCurrencyRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "PLATFORM_CURRENCY_NOT_FOUND"));
 		return toDto(row);
 	}
 
