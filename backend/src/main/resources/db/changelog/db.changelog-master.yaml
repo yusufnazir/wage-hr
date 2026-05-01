@@ -155,3 +155,9 @@ databaseChangeLog:
   - include:
       file: dml/data-m7-backfill-tenant-currency-visibility-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-exchange-rate-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-exchange-rate-privileges-1.xml
+      relativeToChangelogFile: true

@@ -22,6 +22,8 @@ public final class AuditResourceTypes {
 
 	public static final String TENANT_CURRENCY = "TENANT_CURRENCY";
 
+	public static final String EXCHANGE_RATE = "EXCHANGE_RATE";
+
 	private AuditResourceTypes() {
 	}
 }

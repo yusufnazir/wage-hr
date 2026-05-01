@@ -336,6 +336,23 @@ Follow `docs/guides/LIQUIBASE-RULES.md` for all changesets.
 16. **Web — permission guard:** User with `EXCHANGE_RATE_VIEW` only sees the table; Create / Edit / Delete controls are hidden.
 17. **Web — currency dropdown:** Only tenant-activated currencies appear in the From / To dropdowns.
 
+### Implementation Notes (M5 Exchange Rates)
+
+- Backend controller: `backend/src/main/java/com/wagepayroll/api/TenantExchangeRatesController.java`
+- Backend service: `backend/src/main/java/com/wagepayroll/currency/TenantExchangeRateService.java`
+- Backend entity/repository:
+  - `backend/src/main/java/com/wagepayroll/domain/currency/TenantExchangeRateEntity.java`
+  - `backend/src/main/java/com/wagepayroll/domain/currency/TenantExchangeRateRepository.java`
+- Liquibase DDL/DML:
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DdlExchangeRateTable1.java`
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DataExchangeRatePrivileges1.java`
+  - `backend/src/main/resources/db/changelog/ddl/schema-exchange-rate-1.xml`
+  - `backend/src/main/resources/db/changelog/dml/data-exchange-rate-privileges-1.xml`
+- Frontend tab and API client:
+  - `frontend/src/app/app/tenant-currencies/page.tsx`
+  - `frontend/src/lib/api.ts`
+  - `frontend/src/messages/nav.ts`
+
 ---
 
 ## Sub-feature stubs (expand when milestone begins)

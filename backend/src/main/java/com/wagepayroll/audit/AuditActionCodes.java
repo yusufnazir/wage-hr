@@ -64,6 +64,15 @@ public final class AuditActionCodes {
 	/** Tenant admin replaced tenant currency assignments from the platform catalog. */
 	public static final String TENANT_CURRENCIES_REPLACED = "TENANT_CURRENCIES_REPLACED";
 
+	/** Tenant admin created a tenant-scoped exchange rate. */
+	public static final String EXCHANGE_RATE_CREATED = "EXCHANGE_RATE_CREATED";
+
+	/** Tenant admin updated mutable fields of a tenant-scoped exchange rate. */
+	public static final String EXCHANGE_RATE_UPDATED = "EXCHANGE_RATE_UPDATED";
+
+	/** Tenant admin deleted a tenant-scoped exchange rate. */
+	public static final String EXCHANGE_RATE_DELETED = "EXCHANGE_RATE_DELETED";
+
 	private AuditActionCodes() {
 	}
 }

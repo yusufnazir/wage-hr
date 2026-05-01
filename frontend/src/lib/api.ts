@@ -554,6 +554,104 @@ export async function replaceTenantCurrencies(codes: string[]): Promise<void> {
   if (!r.ok && r.status !== 204) throw new Error(await readFailureMessage(r));
 }
 
+export type TenantExchangeRateItem = {
+  id: string;
+  fromCurrencyId: string;
+  fromCurrencyCode: string;
+  fromCurrencyDisplayName: string;
+  toCurrencyId: string;
+  toCurrencyCode: string;
+  toCurrencyDisplayName: string;
+  rate: number;
+  effectiveDate: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantExchangeRatesPageResult =
+  | {
+      ok: true;
+      items: TenantExchangeRateItem[];
+      page: number;
+      size: number;
+      totalElements: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/tenant/exchange-rates — requires EXCHANGE_RATE_VIEW. */
+export async function fetchTenantExchangeRates(
+  page = 0,
+  size = 20,
+  sort = "effectiveDate,desc",
+): Promise<TenantExchangeRatesPageResult> {
+  const q = new URLSearchParams({ page: String(page), size: String(size), sort });
+  const r = await fetch(bffUrl(`/api/v1/tenant/exchange-rates?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantExchangeRateItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export type TenantExchangeRateMutationResult =
+  | { ok: true; item: TenantExchangeRateItem }
+  | { ok: false; status: number };
+
+/** POST /api/v1/tenant/exchange-rates — requires EXCHANGE_RATE_MANAGE. */
+export async function createTenantExchangeRate(payload: {
+  fromCurrencyId: string;
+  toCurrencyId: string;
+  rate: string;
+  effectiveDate: string;
+}): Promise<TenantExchangeRateMutationResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/exchange-rates"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantExchangeRateItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+/** PATCH /api/v1/tenant/exchange-rates/{id} — requires EXCHANGE_RATE_MANAGE. */
+export async function patchTenantExchangeRate(
+  id: string,
+  payload: { rate?: string; effectiveDate?: string },
+): Promise<TenantExchangeRateMutationResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/exchange-rates/${encodeURIComponent(id)}`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantExchangeRateItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantExchangeRateDeleteResult = { ok: true } | { ok: false; status: number };
+
+/** DELETE /api/v1/tenant/exchange-rates/{id} — requires EXCHANGE_RATE_MANAGE. */
+export async function deleteTenantExchangeRate(id: string): Promise<TenantExchangeRateDeleteResult> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/exchange-rates/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (r.status === 204) return { ok: true };
+  return { ok: false, status: r.status };
+}
+
 export type PublicSurfaceFetchResult =
   | { ok: true; surface: PublicSurfacePayload }
   | { ok: false; status: number };
