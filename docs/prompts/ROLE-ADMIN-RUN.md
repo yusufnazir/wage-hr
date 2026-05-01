@@ -26,7 +26,7 @@ Implement a proper roles view for tenant admins and platform superadmins (via ad
 - Add platform superadmin view-only page:
   - /app/platform-role-templates (admin.{BASE_DOMAIN}) lists the two templates (ADMIN, EMPLOYEE) and privilege sets.
 - Tenant bootstrap on registration:
-  - POST /api/v1/auth/register creates a new tenant, copies role templates into tenant roles, creates membership, and assigns the new user the copied tenant Admin role.
+  - `POST /api/v1/auth/register` creates a new tenant, copies role templates into tenant roles, creates membership, assigns the default copied tenant role from platform setting `auth.registration.default_role_template_code` (default **ADMIN** when unset), and leaves email unverified until verify-email — see [`account-registration.md`](../modules/account-registration.md).
 
 Execute with depth of docs/templates/4. BACKEND-FEATURE-PROMPT.md and docs/templates/5. WEB-FRONTEND-PROMPT.md. Read docs/guides/README.md and docs/output/ARCHITECTURE-DEFINITION.md; if architecture conflicts with PROJECT-CONTEXT or role-admin.md, follow PROJECT-CONTEXT + role-admin.md. Do not merge schema assumptions from other module docs. Do not use MASTER-FOUNDATION-TO-FEATURES unless role-admin.md requires net-new stack work.
 

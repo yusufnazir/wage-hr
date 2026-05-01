@@ -45,7 +45,7 @@ Short notes (redirects, unknown tenant handle, etc.):
 Cross-cutting requirements (must stay consistent across prompts 1–6):
 
 - Multi-tenant subdomain model (including local *.lvh.me); env-driven `BASE_DOMAIN`, `AUTH_SUBDOMAIN`, `APP_SUBDOMAIN`, reserved subdomains
-- auth host: login, register, forgot password; post-login redirect to `{tenant}.{BASE_DOMAIN}` or `app.{BASE_DOMAIN}` when tenant has no handle
+- auth host: login, register, verify-email, forgot password; post-login redirect to `{tenant}.{BASE_DOMAIN}` or `app.{BASE_DOMAIN}` when tenant has no handle; self-service registration contract: [`docs/modules/account-registration.md`](../modules/account-registration.md)
 - Privilege-based authorization: privilege = action + resource; tenant privilege pool subset of global catalog; SuperAdmin effective-all via same enforcement path (no ad-hoc bypass)
 - Per-tenant and per-business-unit roles where the domain requires BU-scoped access
 - Cookie/session + CSRF for web (if cookies); safe returnTo / open-redirect rules; Flutter uses token session model — see security guides
@@ -99,7 +99,7 @@ Product scope, stack, and constraints. **Delivery is phased** using milestones i
 - **Outbound email:** External HTTP mail API (adapter); no requirement to self-host SMTP for app delivery
 
 ## Platform capabilities (target)
-- **Identity:** register user, login, forgot password; future **OIDC/SSO** (M7) — email/password first.
+- **Identity:** register user (tenant handle + **email verification** before login — [`docs/modules/account-registration.md`](../modules/account-registration.md)), login, forgot password; future **OIDC/SSO** (M7) — email/password first.
 - **Tenancy:** multi-tenant; tenant handle subdomain + app without subdomain + auth subdomain; invitations for **non-users** and **existing users**; membership and roles **per tenant**; **privilege pool** per tenant assigned from global catalog; SuperAdmin assigns global catalog and tenant pool caps; **privilege indicating SuperAdmin**; every sensitive operation mapped to **CRUD-level** (or finer) privileges.
 - **Settings:** **global** settings (SuperAdmin); **per-tenant** settings (tenant admin).
 - **Navigation:** application **menu structure in datamodel**; visibility by **privilege**, **subscription-derived feature flags**, and effective **tenant privilege pool** (pool widened by active subscription per below).
@@ -189,11 +189,11 @@ Pick the **active** module from [`docs/product/MODULE-INDEX.md`](../product/MODU
 
 | Field | Value |
 |-------|--------|
-| **Feature slug / module doc path** | `docs/modules/role-admin.md` |
-| **Feature name** | Roles admin + role templates + tenant bootstrap (web v1) |
-| **What the feature should do** | **Tenant-scoped** roles list at **`/app/roles`** and separate edit view at **`/app/roles/[roleId]`**. **`ROLE_VIEW`** can list and view role details read-only. **`ROLE_EDIT`** can create roles and edit role **name** + **privilege assignments** (assignable privileges limited to tenant effective pool ceiling). Add tenant nav item **Roles** visible with `ROLE_VIEW`. Add **platform superadmin view-only** page **`/app/platform-role-templates`** on `admin.{BASE_DOMAIN}` that lists the two templates (**ADMIN**, **EMPLOYEE**) and their privilege sets. **Tenant bootstrap:** on `POST /api/v1/auth/register`, create a new tenant, copy templates into tenant roles, create membership, and assign the new user the copied tenant **Admin** role; later tenant-admin edits affect only their tenant’s roles (templates remain unchanged). Out of scope v1: role delete/archive, BU-scoped roles, editing templates, editing global privilege catalog, bulk assignment of roles from the roles screen. |
+| **Feature slug / module doc path** | `docs/modules/mail-templates.md` |
+| **Feature name** | Platform mail template catalog (list + HTML edit, `en`/`nl`) |
+| **What the feature should do** | **Platform superadmin** maintains **`mail_template`** + **`mail_template_locale`** rows (`code`, `content_version`, `active`, per-locale `subject` + `body_html`). **APIs:** `GET /api/v1/platform/mail-templates`, `GET .../{id}`, `PUT .../{id}` with optimistic `ifUpdatedAt`. **Web:** `/app/platform-mail-templates` list and `/app/platform-mail-templates/{id}` edit (locale tabs, HTML textarea, sandboxed preview). **Send path:** `TENANT_INVITATION` uses catalog when active + valid locales; placeholders `{{tenantHandle}}`, `{{inviteLink}}`; `nl-sr` → `nl` → `en` fallback; HTTP mail JSON includes **`html`** when present. **Audit:** `PLATFORM_MAIL_TEMPLATES_UPDATED`. Tenant overrides and Flutter operator UI are **out of scope** for this slice (see module doc). |
 
-*Previous default demo slice (still documented):* `docs/modules/tenant-web-vertical-slice.md` (tenant app shell + demo read).
+*Previous slice (still documented):* **`docs/modules/account-registration.md`** — register + verify-email + default role; **`docs/modules/role-admin.md`** — tenant roles UI + role templates CRUD; **`docs/modules/tenant-web-vertical-slice.md`** — tenant app shell + demo read.
 
 ---
 

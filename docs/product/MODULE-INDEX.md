@@ -4,7 +4,8 @@ Convention: one file per vertical slice — [`../guides/MODULE-DOC-CONVENTION.md
 
 | Slug (file) | Milestone | Status | Notes |
 |-------------|-----------|--------|--------|
-| `auth.md` | M1 | Exists | Extend for register / forgot-password flows as built |
+| `auth.md` | M1 | Exists | Login, logout, CSRF, password reset; register/verify → [`account-registration.md`](../modules/account-registration.md) |
+| `account-registration.md` | M1 | Exists | Self-service register (email, password, **tenant handle**), **email verification** before login, **`auth.registration.default_role_template_code`** — [`../modules/account-registration.md`](../modules/account-registration.md) |
 | `user.md` | M1 | Exists | Profile, locale, preferences |
 | `security.md` | M1 | Exists | Privileges, pools, SuperAdmin |
 | `web-auth-session.md` | M1 | Exists | Cookie/session, CSRF, BFF |
@@ -20,6 +21,7 @@ Convention: one file per vertical slice — [`../guides/MODULE-DOC-CONVENTION.md
 | `data-lifecycle.md` | M1 | Exists | PII inventory, `GET /me/privacy/export`, erasure-request stub — [`../modules/data-lifecycle.md`](../modules/data-lifecycle.md) |
 | `mail-adapter.md` | M2 | Exists | Send-time only; v1 **no** extra mail tables — `external_message_id` on notification; [`../modules/mail-adapter.md`](../modules/mail-adapter.md) |
 | `notifications-inbox.md` | M2 | Exists | **Canonical PII-strict spec:** entity, services, flow, APIs — [`../modules/notifications-inbox.md`](../modules/notifications-inbox.md) |
+| `mail-templates.md` | M2 | Exists | Platform catalog: HTML + i18n (`en`/`nl`) for outbound mail; [`../modules/mail-templates.md`](../modules/mail-templates.md) |
 | `documents-minio.md` | M4 | Exists | MinIO/S3 layout, presign phases, `tenant_document` + attachment table — [`../modules/documents-minio.md`](../modules/documents-minio.md) |
 | `document-sharing.md` | M4 | Exists | ACL, hub semantics, `document_share` — [`../modules/document-sharing.md`](../modules/document-sharing.md) |
 | `commercial-plans.md` | M3 | Complete (M3 v1) | Catalog + **commercial plan** create/replace/**delete unused** (compose from `plan_feature` only); optional Stripe price id on plan — [`../modules/commercial-plans.md`](../modules/commercial-plans.md) |

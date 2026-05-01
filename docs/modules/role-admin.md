@@ -6,7 +6,7 @@
 This module defines:
 
 - Tenant-scoped role administration (list + separate edit view)
-- Platform-scoped **role templates** (superadmin view-only) used when creating new tenants
+- Platform-scoped **role templates** (platform superadmin CRUD) used when creating new tenants
 
 It supports:
 
@@ -39,11 +39,13 @@ Also provide a platform superadmin view into the **role templates** used for new
   - **ROLE_VIEW**: can view list + detail read-only
   - **ROLE_EDIT**: can edit role name/privileges and create roles
 - Works for platform superadmin via tenant lens (non-member elevation follows existing rules and break-glass for mutation)
-- Platform superadmin view-only role templates:
-  - List the two templates (**Admin**, **Employee**) and show their privilege sets
+- Platform superadmin role templates:
+  - List templates and show their privilege sets
+  - Create new templates and edit existing templates (templates affect **future tenant creation only**)
+  - **Read-only operator matrix** (all templates × catalog labels): [`platform-tenant-privileges.md`](./platform-tenant-privileges.md) — web route `/app/platform-role-templates/privileges` (linked from the role templates list on `admin.{BASE_DOMAIN}`).
 - Tenant creation behavior:
   - When a **new tenant is created as part of new-account registration**, the template roles are copied into the tenant roles.
-  - The registering user becomes a member of that tenant and is assigned the **tenant Admin** role.
+  - The registering user becomes a member of that tenant and is assigned **one** tenant role copied from the template identified by **`auth.registration.default_role_template_code`** in **`platform_setting`** (default **`ADMIN`** when the key is absent). Full API, verification gate, and persistence: **[`account-registration.md`](./account-registration.md)**.
 
 ### Explicitly out of scope (v1)
 
@@ -51,7 +53,7 @@ Also provide a platform superadmin view into the **role templates** used for new
 - Create/edit privileges catalog (platform feature)
 - Assign/remove roles from users in this screen (remains in user admin: [`user.md`](./user.md))
 - Business-unit-scoped roles
-- Editing templates (templates are fixed in v1; superadmin can only view)
+- (Option A) Templates do not auto-sync to existing tenants; they are copied only when a tenant is created.
 
 ---
 
@@ -71,23 +73,24 @@ Role templates are a small, platform-owned dataset. They are **not tenant-scoped
 - **`role_template`**: `{ id, code, display_name, created_at, updated_at }`
 - **`role_template_privilege`**: `{ id, role_template_id, privilege_id }`
 
-Templates in v1:
+Templates:
 
-- **Admin** template (`code`: `ADMIN`)
-- **Employee** template (`code`: `EMPLOYEE`)
+- **Admin** template (`code`: `ADMIN`) — required for healthy tenant bootstrap; **default** first membership role for **self-service registration** when **`auth.registration.default_role_template_code`** is unset (see [`account-registration.md`](./account-registration.md)).
+- **Employee** template (`code`: `EMPLOYEE`) — default baseline role template copy
+- Additional templates may exist; all templates are copied into a newly created tenant.
 
-When a tenant is created, templates are copied into tenant roles:
+When a tenant is created (registration or other flows per module docs), templates are copied into tenant roles:
 
 - New rows in `role` (tenant-scoped) are created from templates, and their privilege grants are copied into `role_privilege`.
-- The registering user is assigned the copied tenant **Admin** role via `membership` + `user_role`.
+- The **self-service registering** user is assigned the tenant role copied from the configured default template via `membership` + `user_role` — **[`account-registration.md`](./account-registration.md)**.
 
 #### Allowed columns (schema authority)
 
 `role_template` (strict):
 
 - `id` UUID PK
-- `code` VARCHAR(32) unique, not null (values: `ADMIN`, `EMPLOYEE`)
-- `display_name` VARCHAR(128) not null (values: `Admin`, `Employee`)
+- `code` VARCHAR(32) unique, not null (example values: `ADMIN`, `EMPLOYEE`, `MANAGER`)
+- `display_name` VARCHAR(128) not null (example values: `Admin`, `Employee`, `Manager`)
 - `created_at`, `updated_at` timestamps not null
 
 `role_template_privilege` (strict):
@@ -152,15 +155,20 @@ Use the existing API error conventions (problem+json / code) per global guides.
 
 ---
 
-## 6b) API (platform role templates — superadmin view-only)
+## 6b) API (platform role templates — platform superadmin)
 
 Base path: **`/api/v1/platform/role-templates`**
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/v1/platform/role-templates` | platform superadmin | Returns `data.items[]`: `{ id, code, displayName, privilegeCodes[] }` for the two templates (`ADMIN`, `EMPLOYEE`). |
+| GET | `/api/v1/platform/role-templates` | platform superadmin | Returns `data.items[]`: `{ id, code, displayName, privilegeCodes[] }` (sorted by `code`). |
+| POST | `/api/v1/platform/role-templates` | platform superadmin | Create template. Body: `{ "code": "MANAGER", "displayName": "Manager", "privilegeCodes": ["USER_VIEW", ...] }`. Response `201` with `data.item`. Errors: `400` validation, `409` duplicate code. |
+| PATCH | `/api/v1/platform/role-templates/{id}` | platform superadmin | Update template. Body: `{ "displayName": "...", "privilegeCodes": ["..."] }` (either or both; `privilegeCodes` is full replacement when present). Response `200` with `data.item`. Errors: `400` validation, `404` unknown template. |
 
-No create/update/delete APIs in v1.
+Notes:
+
+- Template mutations affect **future tenant creation only** (Option A). Existing tenants are not modified.
+- `ADMIN` template must exist for deployments that use default **self-service** registration (default role template code **`ADMIN`** when unset — [`account-registration.md`](./account-registration.md)).
 
 ---
 
@@ -171,9 +179,11 @@ No create/update/delete APIs in v1.
 - **`/app/roles`** — roles list view
 - **`/app/roles/[roleId]`** — role detail/edit view (separate page)
 
-Platform superadmin view-only:
+Platform superadmin:
 
-- **`/app/platform-role-templates`** (on `admin.{BASE_DOMAIN}`) — shows the two templates and their privilege sets.
+- **`/app/platform-role-templates`** (on `admin.{BASE_DOMAIN}`) — templates listing view.
+- **`/app/platform-role-templates/new`** — create template view (separate route; code + display name + privileges).
+- **`/app/platform-role-templates/[templateId]`** — template detail/edit view (separate route; edit display name + privileges).
 
 ### Listing view
 
@@ -245,9 +255,10 @@ For platform operators, add a synthetic platform nav item (not tenant nav_menu_i
    - Read without membership succeeds when the privilege is within tenant ceiling.
    - Mutations require `X-Break-Glass-Reason` and are audited per existing break-glass rules.
 7. Platform superadmin can open `/app/platform-role-templates` and see two templates (Admin, Employee) with privilege lists.
-8. Registration creating tenant:
-   - Registering a new account results in a new tenant being created and the user being assigned the copied tenant Admin role.
+8. Registration creating tenant (see [`account-registration.md`](./account-registration.md) for verification + API):
+   - Registering a new account creates a new tenant; the user is assigned the tenant role copied from **`auth.registration.default_role_template_code`** (default **`ADMIN`**).
    - Tenant roles are independent: editing roles in tenant A does not affect tenant B.
+9. Platform superadmin can create and edit templates; edits do not change existing tenants and are reflected for subsequent registrations.
 
 ---
 
@@ -277,7 +288,9 @@ For platform operators, add a synthetic platform nav item (not tenant nav_menu_i
 - **Routes**:
   - List: `frontend/src/app/app/roles/page.tsx`
   - Detail/edit: `frontend/src/app/app/roles/[roleId]/page.tsx`
-  - Platform templates: `frontend/src/app/app/platform-role-templates/page.tsx`
+  - Platform templates list: `frontend/src/app/app/platform-role-templates/page.tsx`
+  - Platform templates create: `frontend/src/app/app/platform-role-templates/new/page.tsx`
+  - Platform templates edit: `frontend/src/app/app/platform-role-templates/[templateId]/page.tsx`
 - **API client**: `frontend/src/lib/api.ts` (`fetchTenantRoles`, `fetchTenantRoleDetail`, `createTenantRole`, `patchTenantRole`)
 - **API client (platform)**: `frontend/src/lib/api.ts` (`fetchPlatformRoleTemplates`)
 - **Break-glass header forwarding (BFF)**: `frontend/src/app/api/bff/[...path]/route.ts` forwards `X-Break-Glass-Reason` for mutating requests.

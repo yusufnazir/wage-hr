@@ -31,6 +31,8 @@ public class NavigationController {
 	private static final UUID NAV_PLATFORM_SETTINGS_ID = UUID.fromString("50000000-0000-0000-0000-000000000099");
 	private static final UUID NAV_PLATFORM_TENANTS_ID = UUID.fromString("50000000-0000-0000-0000-000000000098");
 	private static final UUID NAV_PLATFORM_ROLE_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000097");
+	private static final UUID NAV_PLATFORM_MAIL_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000096");
+	private static final UUID NAV_PLATFORM_CURRENCIES_ID = UUID.fromString("50000000-0000-0000-0000-000000000095");
 
 	private final NavigationMenuService navigationMenuService;
 	private final UserAccountRepository userAccountRepository;
@@ -52,6 +54,10 @@ public class NavigationController {
 						List.of()));
 				tree.add(new NavigationItemDto(NAV_PLATFORM_ROLE_TEMPLATES_ID, "/app/platform-role-templates",
 						"nav.platform_role_templates", 29, List.of()));
+				tree.add(new NavigationItemDto(NAV_PLATFORM_CURRENCIES_ID, "/app/platform-currencies",
+						"nav.platform_currencies", 29, List.of()));
+				tree.add(new NavigationItemDto(NAV_PLATFORM_MAIL_TEMPLATES_ID, "/app/platform-mail-templates",
+						"nav.platform_mail_templates", 29, List.of()));
 				tree.add(new NavigationItemDto(NAV_PLATFORM_SETTINGS_ID, "/app/platform-settings", "nav.platform_settings", 30,
 						List.of()));
 				tree.sort(Comparator.comparingInt(NavigationItemDto::sortOrder));
@@ -67,6 +73,10 @@ public class NavigationController {
 					List.of()));
 			tree.add(new NavigationItemDto(NAV_PLATFORM_ROLE_TEMPLATES_ID, "/app/platform-role-templates",
 					"nav.platform_role_templates", 29, List.of()));
+			tree.add(new NavigationItemDto(NAV_PLATFORM_CURRENCIES_ID, "/app/platform-currencies",
+					"nav.platform_currencies", 29, List.of()));
+			tree.add(new NavigationItemDto(NAV_PLATFORM_MAIL_TEMPLATES_ID, "/app/platform-mail-templates",
+					"nav.platform_mail_templates", 29, List.of()));
 			tree.add(new NavigationItemDto(NAV_PLATFORM_SETTINGS_ID, "/app/platform-settings", "nav.platform_settings", 30,
 					List.of()));
 		}

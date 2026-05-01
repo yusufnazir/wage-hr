@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
-import { fetchPlatformSettings, patchPlatformSettings, type PlatformSettingEntry } from "@/lib/api";
+import { fetchPlatformSettings, patchPlatformSettings, postPlatformMailTest, type PlatformSettingEntry } from "@/lib/api";
 import { navLabel } from "@/messages/nav";
 
 const DATE_FORMATS = ["yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "ISO-8601"] as const;
@@ -49,6 +49,7 @@ export default function PlatformSettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [mailTestTo, setMailTestTo] = useState("");
 
   const reload = useCallback(async () => {
     setLoad("loading");
@@ -81,6 +82,38 @@ export default function PlatformSettingsPage() {
       }
     } catch (e) {
       setMsg(e instanceof Error ? e.message : t("platformSettings.msg.saveFailed"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendMailTest() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await postPlatformMailTest(mailTestTo.trim());
+      setMsg(t("platformSettings.msg.testSent"));
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : t("platformSettings.msg.testFailed"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveMailAndSendTest() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const entries: PlatformSettingEntry[] = MAIL_KEYS.map((key) => ({ key, value: values[key] ?? "" }));
+      await patchPlatformSettings(entries);
+      await postPlatformMailTest(mailTestTo.trim());
+      const r = await fetchPlatformSettings();
+      if (r.ok) {
+        setValues(buildValuesFromEntries(r.entries));
+      }
+      setMsg(t("platformSettings.msg.savedAndTestSent"));
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : t("platformSettings.msg.saveAndTestFailed"));
     } finally {
       setBusy(false);
     }
@@ -136,7 +169,10 @@ export default function PlatformSettingsPage() {
 
   const tabs: TabId[] = ["general", "minio", "mail"];
   const msgIsSuccess =
-    msg === t("platformSettings.msg.saved") || msg === t("platformSettings.msg.savedReload");
+    msg === t("platformSettings.msg.saved") ||
+    msg === t("platformSettings.msg.savedReload") ||
+    msg === t("platformSettings.msg.testSent") ||
+    msg === t("platformSettings.msg.savedAndTestSent");
   const currentDateFormat = (values["platform.date_format"] ?? "yyyy-MM-dd").trim();
   const dateFormatSelectValue = (DATE_FORMATS as readonly string[]).includes(currentDateFormat)
     ? currentDateFormat
@@ -365,6 +401,40 @@ export default function PlatformSettingsPage() {
           >
             {busy ? t("platformSettings.state.saving") : t("platformSettings.action.saveMail")}
           </button>
+
+          <div className="border-t border-border pt-4">
+            <p className="mb-3 text-xs text-muted">{t("platformSettings.helper.mailTest")}</p>
+            <label className="block space-y-1">
+              <span className="text-xs font-medium text-muted">{t("platformSettings.label.mailTestTo")}</span>
+              <input
+                type="email"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm"
+                placeholder="recipient@example.com"
+                value={mailTestTo}
+                onChange={(e) => setMailTestTo(e.target.value)}
+                autoComplete="off"
+                data-testid="platform-settings-mail-test-to"
+              />
+            </label>
+            <button
+              type="button"
+              disabled={busy || !mailTestTo.trim()}
+              className="mt-3 inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted/30 disabled:opacity-50"
+              data-testid="platform-settings-send-mail-test"
+              onClick={() => void sendMailTest()}
+            >
+              {busy ? t("platformSettings.state.sendingTest") : t("platformSettings.action.sendMailTest")}
+            </button>
+            <button
+              type="button"
+              disabled={busy || !mailTestTo.trim()}
+              className="mt-3 ml-2 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-50"
+              data-testid="platform-settings-save-mail-and-test"
+              onClick={() => void saveMailAndSendTest()}
+            >
+              {busy ? t("platformSettings.state.sendingTest") : t("platformSettings.action.saveMailAndSendTest")}
+            </button>
+          </div>
         </section>
       ) : null}
     </div>

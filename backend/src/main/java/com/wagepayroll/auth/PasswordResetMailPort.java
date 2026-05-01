@@ -5,5 +5,6 @@ package com.wagepayroll.auth;
  */
 public interface PasswordResetMailPort {
 
-	void sendPasswordResetLink(String email, String resetUrl);
+	void sendPasswordResetLink(String email, String resetUrl, String firstName, String preferredLocaleForEmail,
+			String expiryMinutes);
 }

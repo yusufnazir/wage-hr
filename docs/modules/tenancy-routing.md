@@ -75,7 +75,7 @@ Implementation lives in **`frontend/src/middleware.ts`**, **`frontend/src/app/pa
 1. **Middleware (cookie hint only)**  
    - If there is **no** **`wp_bff_j`** BFF relay cookie: **`/`** redirects to **`{NEXT_PUBLIC_AUTH_WEB_ORIGIN}/login`** (on **non-auth** hosts and on the **auth** host, so `/` is never a static anonymous “home” for first paint).  
    - If **`wp_bff_j`** is present, **`/`** is not redirected here (the cookie may be **stale** or the user may be **forbidden** on **ADMIN** host—see (2)).  
-   - **`/login`**, **`/register`**, **`/forgot-password`**, **`/reset-password`** on a **non-auth** host redirect to the same path on **`NEXT_PUBLIC_AUTH_WEB_ORIGIN`**.  
+   - **`/login`**, **`/register`**, **`/verify-email`**, **`/forgot-password`**, **`/reset-password`**, **`/terms-of-service`**, **`/privacy-policy`** on a **non-auth** host redirect to the same path on **`NEXT_PUBLIC_AUTH_WEB_ORIGIN`** (see [`account-registration.md`](./account-registration.md) for verify flow).  
    - **`x-wage-host`** is set on all matched requests.
 
 2. **Root `/` (`app/page.tsx`)** — client **`GET /api/bff/v1/me`**  

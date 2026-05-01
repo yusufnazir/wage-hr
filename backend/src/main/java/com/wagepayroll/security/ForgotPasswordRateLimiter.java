@@ -51,6 +51,31 @@ public class ForgotPasswordRateLimiter {
 		}
 	}
 
+	/** Same limits as forgot-password (per {@code docs/modules/account-registration.md}). */
+	public void checkResendVerificationAllowed(HttpServletRequest request, String email) {
+		String key = clientKey(request) + ":resend-verify:" + email.trim().toLowerCase();
+		synchronized (attempts) {
+			List<Instant> list = attempts.computeIfAbsent(key, k -> new ArrayList<>());
+			Instant cutoff = clock.instant()
+					.minusSeconds((long) props.getForgotPasswordWindowMinutes() * 60L);
+			for (Iterator<Instant> it = list.iterator(); it.hasNext();) {
+				if (it.next().isBefore(cutoff)) {
+					it.remove();
+				}
+			}
+			if (list.size() >= props.getForgotPasswordMaxAttempts()) {
+				throw new RateLimitedException();
+			}
+		}
+	}
+
+	public void recordResendVerificationAttempt(HttpServletRequest request, String email) {
+		String key = clientKey(request) + ":resend-verify:" + email.trim().toLowerCase();
+		synchronized (attempts) {
+			attempts.computeIfAbsent(key, k -> new ArrayList<>()).add(clock.instant());
+		}
+	}
+
 	private static String clientKey(HttpServletRequest request) {
 		String xff = request.getHeader("X-Forwarded-For");
 		if (xff != null && !xff.isBlank()) {

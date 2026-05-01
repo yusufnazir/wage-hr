@@ -10,20 +10,27 @@ import com.wagepayroll.common.api.RequestIdFilter;
 import com.wagepayroll.api.dto.ForgotPasswordRequest;
 import com.wagepayroll.api.dto.LoginRequest;
 import com.wagepayroll.api.dto.RegisterRequest;
+import com.wagepayroll.api.dto.ResendVerificationRequest;
 import com.wagepayroll.api.dto.ResetPasswordRequest;
+import com.wagepayroll.api.dto.VerifyEmailRequest;
+import com.wagepayroll.auth.EmailVerificationService;
 import com.wagepayroll.auth.PasswordResetService;
 import com.wagepayroll.auth.RegistrationService;
+import com.wagepayroll.domain.user.UserAccountEntity;
+import com.wagepayroll.domain.user.UserAccountRepository;
+import com.wagepayroll.security.AccountUserDetailsService;
 import com.wagepayroll.security.LoginAttemptService;
 import com.wagepayroll.security.RedirectUrlValidator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.validation.annotation.Validated;
@@ -33,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 
@@ -41,31 +49,52 @@ import jakarta.validation.Valid;
 @Validated
 public class AuthController {
 
-	private final AuthenticationManager authenticationManager;
 	private final SecurityContextRepository securityContextRepository;
 	private final LoginAttemptService loginAttemptService;
 	private final RedirectUrlValidator redirectUrlValidator;
 	private final RegistrationService registrationService;
 	private final PasswordResetService passwordResetService;
+	private final EmailVerificationService emailVerificationService;
+	private final UserAccountRepository userAccountRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final AccountUserDetailsService accountUserDetailsService;
 
-	public AuthController(AuthenticationManager authenticationManager,
-			SecurityContextRepository securityContextRepository, LoginAttemptService loginAttemptService,
+	public AuthController(SecurityContextRepository securityContextRepository, LoginAttemptService loginAttemptService,
 			RedirectUrlValidator redirectUrlValidator, RegistrationService registrationService,
-			PasswordResetService passwordResetService) {
-		this.authenticationManager = authenticationManager;
+			PasswordResetService passwordResetService, EmailVerificationService emailVerificationService,
+			UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder,
+			AccountUserDetailsService accountUserDetailsService) {
 		this.securityContextRepository = securityContextRepository;
 		this.loginAttemptService = loginAttemptService;
 		this.redirectUrlValidator = redirectUrlValidator;
 		this.registrationService = registrationService;
 		this.passwordResetService = passwordResetService;
+		this.emailVerificationService = emailVerificationService;
+		this.userAccountRepository = userAccountRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.accountUserDetailsService = accountUserDetailsService;
 	}
 
 	@PostMapping("/register")
 	public ResponseEntity<ApiResponse<Map<String, String>>> register(@Valid @RequestBody RegisterRequest req,
 			HttpServletRequest request) {
-		registrationService.register(req.email(), req.password());
+		String handle = registrationService.register(req);
 		String rid = RequestIdFilter.currentRequestId(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(Map.of("status", "registered"), rid));
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.of(Map.of("status", "pending_verification", "tenantHandle", handle), rid));
+	}
+
+	@PostMapping("/verify-email")
+	public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest req) {
+		emailVerificationService.verify(req.token());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/resend-verification")
+	public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest req,
+			HttpServletRequest request) {
+		emailVerificationService.resend(request, req.email());
+		return ResponseEntity.accepted().build();
 	}
 
 	@PostMapping("/forgot-password")
@@ -86,8 +115,17 @@ public class AuthController {
 			HttpServletRequest request, HttpServletResponse response) {
 		try {
 			loginAttemptService.checkAllowed(request, req.email());
-			Authentication auth = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
+			String email = req.email().trim().toLowerCase();
+			UserAccountEntity user = userAccountRepository.findByEmailIgnoreCase(email).orElse(null);
+			if (user == null || !passwordEncoder.matches(req.password(), user.getPasswordHash())) {
+				loginAttemptService.recordFailure(request, req.email());
+				throw new BadCredentialsException("Bad credentials");
+			}
+			if (user.getEmailVerifiedAt() == null) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "EMAIL_NOT_VERIFIED");
+			}
+			UserDetails ud = accountUserDetailsService.userDetailsForSession(user);
+			Authentication auth = new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
 			SecurityContext context = SecurityContextHolder.createEmptyContext();
 			context.setAuthentication(auth);
 			SecurityContextHolder.setContext(context);

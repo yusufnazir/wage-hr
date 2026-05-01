@@ -54,7 +54,7 @@ Maintain a **single source of truth** in code (e.g. one list or matcher function
 
 Examples—**replace** with your real paths:
 
-- `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`
+- `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password` *(generic examples — wage-payroll auth host uses **`/login`**, **`/register`**, **`/forgot-password`**, **`/reset-password`**, **`/verify-email`**, **`/terms-of-service`**, **`/privacy-policy`** per [`tenancy-routing.md`](./tenancy-routing.md) and [`account-registration.md`](./account-registration.md))*
 - OAuth/callback paths your IdP uses, e.g. `/auth/callback`, `/api/auth/callback` (if applicable)
 - Static/legal: `/terms`, `/privacy`, `/health` (if exposed on this host)
 - Marketing home if it exists on the same app: `/` (only if product requires anonymous access). **wage-payroll:** **`/`** is not a public marketing surface; anonymous users are redirected toward auth **`/login`** (middleware + **`/me`** gate—see **`tenancy-routing.md`**).

@@ -47,8 +47,8 @@ public class SecurityConfiguration {
 				.requestMatchers("/actuator/health", "/error").permitAll()
 				.requestMatchers("/api/v1/billing/webhooks/**").permitAll()
 				.requestMatchers("/api/v1/auth/login", "/api/v1/auth/csrf", "/api/v1/auth/redirect-check",
-						"/api/v1/auth/logout", "/api/v1/auth/register", "/api/v1/auth/forgot-password",
-						"/api/v1/auth/reset-password")
+						"/api/v1/auth/logout", "/api/v1/auth/register", "/api/v1/auth/verify-email",
+						"/api/v1/auth/resend-verification", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password")
 						.permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/platform/public-surface").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/invitations/accept").permitAll()

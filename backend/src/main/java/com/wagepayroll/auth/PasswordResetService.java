@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import com.wagepayroll.settings.PlatformBrandingService;
 import com.wagepayroll.settings.PlatformUrlJoin;
+import com.wagepayroll.config.AppRateLimitProperties;
 import com.wagepayroll.domain.passwordreset.PasswordResetTokenEntity;
 import com.wagepayroll.domain.passwordreset.PasswordResetTokenRepository;
 import com.wagepayroll.domain.user.UserAccountEntity;
@@ -34,18 +35,21 @@ public class PasswordResetService {
 	private final PasswordResetMailPort mailPort;
 	private final ForgotPasswordRateLimiter forgotLimiter;
 	private final PlatformBrandingService platformBrandingService;
+	private final AppRateLimitProperties rateLimitProperties;
 	private final Clock clock;
 	private final SecureRandom random = new SecureRandom();
 
 	public PasswordResetService(UserAccountRepository users, PasswordResetTokenRepository tokens,
 			PasswordEncoder passwordEncoder, PasswordResetMailPort mailPort,
-			ForgotPasswordRateLimiter forgotLimiter, PlatformBrandingService platformBrandingService) {
+			ForgotPasswordRateLimiter forgotLimiter, PlatformBrandingService platformBrandingService,
+			AppRateLimitProperties rateLimitProperties) {
 		this.users = users;
 		this.tokens = tokens;
 		this.passwordEncoder = passwordEncoder;
 		this.mailPort = mailPort;
 		this.forgotLimiter = forgotLimiter;
 		this.platformBrandingService = platformBrandingService;
+		this.rateLimitProperties = rateLimitProperties;
 		this.clock = Clock.systemUTC();
 	}
 
@@ -64,16 +68,18 @@ public class PasswordResetService {
 		String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
 		String sha = Sha256Hex.ofUtf8String(rawToken);
 		Instant now = clock.instant();
+		int ttlMinutes = rateLimitProperties.getPasswordResetTokenTtlMinutes();
 		PasswordResetTokenEntity row = new PasswordResetTokenEntity();
 		row.setId(UUID.randomUUID());
 		row.setUserAccount(user);
 		row.setTokenSha256(sha);
-		row.setExpiresAt(now.plus(1, ChronoUnit.HOURS));
+		row.setExpiresAt(now.plus(ttlMinutes, ChronoUnit.MINUTES));
 		row.setCreatedAt(now);
 		tokens.save(row);
 		String base = platformBrandingService.publicBaseUrl();
 		String resetUrl = PlatformUrlJoin.joinPublicBaseAndPath(base, "/reset-password?token=" + rawToken);
-		mailPort.sendPasswordResetLink(user.getEmail(), resetUrl);
+		mailPort.sendPasswordResetLink(user.getEmail(), resetUrl, safe(user.getFirstName()), safe(user.getPreferredLocale()),
+				String.valueOf(ttlMinutes));
 	}
 
 	@Transactional
@@ -93,5 +99,9 @@ public class PasswordResetService {
 		user.setUpdatedAt(now);
 		row.setUsedAt(now);
 		users.save(user);
+	}
+
+	private String safe(String value) {
+		return value == null ? "" : value;
 	}
 }

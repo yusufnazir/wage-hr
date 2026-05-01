@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthSplitLayout } from "@/components/shell/AuthSplitLayout";
 import { authGlassCardClassName } from "@/components/shell/AuthShell";
-import { fetchMe, loginJson, redirectCheck } from "@/lib/api";
-import { defaultTenantAppUrl, getAdminWebOrigin, isAdminWebOriginUrl } from "@/lib/web-origins";
+import { EmailNotVerifiedError, fetchMe, fetchMeTenants, loginJson, redirectCheck } from "@/lib/api";
+import { defaultTenantAppUrl, getAdminWebOrigin, isAdminWebOriginUrl, tenantWebAppUrlForHandle } from "@/lib/web-origins";
 import type { MePayload } from "@/lib/api";
 
 async function resolvePostLoginNext(me: MePayload): Promise<string> {
@@ -19,7 +19,26 @@ async function resolvePostLoginNext(me: MePayload): Promise<string> {
   if (me.platformSuperadmin) {
     return `${getAdminWebOrigin()}/app`;
   }
+  if (me.tenantHandle) {
+    return tenantWebAppUrlForHandle(me.tenantHandle);
+  }
+  // Auth host has no tenant context — look up the user's first tenant membership.
+  const tenantsRes = await fetchMeTenants();
+  if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
+    return tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
+  }
   return defaultTenantAppUrl();
+}
+
+/** Prefer resolved tenant/admin (or returnTo); if not allow-listed, fall back to `/` (session router). */
+async function goToPostAuthDestination(me: MePayload, navigation: "replace" | "assign"): Promise<void> {
+  const next = await resolvePostLoginNext(me);
+  const target = (await redirectCheck(next)) ? next : "/";
+  if (navigation === "replace") {
+    window.location.replace(target);
+  } else {
+    window.location.assign(target);
+  }
 }
 
 export default function LoginPage() {
@@ -35,10 +54,7 @@ export default function LoginPage() {
       if (cancelled || !me.ok) {
         return;
       }
-      const next = await resolvePostLoginNext(me.me);
-      if (await redirectCheck(next)) {
-        window.location.replace(next);
-      }
+      await goToPostAuthDestination(me.me, "replace");
     })();
     return () => {
       cancelled = true;
@@ -56,14 +72,13 @@ export default function LoginPage() {
         setMsg("Signed in but could not load profile.");
         return;
       }
-      const next = await resolvePostLoginNext(meRes.me);
-      if (await redirectCheck(next)) {
-        window.location.assign(next);
-        return;
-      }
-      setMsg(`Signed in (session cookie set). Open app: ${next}`);
+      await goToPostAuthDestination(meRes.me, "assign");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Login failed");
+      if (err instanceof EmailNotVerifiedError) {
+        setMsg("Confirm your email before signing in. Use Verify email / resend from the link below.");
+      } else {
+        setMsg(err instanceof Error ? err.message : "Login failed");
+      }
     } finally {
       setBusy(false);
     }
@@ -109,11 +124,11 @@ export default function LoginPage() {
         <Link href="/register" className="text-primary underline-offset-4 hover:underline">
           Create account
         </Link>
+        <Link href="/verify-email" className="text-primary underline-offset-4 hover:underline">
+          Verify email
+        </Link>
         <Link href="/forgot-password" className="text-primary underline-offset-4 hover:underline">
           Forgot password
-        </Link>
-        <Link href="/" className="text-primary underline-offset-4 hover:underline">
-          Back
         </Link>
       </p>
     </AuthSplitLayout>

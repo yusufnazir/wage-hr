@@ -20,6 +20,9 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
 app:
+  auth:
+    # Email verification token TTL (hours); see docs/modules/account-registration.md
+    email-verification-ttl-hours: ${EMAIL_VERIFICATION_TTL_HOURS:24}
   public:
     frontend-origin: ${PUBLIC_FRONTEND_ORIGIN:http://auth.lvh.me:3007}
   mail:
@@ -42,6 +45,7 @@ app:
       login-window-minutes: ${LOGIN_RATE_WINDOW_MINUTES:15}
       forgot-password-max-attempts: ${FORGOT_RATE_MAX:5}
       forgot-password-window-minutes: ${FORGOT_RATE_WINDOW_MINUTES:60}
+      password-reset-token-ttl-minutes: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:60}
     headers:
       content-security-policy: "default-src 'none'; frame-ancestors 'none'"
       referrer-policy: strict-origin-when-cross-origin

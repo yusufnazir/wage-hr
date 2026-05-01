@@ -9,6 +9,7 @@ public class AppRateLimitProperties {
 	private int loginWindowMinutes = 15;
 	private int forgotPasswordMaxAttempts = 5;
 	private int forgotPasswordWindowMinutes = 60;
+	private int passwordResetTokenTtlMinutes = 60;
 
 	public int getLoginMaxAttempts() {
 		return loginMaxAttempts;
@@ -40,5 +41,13 @@ public class AppRateLimitProperties {
 
 	public void setForgotPasswordWindowMinutes(int forgotPasswordWindowMinutes) {
 		this.forgotPasswordWindowMinutes = forgotPasswordWindowMinutes;
+	}
+
+	public int getPasswordResetTokenTtlMinutes() {
+		return passwordResetTokenTtlMinutes;
+	}
+
+	public void setPasswordResetTokenTtlMinutes(int passwordResetTokenTtlMinutes) {
+		this.passwordResetTokenTtlMinutes = passwordResetTokenTtlMinutes;
 	}
 }

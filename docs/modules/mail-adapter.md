@@ -11,7 +11,7 @@
 - **Do not** persist full email bodies, subjects copied from user content, or raw provider payloads in our database.
 - **Traceability:** after send, persist **only** provider identifiers as already specified on the **notification** row (`external_message_id`) unless this module is later extended with a **separate** outbox table via approved schema (see below).
 
-**v1 default:** **No dedicated `mail_*` persistence table** required — the notification row holds `external_message_id`. If you introduce an outbox or retry queue, you **must** add an **allowed column list** here and a Liquibase changeset first; until then, **forbidden**.
+**v1 default:** **No dedicated `mail_*` persistence table** required — the notification row holds `external_message_id`. **Exception (approved):** reusable **operator-authored** layouts live in **`mail_template` / `mail_template_locale`** per [`mail-templates.md`](./mail-templates.md) (catalog only; **not** per-send bodies). If you introduce an outbox or retry queue, you **must** add an **allowed column list** here and a Liquibase changeset first.
 
 ---
 
@@ -20,8 +20,9 @@
 | Store | Where | Allowed fields |
 |-------|--------|------------------|
 | Provider message id | `notification.external_message_id` | Per [notifications-inbox](./notifications-inbox.md) only |
+| Template catalog | `mail_template`, `mail_template_locale` | Per [mail-templates](./mail-templates.md) (operator subject/HTML only) |
 
-No other persisted mail artifact in v1 without **Proposed Schema Extension**.
+No other persisted mail artifact in v1 without **Proposed Schema Extension** beyond the above.
 
 ---
 

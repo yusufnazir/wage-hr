@@ -46,6 +46,6 @@ class MeTenantsIT {
 	void navigationOnAcmeIsNarrowerThanDemo() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "acme.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(5));
+				.andExpect(jsonPath("$.data.items.length()").value(6));
 	}
 }

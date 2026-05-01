@@ -41,6 +41,9 @@ Key/value settings for the **whole deployment**, readable/writable only by **pla
 | `mail.api.project_key` | Project / service key |
 | `mail.api.username` | API user |
 | `mail.api.password` | API password / token |
+| `auth.registration.default_role_template_code` | Must match an existing **`role_template.code`** (case-insensitive). Used on **`POST /api/v1/auth/register`** to choose which **copied** tenant role is assigned to the new user. When absent, behavior defaults to **`ADMIN`**. See [`account-registration.md`](./account-registration.md). |
+
+**PATCH validation:** unknown `role_template.code` → **400** (stable error code documented with implementation). Validator lives alongside existing platform settings validators.
 
 ## Data — `user_account.platform_superadmin`
 

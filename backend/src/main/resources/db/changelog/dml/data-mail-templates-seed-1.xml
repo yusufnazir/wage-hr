@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-mail-templates-seed-1" author="wagepayroll">
+        <insert tableName="mail_template">
+            <column name="id" value="60000000-0000-0000-0000-000000000001"/>
+            <column name="code" value="TENANT_INVITATION"/>
+            <column name="content_version" value="mt-seed-1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000011"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="en"/>
+            <column name="subject" value="Invitation: {{tenantHandle}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1 style=&quot;color:#0f172a&quot;&gt;You are invited&lt;/h1&gt;&lt;p&gt;You have been invited to join tenant &lt;strong&gt;{{tenantHandle}}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;{{inviteLink}}&quot; style=&quot;color:#2563eb&quot;&gt;Accept invitation&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000012"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="nl"/>
+            <column name="subject" value="Uitnodiging: {{tenantHandle}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1 style=&quot;color:#0f172a&quot;&gt;Je bent uitgenodigd&lt;/h1&gt;&lt;p&gt;Je bent uitgenodigd om lid te worden van tenant &lt;strong&gt;{{tenantHandle}}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;{{inviteLink}}&quot; style=&quot;color:#2563eb&quot;&gt;Uitnodiging accepteren&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -40,6 +40,9 @@ public class NavigationMenuService {
 		Set<String> activePlanFeatureCodes = new HashSet<>(subscriptionGatingService.activePlanFeatureCodesOrEmpty(tenantId));
 
 		List<NavMenuItemEntity> rows = navMenuItemRepository.findByTenantIdOrderBySortOrderAsc(tenantId);
+		if (rows.isEmpty()) {
+			return defaultMenuWhenTenantRowsMissing(privSet, activePlanFeatureCodes);
+		}
 		List<NavMenuItemEntity> visible = new ArrayList<>();
 		for (NavMenuItemEntity e : rows) {
 			String req = e.getRequiredPrivilegeCode();
@@ -78,6 +81,33 @@ public class NavigationMenuService {
 
 		sortRecursive(roots);
 		return roots;
+	}
+
+	private List<NavigationItemDto> defaultMenuWhenTenantRowsMissing(Set<String> privSet, Set<String> activePlanFeatureCodes) {
+		List<NavigationItemDto> defaults = new ArrayList<>();
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app", "nav.dashboard", 0, null, null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/users", "nav.users", 10, "USER_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/roles", "nav.roles", 12, "ROLE_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/tenant-currencies", "nav.tenant_currencies", 16,
+				"TENANT_CURRENCY_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/documents", "nav.documents", 15,
+				"DOCUMENT_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/settings", "nav.tenant_settings", 20,
+				"TENANT_SETTINGS_EDIT", null);
+		defaults.sort(Comparator.comparingInt(NavigationItemDto::sortOrder));
+		return defaults;
+	}
+
+	private static void addDefaultIfVisible(List<NavigationItemDto> out, Set<String> privSet,
+			Set<String> activePlanFeatureCodes, String path, String labelKey, int sortOrder, String requiredPrivilege,
+			String requiredPlanFeature) {
+		if (requiredPrivilege != null && !requiredPrivilege.isBlank() && !privSet.contains(requiredPrivilege)) {
+			return;
+		}
+		if (StringUtils.hasText(requiredPlanFeature) && !activePlanFeatureCodes.contains(requiredPlanFeature.trim())) {
+			return;
+		}
+		out.add(new NavigationItemDto(UUID.randomUUID(), path, labelKey, sortOrder, new ArrayList<>()));
 	}
 
 	private static void sortRecursive(List<NavigationItemDto> nodes) {

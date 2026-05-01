@@ -49,6 +49,23 @@ export async function patchJson(
   }
 }
 
+export async function putJson(
+  path: string,
+  body: unknown,
+  okStatuses: number[],
+  extraHeaders?: Record<string, string>,
+): Promise<void> {
+  const r = await fetch(bffUrl(path), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", ...(extraHeaders ?? {}) },
+    body: JSON.stringify(body),
+  });
+  if (!okStatuses.includes(r.status)) {
+    throw new Error(await readFailureMessage(r));
+  }
+}
+
 export async function patchMeLocale(locale: string): Promise<void> {
   await patchJson("/api/v1/me/locale", { locale }, [204]);
 }
@@ -76,6 +93,66 @@ export async function patchPlatformSettings(entries: PlatformSettingEntry[]): Pr
   await patchJson("/api/v1/platform/settings", { entries }, [204]);
 }
 
+/** POST /api/v1/platform/settings/mail/test — platform superadmin only; CSRF via BFF. */
+export async function postPlatformMailTest(to: string): Promise<void> {
+  await postJson("/api/v1/platform/settings/mail/test", { to }, [204]);
+}
+
+export type MailTemplateListItem = {
+  id: string;
+  code: string;
+  contentVersion: string;
+  active: boolean;
+  updatedAt: string;
+};
+
+export type MailTemplateLocalePayload = {
+  locale: string;
+  subject: string;
+  bodyHtml: string;
+};
+
+export type MailTemplateDetail = MailTemplateListItem & {
+  locales: MailTemplateLocalePayload[];
+};
+
+export type MailTemplatesListResult =
+  | { ok: true; items: MailTemplateListItem[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/mail-templates — platform superadmin only. */
+export async function fetchPlatformMailTemplates(): Promise<MailTemplatesListResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/mail-templates"), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ items: MailTemplateListItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+export type MailTemplateOneResult =
+  | { ok: true; item: MailTemplateDetail }
+  | { ok: false; status: number };
+
+export async function fetchPlatformMailTemplate(templateId: string): Promise<MailTemplateOneResult> {
+  const r = await fetch(bffUrl(`/api/v1/platform/mail-templates/${encodeURIComponent(templateId)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ item: MailTemplateDetail }>;
+  return { ok: true, item: body.data.item };
+}
+
+/** PUT /api/v1/platform/mail-templates/{id} — platform superadmin; CSRF via BFF. */
+export async function putPlatformMailTemplate(
+  templateId: string,
+  body: { ifUpdatedAt: string; active: boolean; locales: MailTemplateLocalePayload[] },
+): Promise<void> {
+  await putJson(`/api/v1/platform/mail-templates/${encodeURIComponent(templateId)}`, body, [204]);
+}
+
 export type PlatformRoleTemplate = {
   id: string;
   code: string;
@@ -95,6 +172,78 @@ export async function fetchPlatformRoleTemplates(): Promise<PlatformRoleTemplate
   }
   const body = (await r.json()) as ApiEnvelope<{ items: PlatformRoleTemplate[] }>;
   return { ok: true, items: body.data.items };
+}
+
+export type PlatformRoleTemplateOneResult =
+  | { ok: true; item: PlatformRoleTemplate }
+  | { ok: false; status: number };
+
+export async function fetchPlatformRoleTemplate(templateId: string): Promise<PlatformRoleTemplateOneResult> {
+  const r = await fetch(bffUrl(`/api/v1/platform/role-templates/${encodeURIComponent(templateId)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformRoleTemplate }>;
+  return { ok: true, item: body.data.item };
+}
+
+export async function createPlatformRoleTemplate(args: {
+  code: string;
+  displayName: string;
+  privilegeCodes: string[];
+}): Promise<PlatformRoleTemplate> {
+  const r = await fetch(bffUrl("/api/v1/platform/role-templates"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (r.status !== 201) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformRoleTemplate }>;
+  return body.data.item;
+}
+
+export async function patchPlatformRoleTemplate(args: {
+  id: string;
+  displayName?: string;
+  privilegeCodes?: string[];
+}): Promise<PlatformRoleTemplate> {
+  const r = await fetch(bffUrl(`/api/v1/platform/role-templates/${encodeURIComponent(args.id)}`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ displayName: args.displayName, privilegeCodes: args.privilegeCodes }),
+  });
+  if (r.status !== 200) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformRoleTemplate }>;
+  return body.data.item;
+}
+
+export type PlatformPrivilegeCatalogEntry = {
+  code: string;
+  action: string | null;
+  resource: string | null;
+  description: string | null;
+};
+
+export type PlatformPrivilegeCatalogFetchResult =
+  | { ok: true; entries: PlatformPrivilegeCatalogEntry[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/privileges/catalog — platform superadmin only. */
+export async function fetchPlatformPrivilegeCatalog(): Promise<PlatformPrivilegeCatalogFetchResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/privileges/catalog"), { credentials: "same-origin" });
+  if (!r.ok) {
+    return { ok: false, status: r.status };
+  }
+  const body = (await r.json()) as ApiEnvelope<{ entries: PlatformPrivilegeCatalogEntry[] }>;
+  return { ok: true, entries: body.data.entries };
 }
 
 export type PlatformTenantRow = {
@@ -210,6 +359,13 @@ export async function postLogout(): Promise<void> {
   await postJson("/api/v1/auth/logout", {}, [200]);
 }
 
+export class EmailNotVerifiedError extends Error {
+  constructor() {
+    super("EMAIL_NOT_VERIFIED");
+    this.name = "EmailNotVerifiedError";
+  }
+}
+
 export async function loginJson(email: string, password: string): Promise<void> {
   const r = await fetch(bffUrl("/api/v1/auth/login"), {
     method: "POST",
@@ -217,13 +373,53 @@ export async function loginJson(email: string, password: string): Promise<void> 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
+  if (r.status === 403) {
+    const text = await r.text();
+    if (text.includes("EMAIL_NOT_VERIFIED")) {
+      throw new EmailNotVerifiedError();
+    }
+    throw new Error(`Login failed: 403 ${text.slice(0, 200)}`);
+  }
   if (!r.ok) {
-    throw new Error(`Login failed: ${r.status}`);
+    throw new Error(await readFailureMessage(r));
   }
 }
 
-export async function registerJson(email: string, password: string): Promise<void> {
-  await postJson("/api/v1/auth/register", { email, password }, [201]);
+export type AccountRegisterResult = {
+  status: string;
+  tenantHandle: string;
+};
+
+export type AccountRegisterPayload = {
+  email: string;
+  password: string;
+  tenantHandle: string;
+  firstName: string;
+  lastName: string;
+  agreeToTermsOfService: boolean;
+  agreeToPrivacyPolicy: boolean;
+};
+
+export async function registerJson(payload: AccountRegisterPayload): Promise<AccountRegisterResult> {
+  const r = await fetch(bffUrl("/api/v1/auth/register"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) {
+    throw new Error(await readFailureMessage(r));
+  }
+  const body = (await r.json()) as { data: AccountRegisterResult; meta: { requestId: string } };
+  return body.data;
+}
+
+export async function verifyEmailJson(token: string): Promise<void> {
+  await postJson("/api/v1/auth/verify-email", { token }, [204]);
+}
+
+export async function resendVerificationJson(email: string): Promise<void> {
+  await postJson("/api/v1/auth/resend-verification", { email }, [202]);
 }
 
 export async function forgotPasswordJson(email: string): Promise<void> {
@@ -259,6 +455,92 @@ export type PublicSurfacePayload = {
   publicBaseUrl: string;
   dateFormat: string;
 };
+
+export type PlatformCurrencyRow = {
+  id: string;
+  code: string;
+  displayName: string;
+  sortOrder: number;
+  active: boolean;
+  updatedAt: string;
+};
+
+export type PlatformCurrenciesResult =
+  | { ok: true; items: PlatformCurrencyRow[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/currencies — platform superadmin only. */
+export async function fetchPlatformCurrencies(): Promise<PlatformCurrenciesResult> {
+  const r = await fetch(bffUrl("/api/v1/platform/currencies"), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ items: PlatformCurrencyRow[] }>;
+  return { ok: true, items: body.data.items };
+}
+
+/** POST /api/v1/platform/currencies — platform superadmin only. */
+export async function createPlatformCurrency(args: {
+  code: string;
+  displayName: string;
+  sortOrder?: number;
+  active?: boolean;
+}): Promise<PlatformCurrencyRow> {
+  const r = await fetch(bffUrl("/api/v1/platform/currencies"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCurrencyRow }>;
+  return body.data.item;
+}
+
+/** PATCH /api/v1/platform/currencies/{id} — platform superadmin only. */
+export async function patchPlatformCurrency(
+  id: string,
+  patch: { displayName?: string; sortOrder?: number; active?: boolean },
+): Promise<PlatformCurrencyRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/currencies/${id}`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCurrencyRow }>;
+  return body.data.item;
+}
+
+export type TenantCurrencyItem = {
+  id: string;
+  code: string;
+  displayName: string;
+  sortOrder: number;
+  assigned: boolean;
+};
+
+export type TenantCurrenciesResult =
+  | { ok: true; items: TenantCurrencyItem[]; assignedCodes: string[] }
+  | { ok: false; status: number };
+
+/** GET /api/v1/tenant/currencies — requires TENANT_CURRENCY_VIEW. */
+export async function fetchTenantCurrencies(): Promise<TenantCurrenciesResult> {
+  const r = await fetch(bffUrl("/api/v1/tenant/currencies"), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ items: TenantCurrencyItem[]; assignedCodes: string[] }>;
+  return { ok: true, items: body.data.items, assignedCodes: body.data.assignedCodes };
+}
+
+/** PUT /api/v1/tenant/currencies — requires TENANT_CURRENCY_EDIT. */
+export async function replaceTenantCurrencies(codes: string[]): Promise<void> {
+  const r = await fetch(bffUrl("/api/v1/tenant/currencies"), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ codes }),
+  });
+  if (!r.ok && r.status !== 204) throw new Error(await readFailureMessage(r));
+}
 
 export type PublicSurfaceFetchResult =
   | { ok: true; surface: PublicSurfacePayload }

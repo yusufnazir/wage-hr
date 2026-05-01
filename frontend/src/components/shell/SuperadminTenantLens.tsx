@@ -8,7 +8,11 @@ import { isAdminWorkspaceHostname } from "@/lib/web-origins";
 
 function hideLensChrome(pathname: string): boolean {
   const p = pathname.replace(/\/$/, "") || "/";
-  return p.startsWith("/app/platform-tenants") || p.startsWith("/app/platform-settings");
+  return (
+    p.startsWith("/app/platform-tenants") ||
+    p.startsWith("/app/platform-settings") ||
+    p.startsWith("/app/platform-mail-templates")
+  );
 }
 
 export function SuperadminTenantLens(props: {

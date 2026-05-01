@@ -37,6 +37,16 @@ export function NavMenuIcon({ labelKey }: { labelKey: string }) {
           <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round" />
         </svg>
       );
+    case "nav.platform_mail_templates":
+      return (
+        <svg className={iconClass()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+          <path
+            d="M4 6h16v12H4V6Zm0 0 8 5 8-5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
     case "nav.platform_settings":
       return (
         <svg className={iconClass()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>

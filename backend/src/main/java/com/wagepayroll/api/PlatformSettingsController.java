@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 
 import com.wagepayroll.api.dto.PrivilegeCatalogEntryDto;
+import com.wagepayroll.api.dto.MailApiTestRequest;
 import com.wagepayroll.api.dto.SettingEntryDto;
 import com.wagepayroll.api.dto.SettingsPatchRequest;
 import com.wagepayroll.audit.AuditActionCodes;
@@ -19,13 +20,17 @@ import com.wagepayroll.domain.privilege.PrivilegeEntity;
 import com.wagepayroll.domain.privilege.PrivilegeRepository;
 import com.wagepayroll.security.DefinedPrivilege;
 import com.wagepayroll.security.PlatformOperatorService;
+import com.wagepayroll.mail.OutboundMailService;
 import com.wagepayroll.settings.PlatformSettingsService;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,14 +43,16 @@ public class PlatformSettingsController {
 	private final PlatformSettingsService platformSettingsService;
 	private final AuditService auditService;
 	private final PrivilegeRepository privilegeRepository;
+	private final OutboundMailService outboundMailService;
 
 	public PlatformSettingsController(PlatformOperatorService platformOperatorService,
 			PlatformSettingsService platformSettingsService, AuditService auditService,
-			PrivilegeRepository privilegeRepository) {
+			PrivilegeRepository privilegeRepository, OutboundMailService outboundMailService) {
 		this.platformOperatorService = platformOperatorService;
 		this.platformSettingsService = platformSettingsService;
 		this.auditService = auditService;
 		this.privilegeRepository = privilegeRepository;
+		this.outboundMailService = outboundMailService;
 	}
 
 	@GetMapping("/privileges/catalog")
@@ -77,6 +84,13 @@ public class PlatformSettingsController {
 			auditService.append(null, actor, AuditActionCodes.PLATFORM_SETTINGS_PATCHED, AuditResourceTypes.PLATFORM_SETTING,
 					null, RequestIdFilter.currentRequestId(request), Map.of("keys", keys));
 		}
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/settings/mail/test")
+	public ResponseEntity<Void> sendMailTest(@Valid @RequestBody MailApiTestRequest body) {
+		requirePlatformSuperadminUser();
+		outboundMailService.sendPlatformSettingsTestMail(body.to());
 		return ResponseEntity.noContent().build();
 	}
 

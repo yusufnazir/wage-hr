@@ -8,6 +8,8 @@ public final class AuditActionCodes {
 
 	public static final String PLATFORM_SETTINGS_PATCHED = "PLATFORM_SETTINGS_PATCHED";
 
+	public static final String PLATFORM_MAIL_TEMPLATES_UPDATED = "PLATFORM_MAIL_TEMPLATES_UPDATED";
+
 	/** Platform superadmin used tenant-scoped privilege outside normal role + pool (see {@code security.md}). */
 	public static final String SUPERADMIN_TENANT_ELEVATED_ACCESS = "SUPERADMIN_TENANT_ELEVATED_ACCESS";
 
@@ -52,6 +54,15 @@ public final class AuditActionCodes {
 
 	/** Tenant admin updated a tenant-scoped role name and/or privileges. */
 	public static final String TENANT_ROLE_UPDATED = "TENANT_ROLE_UPDATED";
+
+	/** Platform superadmin created a platform currency catalog row. */
+	public static final String PLATFORM_CURRENCY_CREATED = "PLATFORM_CURRENCY_CREATED";
+
+	/** Platform superadmin updated a platform currency catalog row. */
+	public static final String PLATFORM_CURRENCY_UPDATED = "PLATFORM_CURRENCY_UPDATED";
+
+	/** Tenant admin replaced tenant currency assignments from the platform catalog. */
+	public static final String TENANT_CURRENCIES_REPLACED = "TENANT_CURRENCIES_REPLACED";
 
 	private AuditActionCodes() {
 	}

@@ -30,6 +30,15 @@ public class UserAccountEntity extends AbstractUuidEntity {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	@Column(name = "email_verified_at")
+	private Instant emailVerifiedAt;
+
+	@Column(name = "first_name", length = 100)
+	private String firstName;
+
+	@Column(name = "last_name", length = 100)
+	private String lastName;
+
 	public String getEmail() {
 		return email;
 	}
@@ -76,5 +85,29 @@ public class UserAccountEntity extends AbstractUuidEntity {
 
 	public void setUpdatedAt(Instant updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Instant getEmailVerifiedAt() {
+		return emailVerifiedAt;
+	}
+
+	public void setEmailVerifiedAt(Instant emailVerifiedAt) {
+		this.emailVerifiedAt = emailVerifiedAt;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 }

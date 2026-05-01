@@ -59,7 +59,7 @@ class NavigationAndSettingsIT {
 	void navigationReturnsPlatformOnlyWhenTenantContextMissingForSuperadmin() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "admin.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(3))
+				.andExpect(jsonPath("$.data.items.length()").value(5))
 				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.platform_tenants"));
 	}
 
@@ -74,7 +74,7 @@ class NavigationAndSettingsIT {
 	void navigationReturnsAllSeededRootsForAdmin() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(8));
+				.andExpect(jsonPath("$.data.items.length()").value(10));
 	}
 
 	@Test
@@ -84,7 +84,7 @@ class NavigationAndSettingsIT {
 		navMenuItemRepository.save(dash);
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(7));
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(9));
 
 		UUID billingFeatureId = planFeatureRepository.findByCode("COMMERCIAL_BILLING").orElseThrow().getId();
 		String createPlan = "{\"code\":\"m3_navfeat\",\"sortOrder\":1,\"active\":true,\"planFeatureIds\":[\"%s\"]}"
@@ -99,7 +99,7 @@ class NavigationAndSettingsIT {
 				.content(subBody).with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(8));
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(10));
 	}
 
 	@Test
@@ -151,5 +151,27 @@ class NavigationAndSettingsIT {
 		String body = "{\"entries\":[{\"key\":\"billing.stripe.enabled\",\"value\":\"1\"}]}";
 		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(body)
 				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isNoContent());
+	}
+
+	@Test
+	void platformMailTestForbiddenForNonOperator() throws Exception {
+		mockMvc.perform(post("/api/v1/platform/settings/mail/test").contentType(MediaType.APPLICATION_JSON)
+				.content("{\"to\":\"ops@example.com\"}").with(user(VIEWER_USER_ID)).with(csrf()))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void platformMailTestReturns400WhenMailApiNotConfigured() throws Exception {
+		String clearMail = "{\"entries\":["
+				+ "{\"key\":\"mail.api.base_url\",\"value\":\"\"},"
+				+ "{\"key\":\"mail.api.project_key\",\"value\":\"\"},"
+				+ "{\"key\":\"mail.api.username\",\"value\":\"\"},"
+				+ "{\"key\":\"mail.api.password\",\"value\":\"\"}]}";
+		mockMvc.perform(patch("/api/v1/platform/settings").contentType(MediaType.APPLICATION_JSON).content(clearMail)
+				.with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isNoContent());
+
+		mockMvc.perform(post("/api/v1/platform/settings/mail/test").contentType(MediaType.APPLICATION_JSON)
+				.content("{\"to\":\"ops@example.com\"}").with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isBadRequest());
 	}
 }

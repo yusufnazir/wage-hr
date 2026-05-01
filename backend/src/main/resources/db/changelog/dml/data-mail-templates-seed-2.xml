@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-mail-templates-seed-2" author="wagepayroll">
+        <insert tableName="mail_template">
+            <column name="id" value="60000000-0000-0000-0000-000000000002"/>
+            <column name="code" value="EMAIL_VERIFICATION"/>
+            <column name="content_version" value="mt-seed-1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="mail_template">
+            <column name="id" value="60000000-0000-0000-0000-000000000003"/>
+            <column name="code" value="PASSWORD_RESET_REQUEST"/>
+            <column name="content_version" value="mt-seed-1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000021"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000002"/>
+            <column name="locale" value="en"/>
+            <column name="subject" value="Verify your email"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif;line-height:1.5;padding:24px&quot;&gt;&lt;h1 style=&quot;margin:0 0 12px 0&quot;&gt;Welcome, {{firstName}}&lt;/h1&gt;&lt;p&gt;Please verify your email for tenant &lt;strong&gt;{{tenantHandle}}&lt;/strong&gt;.&lt;/p&gt;&lt;p style=&quot;margin:20px 0&quot;&gt;&lt;a href=&quot;{{verifyLink}}&quot; style=&quot;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:6px;display:inline-block&quot;&gt;Verify email&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;color:#475569;font-size:12px&quot;&gt;Wage Payroll platform email&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000022"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000002"/>
+            <column name="locale" value="nl"/>
+            <column name="subject" value="Verifieer je e-mailadres"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif;line-height:1.5;padding:24px&quot;&gt;&lt;h1 style=&quot;margin:0 0 12px 0&quot;&gt;Welkom, {{firstName}}&lt;/h1&gt;&lt;p&gt;Verifieer je e-mailadres voor tenant &lt;strong&gt;{{tenantHandle}}&lt;/strong&gt;.&lt;/p&gt;&lt;p style=&quot;margin:20px 0&quot;&gt;&lt;a href=&quot;{{verifyLink}}&quot; style=&quot;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:6px;display:inline-block&quot;&gt;E-mail verifiëren&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;color:#475569;font-size:12px&quot;&gt;Wage Payroll platformmail&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000023"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000003"/>
+            <column name="locale" value="en"/>
+            <column name="subject" value="Password reset request"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif;line-height:1.5;padding:24px&quot;&gt;&lt;h1 style=&quot;margin:0 0 12px 0&quot;&gt;Password reset for {{firstName}}&lt;/h1&gt;&lt;p&gt;A password reset was requested for your account. This link expires in {{expiryMinutes}} minutes.&lt;/p&gt;&lt;p style=&quot;margin:20px 0&quot;&gt;&lt;a href=&quot;{{resetLink}}&quot; style=&quot;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:6px;display:inline-block&quot;&gt;Reset password&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;color:#475569;font-size:12px&quot;&gt;Wage Payroll platform email&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000024"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000003"/>
+            <column name="locale" value="nl"/>
+            <column name="subject" value="Aanvraag wachtwoordherstel"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif;line-height:1.5;padding:24px&quot;&gt;&lt;h1 style=&quot;margin:0 0 12px 0&quot;&gt;Wachtwoordherstel voor {{firstName}}&lt;/h1&gt;&lt;p&gt;Er is een wachtwoordherstel aangevraagd voor je account. Deze link verloopt binnen {{expiryMinutes}} minuten.&lt;/p&gt;&lt;p style=&quot;margin:20px 0&quot;&gt;&lt;a href=&quot;{{resetLink}}&quot; style=&quot;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:6px;display:inline-block&quot;&gt;Wachtwoord opnieuw instellen&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;color:#475569;font-size:12px&quot;&gt;Wage Payroll platformmail&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="mail_template_locale">
+                <where>mail_template_id in ('60000000-0000-0000-0000-000000000002','60000000-0000-0000-0000-000000000003')</where>
+            </delete>
+            <delete tableName="mail_template">
+                <where>id in ('60000000-0000-0000-0000-000000000002','60000000-0000-0000-0000-000000000003')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

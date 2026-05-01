@@ -24,6 +24,10 @@ public class AccountUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		UserAccountEntity u = userAccountRepository.findByEmailIgnoreCase(email)
 				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+		return userDetailsForSession(u);
+	}
+
+	public UserDetails userDetailsForSession(UserAccountEntity u) {
 		return User.builder()
 				.username(u.getId().toString())
 				.password(u.getPasswordHash())

@@ -18,7 +18,7 @@
 | Area | Status |
 |------|--------|
 | Create + list **pending** invitations | Implemented |
-| **Accept** with token + password | Implemented |
+| **Accept** with token + password | Implemented; sets `user_account.email_verified_at` when missing so the invited user can sign in without the self-service email verification flow ([`account-registration.md`](./account-registration.md)). |
 | **At most one PENDING** invite per `(tenant_id, normalized email)` | DB unique on `pending_dedup_key` + idempotent `POST` |
 | **Idempotent create** | Second `POST` with same tenant + email while pending returns same `invitationId`, `idempotentReplay: true`, **no** duplicate row, **no** second outbound mail |
 | Email **trim + lowercase + ASCII format** check | Implemented (`INVALID_EMAIL` if bad) |

@@ -55,6 +55,58 @@ test.describe("M1 — auth host → tenant host session", () => {
   });
 });
 
+test.describe("Mail templates — platform list", () => {
+  test("superadmin can open mail templates list and see invitation template", async ({ page }) => {
+    test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL (e.g. http://127.0.0.1:8300) and start the API");
+
+    await page.goto(`http://auth.lvh.me:${port}/login`);
+    await page.getByRole("textbox", { name: "Email" }).fill("admin@demo.lvh.me");
+    await page.getByRole("textbox", { name: "Password" }).fill("ChangeMe!1");
+    await Promise.all([
+      page.waitForURL(new RegExp(`http://admin\\.lvh\\.me:${port}/app`)),
+      page.getByRole("button", { name: "Continue" }).click(),
+    ]);
+
+    await page.goto(`http://admin.lvh.me:${port}/app/platform-mail-templates`);
+    await expect(page.getByTestId("platform-mail-templates-page")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("mail-template-edit-TENANT_INVITATION")).toBeVisible();
+  });
+});
+
+test.describe("Platform settings — mail test", () => {
+  test("superadmin can use Save + send test and trigger both API calls", async ({ page }) => {
+    test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL (e.g. http://127.0.0.1:8300) and start the API");
+
+    await page.goto(`http://auth.lvh.me:${port}/login`);
+    await page.getByRole("textbox", { name: "Email" }).fill("admin@demo.lvh.me");
+    await page.getByRole("textbox", { name: "Password" }).fill("ChangeMe!1");
+    await Promise.all([
+      page.waitForURL(new RegExp(`http://admin\\.lvh\\.me:${port}/app`)),
+      page.getByRole("button", { name: "Continue" }).click(),
+    ]);
+
+    await page.goto(`http://admin.lvh.me:${port}/app/platform-settings`);
+    await page.getByTestId("platform-settings-tab-mail").click();
+    await expect(page.getByTestId("platform-settings-save-mail-and-test")).toBeVisible();
+
+    await page.getByTestId("platform-settings-mail-test-to").fill("qa@example.com");
+
+    const patchReq = page.waitForResponse(
+      (r) => r.url().includes("/api/bff/v1/platform/settings") && r.request().method() === "PATCH",
+    );
+    const postReq = page.waitForResponse(
+      (r) => r.url().includes("/api/bff/v1/platform/settings/mail/test") && r.request().method() === "POST",
+    );
+
+    await page.getByTestId("platform-settings-save-mail-and-test").click();
+
+    await expect((await patchReq).status()).toBe(204);
+    // Test-send can succeed (204) or fail with provider connectivity in local dev (502).
+    await expect([204, 502]).toContain((await postReq).status());
+    await expect(page.getByTestId("platform-settings-msg")).toBeVisible();
+  });
+});
+
 test.describe("M1 — billing catalog privilege", () => {
   test("viewer sees billing summary but not plan picker (catalog 403)", async ({ page }) => {
     test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL (e.g. http://127.0.0.1:8300) and start the API");

@@ -27,7 +27,8 @@ public final class PlatformIntegrationSettingsValidator {
 			"mail.api.base_url",
 			"mail.api.project_key",
 			"mail.api.username",
-			"mail.api.password");
+			"mail.api.password",
+			"auth.registration.default_role_template_code");
 
 	private static final Set<String> DATE_FORMATS = Set.of("yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "ISO-8601");
 

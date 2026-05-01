@@ -8,19 +8,25 @@ import java.util.UUID;
 import com.wagepayroll.api.dto.SettingEntryDto;
 import com.wagepayroll.api.dto.SettingsPatchRequest;
 import com.wagepayroll.billing.BillingIntegrationSettingsValidator;
+import com.wagepayroll.domain.roletemplate.RoleTemplateRepository;
 import com.wagepayroll.domain.setting.PlatformSettingEntity;
 import com.wagepayroll.domain.setting.PlatformSettingRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlatformSettingsService {
 
 	private final PlatformSettingRepository platformSettingRepository;
+	private final RoleTemplateRepository roleTemplateRepository;
 
-	public PlatformSettingsService(PlatformSettingRepository platformSettingRepository) {
+	public PlatformSettingsService(PlatformSettingRepository platformSettingRepository,
+			RoleTemplateRepository roleTemplateRepository) {
 		this.platformSettingRepository = platformSettingRepository;
+		this.roleTemplateRepository = roleTemplateRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -43,6 +49,14 @@ public class PlatformSettingsService {
 			SettingsEntryValidator.validateValue(entry.value());
 			BillingIntegrationSettingsValidator.validateIfBillingKey(entry);
 			PlatformIntegrationSettingsValidator.validateIfKnownScope(entry);
+			if ("auth.registration.default_role_template_code".equals(entry.key())) {
+				String v = entry.value() == null ? "" : entry.value().trim();
+				if (v.isEmpty()) {
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_SETTINGS_VALUE");
+				}
+				roleTemplateRepository.findByCodeIgnoreCase(v)
+						.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UNKNOWN_ROLE_TEMPLATE_CODE"));
+			}
 			PlatformSettingEntity e = platformSettingRepository.findByKey(entry.key()).orElse(null);
 			if (e == null) {
 				PlatformSettingEntity n = new PlatformSettingEntity();

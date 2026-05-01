@@ -119,7 +119,9 @@ public class TenantInvitationService {
 					.map(p -> new CreateInvitationResult(p.getId(), p.getExpiresAt(), null, true))
 					.orElseThrow(() -> ex);
 		}
-		mailSendPort.sendInvitationEmail(new InvitationEmailRequest(tenantId, tenantHandle, email, plainToken));
+		String preferredLocale = users.findByEmailIgnoreCase(email).map(UserAccountEntity::getPreferredLocale).orElse("en");
+		mailSendPort.sendInvitationEmail(
+				new InvitationEmailRequest(tenantId, tenantHandle, email, plainToken, preferredLocale));
 		String devToken = invitationTokenExposure.effectiveExposePlainToken() ? plainToken : null;
 		return new CreateInvitationResult(e.getId(), e.getExpiresAt(), devToken, false);
 	}
@@ -157,11 +159,18 @@ public class TenantInvitationService {
 			Instant now = Instant.now();
 			user.setCreatedAt(now);
 			user.setUpdatedAt(now);
+			user.setEmailVerifiedAt(now);
 			users.save(user);
 		}
 		else {
 			if (!passwordEncoder.matches(body.password(), user.getPasswordHash())) {
 				throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "INVALID_PASSWORD");
+			}
+			if (user.getEmailVerifiedAt() == null) {
+				Instant now = Instant.now();
+				user.setEmailVerifiedAt(now);
+				user.setUpdatedAt(now);
+				users.save(user);
 			}
 		}
 		UUID userId = user.getId();

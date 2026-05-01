@@ -113,3 +113,39 @@ databaseChangeLog:
   - include:
       file: dml/data-m6-role-templates-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-account-registration-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-account-registration-email-verified-backfill-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-email-verification-token-sha256-varchar-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-user-account-names-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-mail-templates-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-mail-templates-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-mail-templates-seed-2.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m7-currencies-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-platform-currencies-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-currency-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-role-template-currency-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-nav-tenant-currencies-demo-1.xml
+      relativeToChangelogFile: true

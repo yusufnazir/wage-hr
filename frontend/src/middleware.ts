@@ -24,7 +24,15 @@ function isAuthHost(hostHeader: string): boolean {
   return requestHostname(hostHeader) === authHostname();
 }
 
-const AUTH_SURFACE_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
+const AUTH_SURFACE_PATHS = [
+  "/login",
+  "/register",
+  "/verify-email",
+  "/forgot-password",
+  "/reset-password",
+  "/terms-of-service",
+  "/privacy-policy",
+];
 
 function isAuthSurfacePath(pathname: string): boolean {
   return AUTH_SURFACE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

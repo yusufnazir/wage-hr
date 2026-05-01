@@ -15,7 +15,8 @@ import com.wagepayroll.tenant.MembershipActivityInterceptor;
 
 @Configuration
 @EnableConfigurationProperties({ AppHostProperties.class, AppCorsProperties.class, AppSecurityHeadersProperties.class,
-		AppRateLimitProperties.class, ForwardingProperties.class, AppPublicProperties.class, MailApiProperties.class })
+		AppRateLimitProperties.class, ForwardingProperties.class, AppPublicProperties.class, MailApiProperties.class,
+		AppAuthProperties.class })
 public class WebConfiguration implements WebMvcConfigurer {
 
 	private final MembershipActivityInterceptor membershipActivityInterceptor;

@@ -2,7 +2,7 @@
 
 ## Data model
 
-- **`user_account`** — global identity (`id` UUID, `email`, `password_hash`, `platform_superadmin`, `preferred_locale`, timestamps). See [`i18n.md`](./i18n.md) for locale semantics and APIs.
+- **`user_account`** — global identity (`id` UUID, `email`, `password_hash`, `platform_superadmin`, `preferred_locale`, **`first_name`** / **`last_name`** (nullable `VARCHAR(100)`; set on self-service registration — see [`account-registration.md`](./account-registration.md)), **`email_verified_at`** (nullable timestamp; self-service registration leaves null until verified), timestamps). See [`i18n.md`](./i18n.md) for locale semantics and APIs.
 - **`membership`** — `(tenant_id, user_id)` links users to tenants (tenant-scoped row). Allowed columns:
   - `id` (UUID), `tenant_id`, `user_id`, `created_at`, `updated_at`
   - `status` (`VARCHAR(32)`, not null, default `ACTIVE`) — tenant membership lifecycle for this tenant; v1 values: `ACTIVE` only in product flows (read-only in tenant UI unless a future change adds suspend).
