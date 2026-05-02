@@ -221,6 +221,8 @@ const en: Record<string, string> = {
   "workTimes.label.workDaysPerWeek": "Work days per week",
   "workTimes.label.description": "Description",
   "workTimes.label.active": "Active",
+  "workTimes.action.activate": "Activate",
+  "workTimes.action.deactivate": "Deactivate",
   "workTimes.msg.created": "Work time created.",
   "workTimes.msg.saved": "Saved.",
   "workTimes.msg.createFailed": "Create failed.",

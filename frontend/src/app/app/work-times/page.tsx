@@ -238,7 +238,7 @@ export default function WorkTimesPage() {
                             disabled={busyId === item.id}
                             className="text-sm text-muted underline-offset-4 hover:underline disabled:opacity-50"
                           >
-                            {item.active ? "Deactivate" : "Activate"}
+                            {item.active ? t("workTimes.action.deactivate") : t("workTimes.action.activate")}
                           </button>
                         </td>
                       )}
