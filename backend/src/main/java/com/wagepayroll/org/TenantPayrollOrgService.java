@@ -18,6 +18,8 @@ import com.wagepayroll.api.dto.TenantEmployeeStatusPatchRequest;
 import com.wagepayroll.api.dto.TenantEmployeeUpsertRequest;
 import com.wagepayroll.api.dto.TenantJobItemDto;
 import com.wagepayroll.api.dto.TenantJobUpsertRequest;
+import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
+import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
 import com.wagepayroll.domain.org.TenantCompanyRepository;
 import com.wagepayroll.domain.org.TenantDepartmentEntity;
@@ -28,6 +30,8 @@ import com.wagepayroll.domain.org.TenantEmployeeGroupRepository;
 import com.wagepayroll.domain.org.TenantEmployeeRepository;
 import com.wagepayroll.domain.org.TenantJobEntity;
 import com.wagepayroll.domain.org.TenantJobRepository;
+import com.wagepayroll.domain.org.TenantWorkTimeEntity;
+import com.wagepayroll.domain.org.TenantWorkTimeRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -55,15 +59,17 @@ public class TenantPayrollOrgService {
 	private final TenantJobRepository jobRepository;
 	private final TenantEmployeeGroupRepository employeeGroupRepository;
 	private final TenantEmployeeRepository employeeRepository;
+	private final TenantWorkTimeRepository workTimeRepository;
 
 	public TenantPayrollOrgService(TenantCompanyRepository companyRepository, TenantDepartmentRepository departmentRepository,
 			TenantJobRepository jobRepository, TenantEmployeeGroupRepository employeeGroupRepository,
-			TenantEmployeeRepository employeeRepository) {
+			TenantEmployeeRepository employeeRepository, TenantWorkTimeRepository workTimeRepository) {
 		this.companyRepository = companyRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobRepository = jobRepository;
 		this.employeeGroupRepository = employeeGroupRepository;
 		this.employeeRepository = employeeRepository;
+		this.workTimeRepository = workTimeRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -385,6 +391,58 @@ public class TenantPayrollOrgService {
 		return toEmployeeDto(saveWithConflict(entity));
 	}
 
+	@Transactional(readOnly = true)
+	public Page<TenantWorkTimeItemDto> listWorkTimes(UUID tenantId, UUID companyId, int page, int size, String sort,
+			Boolean active) {
+		requireCompany(tenantId, companyId);
+		Pageable pageable = pageable(page, size, sort, Set.of("name", "code", "updatedAt", "createdAt"), "name");
+		Page<TenantWorkTimeEntity> rows = active == null
+				? workTimeRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
+				: workTimeRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
+						pageable);
+		return rows.map(this::toWorkTimeDto);
+	}
+
+	@Transactional(readOnly = true)
+	public TenantWorkTimeItemDto getWorkTime(UUID tenantId, UUID id) {
+		return toWorkTimeDto(requireWorkTime(tenantId, id));
+	}
+
+	@Transactional
+	public TenantWorkTimeItemDto createWorkTime(UUID tenantId, TenantWorkTimeUpsertRequest request) {
+		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
+		requireCompany(tenantId, companyId);
+		TenantWorkTimeEntity entity = new TenantWorkTimeEntity();
+		entity.setId(UUID.randomUUID());
+		entity.setTenantId(tenantId);
+		entity.setCompanyId(companyId);
+		applyWorkTime(entity, request, true);
+		Instant now = Instant.now();
+		entity.setCreatedAt(now);
+		entity.setUpdatedAt(now);
+		return toWorkTimeDto(saveWithConflict(entity));
+	}
+
+	@Transactional
+	public TenantWorkTimeItemDto updateWorkTime(UUID tenantId, UUID id, TenantWorkTimeUpsertRequest request) {
+		TenantWorkTimeEntity entity = requireWorkTime(tenantId, id);
+		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
+		if (!entity.getCompanyId().equals(companyId)) {
+			throw badRequest("companyId cannot be changed");
+		}
+		applyWorkTime(entity, request, false);
+		entity.setUpdatedAt(Instant.now());
+		return toWorkTimeDto(saveWithConflict(entity));
+	}
+
+	@Transactional
+	public TenantWorkTimeItemDto patchWorkTimeActive(UUID tenantId, UUID id, TenantActivePatchRequest request) {
+		TenantWorkTimeEntity entity = requireWorkTime(tenantId, id);
+		entity.setActive(requireActive(request));
+		entity.setUpdatedAt(Instant.now());
+		return toWorkTimeDto(saveWithConflict(entity));
+	}
+
 	private void applyCompany(TenantCompanyEntity entity, TenantCompanyUpsertRequest request, boolean create) {
 		if (request == null) {
 			throw badRequest("Request body is required");
@@ -544,6 +602,38 @@ public class TenantPayrollOrgService {
 		}
 	}
 
+	private void applyWorkTime(TenantWorkTimeEntity entity, TenantWorkTimeUpsertRequest request, boolean create) {
+		if (request == null) {
+			throw badRequest("Request body is required");
+		}
+		entity.setName(requireText(request.name(), "name", 120));
+		entity.setCode(requireText(request.code(), "code", 40));
+		if (request.hoursPerDay() == null || request.hoursPerDay().compareTo(BigDecimal.ZERO) <= 0
+				|| request.hoursPerDay().compareTo(new BigDecimal("24")) > 0) {
+			throw badRequest("hoursPerDay must be > 0 and <= 24");
+		}
+		entity.setHoursPerDay(request.hoursPerDay());
+		if (request.workDaysPerWeek() == null || request.workDaysPerWeek() < 1 || request.workDaysPerWeek() > 7) {
+			throw badRequest("workDaysPerWeek must be between 1 and 7");
+		}
+		entity.setWorkDaysPerWeek(request.workDaysPerWeek().intValue());
+		entity.setDescription(trimToNull(request.description()));
+		if (create) {
+			entity.setActive(request.active() == null ? true : request.active().booleanValue());
+		}
+		else if (request.active() != null) {
+			entity.setActive(request.active().booleanValue());
+		}
+		if (create && workTimeRepository.existsByTenantIdAndCompanyIdAndCode(entity.getTenantId(), entity.getCompanyId(),
+				entity.getCode())) {
+			throw conflict("A work time with this code already exists in the company");
+		}
+		if (!create && workTimeRepository.existsByTenantIdAndCompanyIdAndCodeAndIdNot(entity.getTenantId(),
+				entity.getCompanyId(), entity.getCode(), entity.getId())) {
+			throw conflict("A work time with this code already exists in the company");
+		}
+	}
+
 	private Pageable pageable(int page, int size, String sort, Set<String> allowedFields, String defaultField) {
 		int safePage = Math.max(page, 0);
 		int safeSize = size <= 0 ? 20 : Math.min(size, MAX_PAGE_SIZE);
@@ -617,6 +707,15 @@ public class TenantPayrollOrgService {
 		}
 	}
 
+	private TenantWorkTimeEntity saveWithConflict(TenantWorkTimeEntity entity) {
+		try {
+			return workTimeRepository.save(entity);
+		}
+		catch (DataIntegrityViolationException ex) {
+			throw conflict("Request conflicts with existing records");
+		}
+	}
+
 	private TenantCompanyEntity requireCompany(UUID tenantId, UUID id) {
 		return companyRepository.findByIdAndTenantId(id, tenantId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
@@ -664,6 +763,11 @@ public class TenantPayrollOrgService {
 		return employeeRepository.findByIdAndTenantIdAndCompanyId(id, tenantId, companyId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
 						"Employee does not belong to specified company"));
+	}
+
+	private TenantWorkTimeEntity requireWorkTime(UUID tenantId, UUID id) {
+		return workTimeRepository.findByIdAndTenantId(id, tenantId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Work time not found"));
 	}
 
 	private String requireText(String value, String field, int maxLen) {
@@ -793,6 +897,11 @@ public class TenantPayrollOrgService {
 	private TenantEmployeeGroupItemDto toEmployeeGroupDto(TenantEmployeeGroupEntity e) {
 		return new TenantEmployeeGroupItemDto(e.getId(), e.getCompanyId(), e.getName(), e.getCode(), e.getDescription(),
 				e.isActive(), e.getCreatedAt(), e.getUpdatedAt());
+	}
+
+	private TenantWorkTimeItemDto toWorkTimeDto(TenantWorkTimeEntity e) {
+		return new TenantWorkTimeItemDto(e.getId(), e.getCompanyId(), e.getName(), e.getCode(), e.getHoursPerDay(),
+				e.getWorkDaysPerWeek(), e.getDescription(), e.isActive(), e.getCreatedAt(), e.getUpdatedAt());
 	}
 
 	private TenantEmployeeItemDto toEmployeeDto(TenantEmployeeEntity e) {

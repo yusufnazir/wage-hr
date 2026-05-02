@@ -164,3 +164,9 @@ databaseChangeLog:
   - include:
       file: dml/data-m5-payroll-org-nav-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m8-work-time-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m8-work-time-privileges-1.xml
+      relativeToChangelogFile: true

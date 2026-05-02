@@ -1932,7 +1932,104 @@ export async function patchTenantEmployeeActive(id: string, active: boolean): Pr
   return body.data.item;
 }
 
-/** POST /api/v1/tenant/documents/complete — DOCUMENT_EDIT after successful PUT to presigned URL. */
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Work Times
+// ---------------------------------------------------------------------------
+
+export type TenantWorkTimeItem = {
+  id: string;
+  companyId: string;
+  name: string;
+  code: string;
+  hoursPerDay: number;
+  workDaysPerWeek: number;
+  description: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantWorkTimePageResult =
+  | { ok: true; items: TenantWorkTimeItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantWorkTimes(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  active?: boolean | null;
+}): Promise<TenantWorkTimePageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/work-times?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantWorkTimeItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantWorkTime(id: string): Promise<{ ok: true; item: TenantWorkTimeItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/work-times/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantWorkTimeItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantWorkTimeUpsertPayload = {
+  companyId: string;
+  name: string;
+  code: string;
+  hoursPerDay: number;
+  workDaysPerWeek: number;
+  description?: string | null;
+  active?: boolean;
+};
+
+export async function createTenantWorkTime(payload: TenantWorkTimeUpsertPayload): Promise<TenantWorkTimeItem> {
+  const r = await fetch(bffUrl("/api/v1/work-times"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantWorkTimeItem }>;
+  return body.data.item;
+}
+
+export async function putTenantWorkTime(id: string, payload: TenantWorkTimeUpsertPayload): Promise<TenantWorkTimeItem> {
+  const r = await fetch(bffUrl(`/api/v1/work-times/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantWorkTimeItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantWorkTimeActive(id: string, active: boolean): Promise<TenantWorkTimeItem> {
+  const r = await fetch(bffUrl(`/api/v1/work-times/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantWorkTimeItem }>;
+  return body.data.item;
+}
 export async function completeDocumentUpload(args: {
   documentId: string;
   storageKey: string;
