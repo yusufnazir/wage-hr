@@ -58,6 +58,18 @@ public final class AuditActionCodes {
 	/** Platform superadmin updated a platform currency catalog row. */
 	public static final String PLATFORM_CURRENCY_UPDATED = "PLATFORM_CURRENCY_UPDATED";
 
+	/** Platform superadmin created a platform country catalog row. */
+	public static final String PLATFORM_COUNTRY_CREATED = "PLATFORM_COUNTRY_CREATED";
+
+	/** Platform superadmin updated a platform country catalog row. */
+	public static final String PLATFORM_COUNTRY_UPDATED = "PLATFORM_COUNTRY_UPDATED";
+
+	/** Platform superadmin activated a platform country catalog row. */
+	public static final String PLATFORM_COUNTRY_ACTIVATED = "PLATFORM_COUNTRY_ACTIVATED";
+
+	/** Platform superadmin deactivated a platform country catalog row. */
+	public static final String PLATFORM_COUNTRY_DEACTIVATED = "PLATFORM_COUNTRY_DEACTIVATED";
+
 	/** Tenant admin replaced tenant currency assignments from the platform catalog. */
 	public static final String TENANT_CURRENCIES_REPLACED = "TENANT_CURRENCIES_REPLACED";
 

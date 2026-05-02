@@ -57,6 +57,15 @@ export function NavMenuIcon({ labelKey }: { labelKey: string }) {
           />
         </svg>
       );
+    case "nav.platform_countries":
+      return (
+        <svg className={iconClass()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3.5 12h17" strokeLinecap="round" />
+          <path d="M12 3.5c2.8 2.3 4.5 5.2 4.5 8.5s-1.7 6.2-4.5 8.5" strokeLinecap="round" />
+          <path d="M12 3.5c-2.8 2.3-4.5 5.2-4.5 8.5s1.7 6.2 4.5 8.5" strokeLinecap="round" />
+        </svg>
+      );
     default:
       return (
         <svg className={iconClass()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>

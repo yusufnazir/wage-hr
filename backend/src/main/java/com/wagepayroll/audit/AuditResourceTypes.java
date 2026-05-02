@@ -20,6 +20,8 @@ public final class AuditResourceTypes {
 
 	public static final String PLATFORM_CURRENCY = "PLATFORM_CURRENCY";
 
+	public static final String PLATFORM_COUNTRY = "PLATFORM_COUNTRY";
+
 	public static final String TENANT_CURRENCY = "TENANT_CURRENCY";
 
 	public static final String EXCHANGE_RATE = "EXCHANGE_RATE";

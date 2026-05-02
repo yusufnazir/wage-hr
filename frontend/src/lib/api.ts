@@ -523,6 +523,184 @@ export async function patchPlatformCurrency(
   return body.data.item;
 }
 
+export type PlatformCountryTranslation = {
+  locale: string;
+  name: string;
+};
+
+export type PlatformCountryRow = {
+  id: string;
+  isoAlpha2: string;
+  isoAlpha3: string;
+  isoNumeric: string;
+  dialCode: string | null;
+  active: boolean;
+  name: string;
+  translations: PlatformCountryTranslation[];
+  updatedAt: string;
+};
+
+export type PlatformCountriesResult =
+  | {
+      ok: true;
+      items: PlatformCountryRow[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/countries — platform superadmin only. */
+export async function fetchPlatformCountries(args?: {
+  page?: number;
+  size?: number;
+  search?: string;
+  active?: boolean | null;
+  locale?: string;
+}): Promise<PlatformCountriesResult> {
+  const q = new URLSearchParams({
+    page: String(args?.page ?? 0),
+    size: String(args?.size ?? 50),
+    locale: args?.locale ?? "en",
+  });
+  if (args?.search?.trim()) q.set("search", args.search.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/platform/countries?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    items: PlatformCountryRow[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
+/** GET /api/v1/platform/countries/{id} — platform superadmin only. */
+export async function fetchPlatformCountry(
+  id: string,
+  locale = "en",
+): Promise<{ ok: true; item: PlatformCountryRow } | { ok: false; status: number }> {
+  const r = await fetch(
+    bffUrl(`/api/v1/platform/countries/${encodeURIComponent(id)}?locale=${encodeURIComponent(locale)}`),
+    { credentials: "same-origin" },
+  );
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCountryRow }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type PlatformCountryUpsertRequest = {
+  isoAlpha2: string;
+  isoAlpha3: string;
+  isoNumeric: string;
+  dialCode?: string | null;
+  active?: boolean;
+  translations: PlatformCountryTranslation[];
+};
+
+/** POST /api/v1/platform/countries — platform superadmin only. */
+export async function createPlatformCountry(payload: PlatformCountryUpsertRequest): Promise<PlatformCountryRow> {
+  const r = await fetch(bffUrl("/api/v1/platform/countries"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCountryRow }>;
+  return body.data.item;
+}
+
+/** PUT /api/v1/platform/countries/{id} — platform superadmin only. */
+export async function putPlatformCountry(id: string, payload: PlatformCountryUpsertRequest): Promise<PlatformCountryRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/countries/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCountryRow }>;
+  return body.data.item;
+}
+
+/** PATCH /api/v1/platform/countries/{id}/activate — platform superadmin only. */
+export async function patchActivatePlatformCountry(id: string): Promise<PlatformCountryRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/countries/${encodeURIComponent(id)}/activate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCountryRow }>;
+  return body.data.item;
+}
+
+/** PATCH /api/v1/platform/countries/{id}/deactivate — platform superadmin only. */
+export async function patchDeactivatePlatformCountry(id: string): Promise<PlatformCountryRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/countries/${encodeURIComponent(id)}/deactivate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: PlatformCountryRow }>;
+  return body.data.item;
+}
+
+export type CountriesResult =
+  | {
+      ok: true;
+      items: PlatformCountryRow[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/countries — authenticated users; active-only. */
+export async function fetchCountries(args?: {
+  page?: number;
+  size?: number;
+  search?: string;
+  locale?: string;
+}): Promise<CountriesResult> {
+  const q = new URLSearchParams({
+    page: String(args?.page ?? 0),
+    size: String(args?.size ?? 50),
+    locale: args?.locale ?? "en",
+  });
+  if (args?.search?.trim()) q.set("search", args.search.trim());
+  const r = await fetch(bffUrl(`/api/v1/countries?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    items: PlatformCountryRow[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
 export type TenantCurrencyItem = {
   id: string;
   code: string;

@@ -182,3 +182,37 @@ test.describe("M1 — tenant member on demo host", () => {
     await expect(page.getByTestId("demo-ok")).toContainText("Tenant user directory reachable");
   });
 });
+
+test.describe("M7 — platform countries", () => {
+  test("platform superadmin can open platform countries page", async ({ page }) => {
+    test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL and start the API");
+
+    await page.goto(`http://auth.lvh.me:${port}/login`);
+    await page.getByRole("textbox", { name: "Email" }).fill("admin@demo.lvh.me");
+    await page.getByRole("textbox", { name: "Password" }).fill("ChangeMe!1");
+    await Promise.all([
+      page.waitForURL(new RegExp(`http://admin\\.lvh\\.me:${port}/app`)),
+      page.getByRole("button", { name: "Continue" }).click(),
+    ]);
+
+    await page.goto(`http://admin.lvh.me:${port}/app/platform-countries`);
+    await expect(page.getByTestId("platform-countries-page")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("superadmin-lens-select")).toHaveCount(0);
+    await expect(page.getByTestId("platform-countries-new")).toBeVisible();
+  });
+
+  test("tenant viewer cannot use platform countries management", async ({ page }) => {
+    test.skip(!hasApi, "Set PLAYWRIGHT_API_BASE_URL and start the API");
+
+    await page.goto(`http://auth.lvh.me:${port}/login`);
+    await page.getByRole("textbox", { name: "Email" }).fill("viewer@demo.lvh.me");
+    await page.getByRole("textbox", { name: "Password" }).fill("ChangeMe!1");
+    await Promise.all([
+      page.waitForURL(new RegExp(`http://demo\\.lvh\\.me:${port}/app`)),
+      page.getByRole("button", { name: "Continue" }).click(),
+    ]);
+
+    await page.goto(`http://demo.lvh.me:${port}/app/platform-countries`);
+    await expect(page.getByText(/Only a platform operator/i)).toBeVisible({ timeout: 20_000 });
+  });
+});

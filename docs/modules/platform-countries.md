@@ -6,6 +6,35 @@
 
 ---
 
+## Implementation Snapshot (M7)
+
+Implemented backend + web (mobile excluded) in this repository.
+
+- Backend API and service:
+  - `backend/src/main/java/com/wagepayroll/api/PlatformCountriesController.java`
+  - `backend/src/main/java/com/wagepayroll/api/CountriesController.java`
+  - `backend/src/main/java/com/wagepayroll/country/PlatformCountryService.java`
+- Backend persistence:
+  - `backend/src/main/java/com/wagepayroll/domain/country/PlatformCountryEntity.java`
+  - `backend/src/main/java/com/wagepayroll/domain/country/PlatformCountryTranslationEntity.java`
+  - `backend/src/main/java/com/wagepayroll/domain/country/PlatformCountryRepository.java`
+  - `backend/src/main/java/com/wagepayroll/domain/country/PlatformCountryTranslationRepository.java`
+- Liquibase:
+  - `backend/src/main/resources/db/changelog/ddl/schema-m7-platform-countries-1.xml`
+  - `backend/src/main/resources/db/changelog/dml/data-m7-platform-countries-seed-1.xml`
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DataM7PlatformCountriesSeed1.java`
+- Web (Next.js):
+  - `frontend/src/app/app/platform-countries/page.tsx`
+  - `frontend/src/app/app/platform-countries/new/page.tsx`
+  - `frontend/src/app/app/platform-countries/[id]/edit/page.tsx`
+  - `frontend/src/lib/api.ts`
+  - `frontend/src/messages/nav.ts`
+- Test coverage:
+  - `backend/src/test/java/com/wagepayroll/api/PlatformCountriesIT.java`
+  - `frontend/e2e/m1-platform.spec.ts` (route-level coverage)
+
+---
+
 ## 1. Objective
 
 Provide a **platform-managed global catalog of countries** (ISO 3166-1), seeded with all standard countries and their translations, so that downstream modules (employee records, payroll adapters, address fields) can reference a single authoritative list rather than hardcoding values.

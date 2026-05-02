@@ -11,7 +11,8 @@ function hideLensChrome(pathname: string): boolean {
   return (
     p.startsWith("/app/platform-tenants") ||
     p.startsWith("/app/platform-settings") ||
-    p.startsWith("/app/platform-mail-templates")
+    p.startsWith("/app/platform-mail-templates") ||
+    p.startsWith("/app/platform-countries")
   );
 }
 

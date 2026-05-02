@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m7-platform-countries-1" author="wagepayroll">
+        <createTable tableName="platform_country">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="iso_alpha2" type="VARCHAR(2)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="iso_alpha3" type="VARCHAR(3)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="iso_numeric" type="VARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dial_code" type="VARCHAR(15)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="platform_country" indexName="idx_platform_country_active">
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m7-platform-country-translation-1" author="wagepayroll">
+        <createTable tableName="platform_country_translation">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="country_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(35)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="platform_country_translation" baseColumnNames="country_id"
+                                 constraintName="fk_platform_country_translation_country"
+                                 referencedTableName="platform_country" referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="platform_country_translation" columnNames="country_id,locale"
+                             constraintName="uk_platform_country_translation_country_locale"/>
+        <createIndex tableName="platform_country_translation" indexName="idx_platform_country_translation_locale">
+            <column name="locale"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

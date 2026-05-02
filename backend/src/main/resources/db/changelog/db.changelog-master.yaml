@@ -144,6 +144,12 @@ databaseChangeLog:
       file: ddl/schema-exchange-rate-1.xml
       relativeToChangelogFile: true
   - include:
+      file: ddl/schema-m7-platform-countries-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m7-platform-countries-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-exchange-rate-privileges-1.xml
       relativeToChangelogFile: true
   - include:
