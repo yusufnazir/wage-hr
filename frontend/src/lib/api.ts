@@ -2030,6 +2030,156 @@ export async function patchTenantWorkTimeActive(id: string, active: boolean): Pr
   const body = (await r.json()) as ApiEnvelope<{ item: TenantWorkTimeItem }>;
   return body.data.item;
 }
+
+// ── Pay Periods ──────────────────────────────────────────────────────────────
+
+export type TenantPayPeriodItem = {
+  id: string;
+  companyId: string;
+  year: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantPayPeriodPageResult =
+  | { ok: true; items: TenantPayPeriodItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export type TenantPayPeriodUpsertPayload = {
+  companyId: string;
+  year: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+};
+
+export async function fetchTenantPayPeriods(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  year?: number | null;
+  status?: string | null;
+}): Promise<TenantPayPeriodPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (args?.year != null) q.set("year", String(args.year));
+  if (args?.status) q.set("status", args.status);
+  const r = await fetch(bffUrl(`/api/v1/pay-periods?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantPayPeriodItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantPayPeriod(id: string): Promise<{ ok: true; item: TenantPayPeriodItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/pay-periods/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export async function createTenantPayPeriod(payload: TenantPayPeriodUpsertPayload): Promise<TenantPayPeriodItem> {
+  const r = await fetch(bffUrl("/api/v1/pay-periods"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;
+  return body.data.item;
+}
+
+export async function putTenantPayPeriod(id: string, payload: TenantPayPeriodUpsertPayload): Promise<TenantPayPeriodItem> {
+  const r = await fetch(bffUrl(`/api/v1/pay-periods/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantPayPeriodStatus(id: string, status: string): Promise<TenantPayPeriodItem> {
+  const r = await fetch(bffUrl(`/api/v1/pay-periods/${encodeURIComponent(id)}/status`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;
+  return body.data.item;
+}
+
+// ── Pay Period Runs ───────────────────────────────────────────────────────────
+
+export type TenantPayPeriodRunItem = {
+  id: string;
+  payPeriodId: string;
+  tenantId: string;
+  runType: string;
+  runNumber: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantPayPeriodRunPageResult =
+  | { ok: true; items: TenantPayPeriodRunItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantPayPeriodRuns(
+  payPeriodId: string,
+  args?: { page?: number; size?: number },
+): Promise<TenantPayPeriodRunPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  const r = await fetch(bffUrl(`/api/v1/pay-periods/${encodeURIComponent(payPeriodId)}/runs?${q}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantPayPeriodRunItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function createTenantPayPeriodRun(payload: {
+  payPeriodId: string;
+  runType: string;
+}): Promise<TenantPayPeriodRunItem> {
+  const r = await fetch(bffUrl("/api/v1/pay-period-runs"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodRunItem }>;
+  return body.data.item;
+}
+
 export async function completeDocumentUpload(args: {
   documentId: string;
   storageKey: string;
