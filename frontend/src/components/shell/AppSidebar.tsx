@@ -144,7 +144,7 @@ export function AppSidebar({
       ) : null}
       <aside
         data-testid="app-sidebar"
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-surface shadow-lg transition-transform duration-200 lg:static lg:z-0 lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-surface shadow-lg transition-all duration-200 ${
           collapsed ? "w-[4.5rem]" : "w-64"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >

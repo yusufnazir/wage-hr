@@ -336,7 +336,7 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
           tenantLine={tenantBranding.line}
           tenantSub={tenantBranding.sub}
         />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col lg:ml-64" style={collapsed ? { marginLeft: '4.5rem' } : {}}>
           <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-surface/90 px-3 shadow-sm backdrop-blur-xl dark:bg-surface/95 sm:px-4">
             <button
               type="button"
