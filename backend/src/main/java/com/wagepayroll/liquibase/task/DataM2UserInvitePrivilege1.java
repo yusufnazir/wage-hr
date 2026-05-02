@@ -15,7 +15,7 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 /**
- * M2: global privilege {@code USER_INVITE}, demo tenant pool + Admin role grant.
+ * M2: global privilege {@code USER_INVITE} and demo Admin role grant.
  */
 public class DataM2UserInvitePrivilege1 implements CustomTaskChange {
 
@@ -36,15 +36,6 @@ public class DataM2UserInvitePrivilege1 implements CustomTaskChange {
 					ps.setString(1, PRIV_USER_INVITE.toString());
 					ps.setString(2, "USER_INVITE");
 					ps.setString(3, "Create and manage tenant invitations");
-					ps.setTimestamp(4, ts);
-					ps.setTimestamp(5, ts);
-					ps.executeUpdate();
-				}
-				try (PreparedStatement ps = c.prepareStatement(
-						"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-					ps.setString(1, UUID.randomUUID().toString());
-					ps.setString(2, TENANT_DEMO.toString());
-					ps.setString(3, PRIV_USER_INVITE.toString());
 					ps.setTimestamp(4, ts);
 					ps.setTimestamp(5, ts);
 					ps.executeUpdate();

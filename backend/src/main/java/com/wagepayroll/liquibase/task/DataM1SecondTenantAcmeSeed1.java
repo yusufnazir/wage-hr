@@ -3,7 +3,6 @@ package com.wagepayroll.liquibase.task;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,13 +26,8 @@ public class DataM1SecondTenantAcmeSeed1 implements CustomTaskChange {
 
 	private static final UUID MEMBERSHIP_ID = UUID.fromString("60000000-0000-0000-0000-000000000001");
 	private static final UUID ROLE_READER_ID = UUID.fromString("40000000-0000-0000-0000-000000000003");
-	private static final UUID TPA_VIEW_ID = UUID.fromString("61000000-0000-0000-0000-000000000001");
 	private static final UUID RP_VIEW_ID = UUID.fromString("62000000-0000-0000-0000-000000000001");
 	private static final UUID USER_ROLE_ID = UUID.fromString("63000000-0000-0000-0000-000000000001");
-
-	private static final UUID NAV_DASH = UUID.fromString("50100000-0000-0000-0000-000000000001");
-	private static final UUID NAV_USERS = UUID.fromString("50100000-0000-0000-0000-000000000002");
-	private static final UUID NAV_SETTINGS = UUID.fromString("50100000-0000-0000-0000-000000000003");
 
 	@Override
 	public void execute(Database database) throws CustomChangeException {
@@ -45,15 +39,10 @@ public class DataM1SecondTenantAcmeSeed1 implements CustomTaskChange {
 			c.setAutoCommit(false);
 			try {
 				insertTenant(c, ACME_TENANT_ID, "acme", "Acme Corp", ts);
-				insertTpa(c, TPA_VIEW_ID, ACME_TENANT_ID, PRIV_USER_VIEW, ts);
 				insertRole(c, ROLE_READER_ID, ACME_TENANT_ID, "Reader", ts);
 				insertRolePrivilege(c, RP_VIEW_ID, ACME_TENANT_ID, ROLE_READER_ID, PRIV_USER_VIEW);
 				insertMembership(c, MEMBERSHIP_ID, ACME_TENANT_ID, USER_ADMIN, ts);
 				insertUserRole(c, USER_ROLE_ID, ACME_TENANT_ID, USER_ADMIN, ROLE_READER_ID, ts);
-				insertNav(c, NAV_DASH, ACME_TENANT_ID, null, "/app", "nav.dashboard", 0, null, ts);
-				insertNav(c, NAV_USERS, ACME_TENANT_ID, null, "/app/users", "nav.users", 10, "USER_VIEW", ts);
-				insertNav(c, NAV_SETTINGS, ACME_TENANT_ID, null, "/app/settings", "nav.tenant_settings", 20,
-						"TENANT_SETTINGS_EDIT", ts);
 				c.commit();
 			}
 			catch (Exception e) {
@@ -72,18 +61,6 @@ public class DataM1SecondTenantAcmeSeed1 implements CustomTaskChange {
 			ps.setString(1, id.toString());
 			ps.setString(2, handle);
 			ps.setString(3, name);
-			ps.setTimestamp(4, ts);
-			ps.setTimestamp(5, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertTpa(Connection c, UUID id, UUID tenantId, UUID privId, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			ps.setString(3, privId.toString());
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
 			ps.executeUpdate();
@@ -137,33 +114,6 @@ public class DataM1SecondTenantAcmeSeed1 implements CustomTaskChange {
 			ps.setString(4, roleId.toString());
 			ps.setTimestamp(5, ts);
 			ps.setTimestamp(6, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertNav(Connection c, UUID id, UUID tenantId, UUID parentId, String path, String labelKey,
-			int sortOrder, String requiredPriv, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO nav_menu_item (id, tenant_id, parent_id, path, label_key, sort_order, required_privilege_code, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			if (parentId == null) {
-				ps.setNull(3, Types.VARCHAR);
-			}
-			else {
-				ps.setString(3, parentId.toString());
-			}
-			ps.setString(4, path);
-			ps.setString(5, labelKey);
-			ps.setInt(6, sortOrder);
-			if (requiredPriv == null) {
-				ps.setNull(7, Types.VARCHAR);
-			}
-			else {
-				ps.setString(7, requiredPriv);
-			}
-			ps.setTimestamp(8, ts);
-			ps.setTimestamp(9, ts);
 			ps.executeUpdate();
 		}
 	}

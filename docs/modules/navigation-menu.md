@@ -2,6 +2,8 @@
 
 Effective **application menu** for the signed-in principal in the **current tenant** context. Visibility is driven by **effective privileges** and, when set on a row, by **subscription plan feature codes** (`required_plan_feature_code` vs active `tenant_subscription` per [`commercial-subscriptions.md`](./commercial-subscriptions.md)).
 
+`nav_menu_item` is a **global catalog** — there is no `tenant_id` column. All tenants share the same set of rows. Whether a given item is shown to a specific user in a specific tenant is evaluated at request time based on the user's effective privileges within that tenant.
+
 ## Data — `nav_menu_item` (strict)
 
 **Allowed columns only** (no free-form labels in DB — use i18n keys):
@@ -9,9 +11,8 @@ Effective **application menu** for the signed-in principal in the **current tena
 | Column | Type | Notes |
 |--------|------|--------|
 | `id` | UUID | PK |
-| `tenant_id` | UUID | FK → `tenant.id` |
-| `parent_id` | UUID, nullable | FK → `nav_menu_item.id`; must reference a row in the **same** tenant (enforced in application layer) |
-| `path` | string | App route path (e.g. `/app`, `/app/users`) |
+| `parent_id` | UUID, nullable | FK → `nav_menu_item.id` |
+| `path` | string | App route path (e.g. `/app`, `/app/users`); UNIQUE constraint |
 | `label_key` | string | Message / i18n key (not user-entered copy) |
 | `sort_order` | int | Sibling order |
 | `required_privilege_code` | string, nullable | If set, user must have this `privilege.code` in the current tenant (and allowance + role) to see the item |

@@ -15,7 +15,7 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 /**
- * M6: {@code ROLE_VIEW}, {@code ROLE_EDIT}; demo tenant pool + Admin / Viewer role grants.
+ * M6: {@code ROLE_VIEW}, {@code ROLE_EDIT}; demo Admin / Viewer role grants.
  */
 public class DataM6RoleAdminPrivileges1 implements CustomTaskChange {
 
@@ -36,9 +36,6 @@ public class DataM6RoleAdminPrivileges1 implements CustomTaskChange {
 			try {
 				insertPrivilege(c, PRIV_ROLE_VIEW, "ROLE_VIEW", "View roles and their granted privileges", ts);
 				insertPrivilege(c, PRIV_ROLE_EDIT, "ROLE_EDIT", "Create roles and edit role privileges", ts);
-
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_ROLE_VIEW, ts);
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_ROLE_EDIT, ts);
 
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_ROLE_VIEW);
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_ROLE_EDIT);
@@ -62,18 +59,6 @@ public class DataM6RoleAdminPrivileges1 implements CustomTaskChange {
 			ps.setString(1, id.toString());
 			ps.setString(2, code);
 			ps.setString(3, desc);
-			ps.setTimestamp(4, ts);
-			ps.setTimestamp(5, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertTpa(Connection c, UUID id, UUID tenantId, UUID privId, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			ps.setString(3, privId.toString());
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
 			ps.executeUpdate();

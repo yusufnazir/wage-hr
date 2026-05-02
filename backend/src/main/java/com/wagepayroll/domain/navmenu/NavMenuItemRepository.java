@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NavMenuItemRepository extends JpaRepository<NavMenuItemEntity, UUID> {
 
-	List<NavMenuItemEntity> findByTenantIdOrderBySortOrderAsc(UUID tenantId);
+	List<NavMenuItemEntity> findAllByOrderBySortOrderAsc();
 }

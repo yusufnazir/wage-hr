@@ -44,13 +44,9 @@ class SubscriptionGatingIT {
 	private PlanFeatureRepository planFeatureRepository;
 
 	@Test
-	void activeSubscriptionRestoresInviteWhenRemovedFromAllowancePool() throws Exception {
-		String narrowPool = "{\"codes\":[\"USER_VIEW\",\"USER_EDIT\",\"TENANT_SETTINGS_EDIT\"]}";
-		mockMvc.perform(put("/api/v1/platform/tenants/" + DEMO_TENANT_ID + "/privilege-pool").contentType(MediaType.APPLICATION_JSON)
-				.content(narrowPool).with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isOk());
-
+	void activeSubscriptionPublishesPlanFeatureCodesWithoutTenantPoolMutation() throws Exception {
 		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.privileges", not(hasItem("USER_INVITE"))))
+				.andExpect(jsonPath("$.data.privileges", hasItem("USER_INVITE")))
 				.andExpect(jsonPath("$.data.planFeatureCodes").isEmpty());
 
 		UUID tenantCore = planFeatureRepository.findByCode("TENANT_CORE").orElseThrow().getId();
@@ -73,7 +69,7 @@ class SubscriptionGatingIT {
 				.andExpect(jsonPath("$.data.planFeatureCodes[1]").value("HR_ESSENTIALS"));
 
 		mockMvc.perform(get("/api/v1/tenant/privileges/pool").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.privileges.length()").value(4))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.privileges", hasItem("USER_INVITE")));
 	}
 }

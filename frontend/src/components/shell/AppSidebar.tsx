@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,6 +8,26 @@ import type { NavigationItem } from "@/lib/api";
 import { brandFaviconSrc, brandLogoWordmarkSmallSrc } from "@/lib/brand-assets";
 import { navLabel } from "@/messages/nav";
 import { NavMenuIcon, navItemActive } from "@/components/shell/nav-icons";
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={`shrink-0 transition-transform duration-200 ${open ? "rotate-0" : "-rotate-90"}`}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
 
 function NavBranch({
   items,
@@ -23,26 +44,61 @@ function NavBranch({
   depth: number;
   onPick?: () => void;
 }) {
+  // Track which group nodes are open; default all open
+  const groupIds = items.filter((i) => !i.path).map((i) => i.id);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(groupIds));
+
+  function toggleGroup(id: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   return (
     <ul className={depth === 0 ? "space-y-0.5" : "ml-2 mt-1 space-y-0.5 border-l border-border/60 pl-2"} data-testid={depth === 0 ? "app-sidebar-nav" : undefined}>
       {items.map((item) => {
         const active = navItemActive(pathname, item);
-        const showChildren = !collapsed && item.children && item.children.length > 0;
+        const isGroup = !item.path;
+        const groupOpen = isGroup && (collapsed || openGroups.has(item.id));
+        const showChildren = isGroup
+          ? groupOpen && item.children && item.children.length > 0
+          : !collapsed && item.children && item.children.length > 0;
         return (
           <li key={item.id}>
-            <Link
-              href={item.path}
-              data-testid={`nav-link-${item.labelKey}`}
-              onClick={onPick}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
-                active
-                  ? "bg-primary/12 text-primary shadow-sm ring-1 ring-primary/20 dark:bg-primary/15 dark:ring-primary/25"
-                  : "text-foreground/90 hover:bg-foreground/[0.04] hover:text-foreground"
-              }`}
-            >
-              <NavMenuIcon labelKey={item.labelKey} />
-              <span className={collapsed ? "sr-only" : "truncate"}>{navLabel(locale, item.labelKey)}</span>
-            </Link>
+            {isGroup ? (
+              <>
+                {!collapsed ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(item.id)}
+                    className="flex w-full items-center gap-1.5 px-3 pb-1 pt-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted/80 hover:text-muted transition-colors"
+                    aria-expanded={openGroups.has(item.id)}
+                  >
+                    <span className="flex-1 text-left">{navLabel(locale, item.labelKey)}</span>
+                    <ChevronIcon open={openGroups.has(item.id)} />
+                  </button>
+                ) : (
+                  <div className="mx-2 my-1 border-t border-border/70" aria-hidden />
+                )}
+              </>
+            ) : (
+              <Link
+                href={item.path}
+                data-testid={`nav-link-${item.labelKey}`}
+                onClick={onPick}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
+                  active
+                    ? "bg-primary/12 text-primary shadow-sm ring-1 ring-primary/20 dark:bg-primary/15 dark:ring-primary/25"
+                    : "text-foreground/90 hover:bg-foreground/[0.04] hover:text-foreground"
+                }`}
+              >
+                <NavMenuIcon labelKey={item.labelKey} />
+                <span className={collapsed ? "sr-only" : "truncate"}>{navLabel(locale, item.labelKey)}</span>
+              </Link>
+            )}
             {showChildren ? (
               <NavBranch items={item.children!} pathname={pathname} locale={locale} collapsed={collapsed} depth={depth + 1} onPick={onPick} />
             ) : null}

@@ -37,8 +37,8 @@ Do **not** treat this path as optional documentation: prompts and scaffold assum
 
 ## 2. System overview
 
-- **Purpose:** Multi-tenant **HR/payroll SaaS**: tenant-scoped operations, reporting, employee self-service, time and leave, **country-based payroll** (adapters; **Suriname first**), **subscriptions and billing** (PayPal + Stripe, usage/PAYG), documents (MinIO), notifications/inbox (PII-minimal), and platform governance (privileges, pools, SuperAdmin, audit, controlled deletion and anonymization).
-- **Key workflows (high level):** Register/login/forgot password on **auth** host; tenant resolution from host (with **BFF forwarding** in web dev — see §6); tenant picker when multiple memberships; **invitations** (M2); **RBAC** from tenant privilege pool (widened by subscription) plus **feature flags**; **plan catalog and subscriptions** (M3); **billing** webhooks and reconciliation; **payroll runs** (M5+); **documents** (M4); **notifications** without persisted bodies; **audit** on sensitive actions; **SuperAdmin** catalog and break-glass.
+- **Purpose:** Multi-tenant **HR/payroll SaaS**: tenant-scoped operations, reporting, employee self-service, time and leave, **country-based payroll** (adapters; **Suriname first**), **subscriptions and billing** (PayPal + Stripe, usage/PAYG), documents (MinIO), notifications/inbox (PII-minimal), and platform governance (privileges, SuperAdmin, audit, controlled deletion and anonymization).
+- **Key workflows (high level):** Register/login/forgot password on **auth** host; tenant resolution from host (with **BFF forwarding** in web dev — see §6); tenant picker when multiple memberships; **invitations** (M2); **RBAC** from tenant role grants plus feature/menu gating; **plan catalog and subscriptions** (M3); **billing** webhooks and reconciliation; **payroll runs** (M5+); **documents** (M4); **notifications** without persisted bodies; **audit** on sensitive actions; **SuperAdmin** catalog and break-glass.
 - **v1 scope boundaries (contract — MANDATORY):**
   - **SaaS billing / subscriptions (PayPal + Stripe, usage-based):** **in product scope**, delivered per **`BUILD-CHECKLIST` milestone M3** (phased, not absent).
   - **Live bank / payroll disbursement** (employer money movement): **out of scope** (distinct from customer billing for the SaaS).
@@ -75,7 +75,7 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 
 - **Identity & access:** Email/password, register, forgot password; **web:** session + CSRF (Spring) with **Next.js BFF** hiding API origin from browser (§6); **mobile:** tokens; future OIDC (M7).
 - **Tenancy & routing:** Tenant handle subdomain, `app.*`, `auth.*`; membership; tenant picker; last-used tenant policy; **`TenantContextFilter`** uses **`X-Forwarded-Host`** when present (BFF) else **`Host`**.
-- **Authorization:** Privilege catalog (global), tenant pool ceiling, roles, SuperAdmin data-driven “all privileges”; **subscription widens pool + feature flags** — combined resolver (order §5.4).
+- **Authorization:** Privilege catalog (global), tenant role grants, SuperAdmin data-driven “all privileges”; subscription contributes feature/menu gating via plan features.
 - **Commercial (M3):** Plan feature codes (predefined in code + mirrored in DB), plan editor, subscription state, **PayPal + Stripe**, webhooks, reconciliation.
 - **Messaging:** Outbound mail via **external HTTP API**; in-app notifications + inbox per **`notifications-inbox.md`**; **mail-adapter** — no persisted email bodies in app DB by default.
 - **Documents (M4):** MinIO storage, metadata, ACL, share by user/role, **record↔document** links; no real-time collaborative editing.
@@ -88,7 +88,7 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 - **API surface:** Versioned REST, problem+json, OpenAPI as team convention.
 - **Clients:** Next.js (**BFF + relay cookies** for browser → Spring), Flutter (opaque refresh + access tokens).
 
-**Cross-module dependencies:** Tenancy + authn before authorization; **commercial** feeds **effective tenant pool + feature flags** consumed by authorization and menu; **notifications** depend on identity + mail port but **must not** store PII payloads; **documents** depend on MinIO and tenant ACL; payroll modules depend on tenancy, privileges, and country adapters.
+**Cross-module dependencies:** Tenancy + authn before authorization; **commercial** feeds plan feature flags consumed by menu/feature gates; **notifications** depend on identity + mail port but **must not** store PII payloads; **documents** depend on MinIO and tenant ACL; payroll modules depend on tenancy, privileges, and country adapters.
 
 ---
 
@@ -118,14 +118,14 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 
 - Effective **all** privileges via **catalog attachment** or equivalent data-driven rule; **same** authorization API as tenants — **no** `if (superAdmin) return true` in controllers.
 
-### 6.3 Privilege pools
+### 6.3 Privilege catalog and role grants
 
 - **Global catalog:** all product privileges (Liquibase-seeded).
-- **Tenant allowed subset:** SuperAdmin sets ceiling; subscription may **widen** what the tenant may receive; tenant admins assign roles **only** within effective pool.
+- **Tenant roles:** tenant admins assign catalog privileges to roles via `role_privilege`.
 
 ### 6.4 Enforcement strategy
 
-- **Backend:** Authn → tenant resolution → **subscription state (pool + flags)** → **privilege** check → handler. Deny by default.
+- **Backend:** Authn → tenant resolution → **privilege** check (role grants / superadmin elevation) → handler. Deny by default.
 - **Frontend/mobile:** Effective permissions from API; UI hide/disable only.
 - **Web session (Spring):** Session + **CookieCsrfTokenRepository** for unsafe HTTP methods. **Browser (wage-payroll web):** does **not** call Spring directly; Next.js **Route Handler** `**/api/bff/**` proxies to Spring using server-only **`API_BASE_URL`**, prefetches **`GET /api/v1/auth/csrf`** before mutating verbs, forwards **`X-Forwarded-Host`** from the browser `Host`, and sets HttpOnly relay cookies **`wp_bff_j` / `wp_bff_x`** (`Domain=.lvh.me` in `*.lvh.me` dev by default). See `docs/modules/tenant-web-vertical-slice.md` §3.3, `frontend/.env.example`.
 - **Flutter:** Short-lived access + refresh (opaque preferred); no cross-site cookie reliance on Spring from the mobile app.
@@ -141,7 +141,7 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 ### 6.6 Commercial model & plan-based entitlements
 
 - **Subscriptions and plans:** **Yes** (M3). Predefined **plan feature codes** in code mirrored in DB.
-- **Active subscription (dual — contract):** (1) **Widens tenant privilege pool ceiling.** (2) Sets **feature flags** for gating and menu. **Both** apply. Resolver order: **authn → tenant → subscription → effective pool + flags → privilege → handler**.
+- **Active subscription (contract):** Sets **feature flags** for gating and menu. Resolver order: **authn → tenant → privilege → handler** for authorization, with plan features evaluated where feature/menu gates are configured.
 - **Billing:** **PayPal** + **Stripe**, usage/PAYG; webhooks; PCI boundaries per provider — **`docs/modules/commercial-billing.md`** when implemented.
 
 ---
@@ -150,7 +150,7 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 
 **Standards:** UUID `id`; tenant-scoped tables include `tenant_id`, `created_at`, `updated_at` per **`DATA-MODEL-STANDARDS`**. **Liquibase-only** DDL; **`SCHEMA-PERSISTENCE-PREFLIGHT`** + **one `docs/modules/{feature-slug}.md`** per feature.
 
-**Core platform entities (illustrative):** `tenant`, `user`, `user_tenant_membership`, `role`, `privilege`, `role_privilege`, tenant pool / allowance tables, `user_role`, session/refresh, `platform_setting`, `tenant_setting`, menu tables, `audit_event`, `invitation`.
+**Core platform entities (illustrative):** `tenant`, `user`, `user_tenant_membership`, `role`, `privilege`, `role_privilege`, `user_role`, session/refresh, `platform_setting`, `tenant_setting`, menu tables, `audit_event`, `invitation`.
 
 **Commercial (M3):** `plan_definition`, `plan_feature`, `subscription`, metering/billing tables — per module docs before implementation.
 

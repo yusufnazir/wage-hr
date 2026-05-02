@@ -15,7 +15,7 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 /**
- * M7 reference-data currencies: privilege catalog rows + demo tenant allowance/role grants.
+ * M7 reference-data currencies: privilege catalog rows + demo tenant role grants.
  */
 public class DataM7CurrencyPrivileges1 implements CustomTaskChange {
 
@@ -44,9 +44,6 @@ public class DataM7CurrencyPrivileges1 implements CustomTaskChange {
 				insertPrivilege(c, PRIV_TENANT_CURRENCY_EDIT, "TENANT_CURRENCY_EDIT",
 						"Assign platform currencies to a tenant", ts);
 
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_TENANT_CURRENCY_VIEW, ts);
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_TENANT_CURRENCY_EDIT, ts);
-
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_TENANT_CURRENCY_VIEW);
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_TENANT_CURRENCY_EDIT);
 
@@ -68,18 +65,6 @@ public class DataM7CurrencyPrivileges1 implements CustomTaskChange {
 			ps.setString(1, id.toString());
 			ps.setString(2, code);
 			ps.setString(3, desc);
-			ps.setTimestamp(4, ts);
-			ps.setTimestamp(5, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertTpa(Connection c, UUID id, UUID tenantId, UUID privId, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			ps.setString(3, privId.toString());
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
 			ps.executeUpdate();

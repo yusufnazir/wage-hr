@@ -46,6 +46,9 @@ class MeTenantsIT {
 	void navigationOnAcmeIsNarrowerThanDemo() throws Exception {
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "acme.lvh.me").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items.length()").value(6));
+				.andExpect(jsonPath("$.data.items.length()").value(3))
+				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.group.workspace"))
+				.andExpect(jsonPath("$.data.items[1].labelKey").value("nav.group.security"))
+				.andExpect(jsonPath("$.data.items[2].labelKey").value("nav.group.administration"));
 	}
 }

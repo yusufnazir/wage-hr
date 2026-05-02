@@ -12,6 +12,7 @@ import { UserMenu } from "@/components/shell/UserMenu";
 import { SetHtmlLang } from "@/components/i18n/SetHtmlLang";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import {
+  clearLensTenant,
   fetchMe,
   fetchMeTenants,
   fetchNavigation,
@@ -83,7 +84,17 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
     setPhase("loading");
     setErrorDetail(null);
     try {
-      const [psRes, meResult] = await Promise.all([fetchPublicSurface(), fetchMe()]);
+      const [psRes, initialMeResult] = await Promise.all([fetchPublicSurface(), fetchMe()]);
+      let meResult = initialMeResult;
+      if (!meResult.ok && meResult.status === 404) {
+        // Recover from a stale superadmin lens cookie that points to a removed tenant id.
+        try {
+          await clearLensTenant();
+          meResult = await fetchMe();
+        } catch {
+          // Keep original 404 behavior if recovery fails.
+        }
+      }
       if (psRes.ok) {
         setPublicSurface(psRes.surface);
       }

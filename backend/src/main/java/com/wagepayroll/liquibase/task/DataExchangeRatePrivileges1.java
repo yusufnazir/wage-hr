@@ -35,9 +35,6 @@ public class DataExchangeRatePrivileges1 implements CustomTaskChange {
 				insertPrivilege(c, PRIV_EXCHANGE_RATE_VIEW, "EXCHANGE_RATE_VIEW", "View tenant exchange rates", ts);
 				insertPrivilege(c, PRIV_EXCHANGE_RATE_MANAGE, "EXCHANGE_RATE_MANAGE", "Manage tenant exchange rates", ts);
 
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_EXCHANGE_RATE_VIEW, ts);
-				insertTpa(c, UUID.randomUUID(), TENANT_DEMO, PRIV_EXCHANGE_RATE_MANAGE, ts);
-
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EXCHANGE_RATE_VIEW);
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EXCHANGE_RATE_MANAGE);
 				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_VIEWER, PRIV_EXCHANGE_RATE_VIEW);
@@ -61,18 +58,6 @@ public class DataExchangeRatePrivileges1 implements CustomTaskChange {
 			ps.setString(1, id.toString());
 			ps.setString(2, code);
 			ps.setString(3, desc);
-			ps.setTimestamp(4, ts);
-			ps.setTimestamp(5, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertTpa(Connection c, UUID id, UUID tenantId, UUID privId, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			ps.setString(3, privId.toString());
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
 			ps.executeUpdate();

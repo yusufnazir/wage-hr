@@ -20,7 +20,7 @@ Implement a proper roles view for tenant admins and platform superadmins (via ad
 - Privileges:
   - ROLE_VIEW: list + detail read-only
   - ROLE_EDIT: create + edit (name + privileges)
-- Enforce tenant ceiling: role privileges assignable only from tenant effective pool (allowances ∪ subscription-derived).
+- Enforce privilege catalog validation: role privileges assignable only from known global privilege codes.
 - Superadmin tenant lens: works under admin.{BASE_DOMAIN} with X-Tenant-Id; mutating elevated calls require X-Break-Glass-Reason and are audited (existing break-glass rules).
 - Add nav item /app/roles visible with ROLE_VIEW only.
 - Add platform superadmin view-only page:

@@ -6,9 +6,8 @@ import java.util.Set;
 
 /**
  * Maps commercial {@link PlanFeatureCode} values (from {@code plan_feature} / subscriptions) to named
- * {@code privilege.code} rows that the active subscription adds to the tenant <strong>effective privilege
- * pool ceiling</strong> (union with {@code tenant_privilege_allowance}). Extend the switch when new product
- * areas ship privileges.
+ * {@code privilege.code} rows that the active subscription contributes to tenant-scoped effective access.
+ * Extend the switch when new product areas ship privileges.
  */
 public final class PlanFeaturePrivilegeWiring {
 

@@ -14,7 +14,6 @@ import com.wagepayroll.auth.EmailVerificationMailPort;
 import com.wagepayroll.auth.Sha256Hex;
 import com.wagepayroll.domain.emailverification.EmailVerificationTokenRepository;
 import com.wagepayroll.domain.membership.MembershipRepository;
-import com.wagepayroll.domain.navmenu.NavMenuItemRepository;
 import com.wagepayroll.domain.role.RoleEntity;
 import com.wagepayroll.domain.role.RolePrivilegeRepository;
 import com.wagepayroll.domain.role.RoleRepository;
@@ -72,9 +71,6 @@ class RegistrationTenantBootstrapIT {
 	private RolePrivilegeRepository rolePrivilegeRepository;
 
 	@Autowired
-	private NavMenuItemRepository navMenuItemRepository;
-
-	@Autowired
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
 	@BeforeEach
@@ -115,9 +111,6 @@ class RegistrationTenantBootstrapIT {
 				.anySatisfy(ur -> assertThat(ur.getRoleId()).isEqualTo(adminRoleId));
 
 		assertThat(rolePrivilegeRepository.findPrivilegeIdsByTenantIdAndRoleId(tenantId, adminRoleId)).isNotEmpty();
-
-		assertThat(navMenuItemRepository.findByTenantIdOrderBySortOrderAsc(tenantId)).extracting(n -> n.getLabelKey())
-				.containsExactly("nav.dashboard", "nav.users", "nav.roles", "nav.documents", "nav.tenant_settings");
 	}
 
 	@Test

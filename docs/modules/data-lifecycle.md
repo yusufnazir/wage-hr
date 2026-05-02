@@ -34,7 +34,7 @@ Classification: **`none`** | **`low`** | **`sensitive`** (per `DATA-MODEL-STANDA
 | `password_reset_token` | Global | **sensitive:** ties to account recovery; short TTL; never export. |
 | `audit_event` | Optional tenant | **low / sensitive (metadata-dependent):** minimize PII in `metadata_json`; append-only; retention ≥ contract. |
 | `nav_menu_item` | Yes | **none:** menu structure. |
-| `privilege`, `role_privilege`, `tenant_privilege_allowance` | Mixed | **none:** authorization catalog. |
+| `privilege`, `role_privilege` | Mixed | **none:** authorization catalog. |
 
 **Messaging / inbox (M2+):** canonical rules live in [`notifications-inbox.md`](./notifications-inbox.md) — high-risk for stored PII; not in M1 DDL beyond this inventory pointer.
 

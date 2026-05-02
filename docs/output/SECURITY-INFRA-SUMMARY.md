@@ -21,7 +21,7 @@
 
 | Artifact | Purpose |
 |----------|---------|
-| `schema-*-1` in `backend/src/main/resources/db/changelog/ddl/schema-bootstrap-1.xml` | `tenant`, `privilege`, `user_account`, `tenant_privilege_allowance`, `role`, `role_privilege`, `membership`, `user_role` |
+| `schema-*-1` in `backend/src/main/resources/db/changelog/ddl/schema-bootstrap-1.xml` | `tenant`, `privilege`, `user_account`, `role`, `role_privilege`, `membership`, `user_role` |
 | `data-scaffold-1` in `backend/src/main/resources/db/changelog/dml/data-scaffold-1.xml` | Delegates to `com.wagepayroll.liquibase.task.DataScaffoldSeed1` (Java DML only — no raw SQL DML in XML) |
 
 **Privileges seeded:** `USER_VIEW`, `USER_EDIT`, `TENANT_SETTINGS_EDIT`. Demo tenant handle: `demo`.
@@ -30,14 +30,14 @@
 
 | Endpoint | Effective requirement |
 |----------|------------------------|
-| `GET /api/v1/demo/user-view` | `USER_VIEW` + membership in tenant + grant via role + tenant allowance |
+| `GET /api/v1/demo/user-view` | `USER_VIEW` + membership in tenant + grant via role |
 | `GET /api/v1/me` | Authenticated; privileges listed only when `tenant_id` is resolved |
 
 All other `/api/v1/**` routes require authentication unless listed as `permitAll` in `SecurityConfiguration`.
 
 ## SuperAdmin non-bypass
 
-There is **no** `if (superAdmin) return true` path. Access is derived from **membership + tenant allowance + role → privilege** only (`PermissionService`).
+There is **no** `if (superAdmin) return true` path. Access is derived from **membership + role → privilege** (or elevated superadmin path in `PermissionService`).
 
 ## Tests
 

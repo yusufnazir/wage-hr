@@ -13,9 +13,6 @@ public final class AuditActionCodes {
 	/** Platform superadmin used tenant-scoped privilege outside normal role + pool (see {@code security.md}). */
 	public static final String SUPERADMIN_TENANT_ELEVATED_ACCESS = "SUPERADMIN_TENANT_ELEVATED_ACCESS";
 
-	/** Platform superadmin replaced {@code tenant_privilege_allowance} for a tenant. */
-	public static final String TENANT_PRIVILEGE_POOL_REPLACED = "TENANT_PRIVILEGE_POOL_REPLACED";
-
 	/** Platform superadmin upserted {@code tenant_subscription} for a tenant. */
 	public static final String TENANT_SUBSCRIPTION_UPSERTED = "TENANT_SUBSCRIPTION_UPSERTED";
 

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.wagepayroll.api.dto.TenantRoleCreateRequest;
 import com.wagepayroll.api.dto.TenantRoleDetailResponseDto;
@@ -27,7 +26,6 @@ import com.wagepayroll.domain.role.RolePrivilegeEntity;
 import com.wagepayroll.domain.role.RolePrivilegeRepository;
 import com.wagepayroll.domain.role.RoleRepository;
 import com.wagepayroll.domain.role.UserRoleRepository;
-import com.wagepayroll.security.PermissionService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -50,18 +48,16 @@ public class TenantRoleAdminService {
 	private final RolePrivilegeRepository rolePrivilegeRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final PrivilegeRepository privilegeRepository;
-	private final PermissionService permissionService;
 	private final AuditService auditService;
 
 	public TenantRoleAdminService(NamedParameterJdbcTemplate jdbc, RoleRepository roleRepository,
 			RolePrivilegeRepository rolePrivilegeRepository, UserRoleRepository userRoleRepository,
-			PrivilegeRepository privilegeRepository, PermissionService permissionService, AuditService auditService) {
+			PrivilegeRepository privilegeRepository, AuditService auditService) {
 		this.jdbc = jdbc;
 		this.roleRepository = roleRepository;
 		this.rolePrivilegeRepository = rolePrivilegeRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.privilegeRepository = privilegeRepository;
-		this.permissionService = permissionService;
 		this.auditService = auditService;
 	}
 
@@ -105,8 +101,8 @@ public class TenantRoleAdminService {
 		RoleEntity role = roleRepository.findByTenantIdAndId(tenantId, roleId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ROLE_NOT_FOUND"));
 		List<String> privilegeCodes = privilegeCodesForRole(tenantId, roleId);
-		List<String> ceiling = permissionService.tenantPoolPrivilegeCodes(tenantId);
-		return new TenantRoleDetailResponseDto(new TenantRoleDto(role.getId(), role.getName(), privilegeCodes), ceiling);
+		List<String> assignable = privilegeRepository.findAllByOrderByCodeAsc().stream().map(PrivilegeEntity::getCode).toList();
+		return new TenantRoleDetailResponseDto(new TenantRoleDto(role.getId(), role.getName(), privilegeCodes), assignable);
 	}
 
 	@Transactional
@@ -205,17 +201,11 @@ public class TenantRoleAdminService {
 
 	private void replaceRolePrivilegesOrThrow(UUID tenantId, UUID roleId, List<String> privilegeCodes, UUID actorUserId,
 			boolean creating) {
-		List<String> ceiling = permissionService.tenantPoolPrivilegeCodes(tenantId);
-		Set<String> ceilingSet = ceiling.stream().map(String::trim).collect(Collectors.toSet());
-
 		Map<String, UUID> codeToId = new HashMap<>();
 		for (String code : privilegeCodes) {
 			PrivilegeEntity p = privilegeRepository.findByCode(code).orElse(null);
 			if (p == null) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UNKNOWN_PRIVILEGE_CODE");
-			}
-			if (!ceilingSet.contains(code)) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PRIVILEGE_NOT_IN_TENANT_CEILING");
 			}
 			codeToId.put(code, p.getId());
 		}

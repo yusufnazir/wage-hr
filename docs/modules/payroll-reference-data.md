@@ -68,7 +68,7 @@ Allow tenant admins to define and maintain dated exchange rates between their ac
 | `EXCHANGE_RATE_VIEW` | Read access: list, single record, and resolve endpoints |
 | `EXCHANGE_RATE_MANAGE` | Write access: create, update, delete (logically implies VIEW) |
 
-Both privileges must be registered in the **global privilege pool** via a Liquibase DML task so SuperAdmin inherits them automatically. Tenant admins may then expose either or both to their tenant's roles.
+Both privileges must be registered in the **global privilege catalog** via a Liquibase DML task so SuperAdmin inherits them automatically. Tenant admins may then expose either or both to their tenant's roles.
 
 ---
 

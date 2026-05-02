@@ -54,7 +54,7 @@ Boolean column on `user_account` (default `false`). When `true`, the principal m
 - **`GET /api/v1/platform/privileges/catalog`** — Authenticated; **no tenant context**. **403** if not platform superadmin. Response `data.entries`: `{ code, action, resource, description }[]` sorted by `code`.
 - **`GET /api/v1/platform/settings`** — Authenticated; **no tenant context** required. **403** if not platform superadmin. Returns all rows (including secret values — restrict via role only).
 - **`PATCH /api/v1/platform/settings`** — Same; body `{ "entries": [ { "key": "...", "value": "..." } ] }`; keys `[a-z0-9_.-]{1,128}`; values ≤ 2000. **`platform.date_format`** must be an allow-listed token **or** a custom pattern (`yyyy`, `MM`, `dd` each exactly once; separators only); unknown keys **400** (`PlatformIntegrationSettingsValidator` + billing validator).
-- **`PUT /api/v1/platform/tenants/{tenantId}/privilege-pool`** — Authenticated platform superadmin; body `{ "codes": [ "USER_VIEW", ... ] }` (**non-empty**); each code must exist in global `privilege`. Replaces all `tenant_privilege_allowance` rows for the tenant. **200** `data.privileges` (sorted). **404** if tenant id unknown; **400** for unknown code or empty list. Writes **`audit_event`** `TENANT_PRIVILEGE_POOL_REPLACED` (see [`audit.md`](./audit.md)).
+- **`PUT /api/v1/platform/tenants/{tenantId}/privilege-pool`** — Removed from API surface. Route is not registered.
 - **Tenant registry (list / create / rename):** see [`platform-tenant-admin.md`](./platform-tenant-admin.md) — **`GET/POST /api/v1/platform/tenants`**, **`GET/PATCH /api/v1/platform/tenants/{tenantId}`**.
 
 ## API — consumers (all signed-in users in tenant context)

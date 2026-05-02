@@ -80,7 +80,7 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 | Item | Value |
 |------|--------|
 | Demo tenant handle | **`demo`** |
-| Second tenant (M1) | **`acme`** — same admin user; **Reader** role (**`USER_VIEW`** only); narrower privilege pool than `demo` |
+| Second tenant (M1) | **`acme`** — same admin user; **Reader** role (**`USER_VIEW`** only); narrower role grants than `demo` |
 | Admin user | **`admin@demo.lvh.me`** / **`ChangeMe!1`** |
 | Privilege | **`USER_VIEW`** (and others on `demo`) via roles |
 

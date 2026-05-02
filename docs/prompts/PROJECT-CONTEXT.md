@@ -46,7 +46,7 @@ Cross-cutting requirements (must stay consistent across prompts 1–6):
 
 - Multi-tenant subdomain model (including local *.lvh.me); env-driven `BASE_DOMAIN`, `AUTH_SUBDOMAIN`, `APP_SUBDOMAIN`, reserved subdomains
 - auth host: login, register, verify-email, forgot password; post-login redirect to `{tenant}.{BASE_DOMAIN}` or `app.{BASE_DOMAIN}` when tenant has no handle; self-service registration contract: [`docs/modules/account-registration.md`](../modules/account-registration.md)
-- Privilege-based authorization: privilege = action + resource; tenant privilege pool subset of global catalog; SuperAdmin effective-all via same enforcement path (no ad-hoc bypass)
+- Privilege-based authorization: privilege = action + resource; tenant roles assign privileges from global catalog; SuperAdmin effective-all via same enforcement path (no ad-hoc bypass)
 - Per-tenant and per-business-unit roles where the domain requires BU-scoped access
 - Cookie/session + CSRF for web (if cookies); safe returnTo / open-redirect rules; Flutter uses token session model — see security guides
 - Reverse proxy forwarded header trust; canonical scheme/host; API base `https://api.{BASE_DOMAIN}/v1/`
@@ -54,7 +54,7 @@ Cross-cutting requirements (must stay consistent across prompts 1–6):
 - Web: unique URL per screen for shareable layout; filter/query state for shareable filtered views where specified in module docs
 - Theming: light/dark + swappable custom themes consistent across layouts (`WEB-THEMING-AND-DESIGN-SYSTEM`); modern **split auth** (marketing + form) + glass surfaces; tenant **`/app`** **shell** (sidebar from `GET /api/v1/me/navigation`, header user menu, shared layout) — `tenant-web-vertical-slice.md` §3.6
 - i18n across web and Flutter; menu structure driven from datamodel API (`GET /api/v1/me/navigation`); locale via `PATCH /api/v1/me/locale` (web: header user menu on tenant routes)
-- Commercial gating: active subscription widens **tenant privilege pool** and **feature flags** (both enforced; order in architecture doc)
+- Commercial gating: active subscription drives **feature flags** / `planFeatureCodes`; authorization remains role-based (order in architecture doc)
 - Inbox: in-app + **system-sent** comms; **minimal PII** in message rows (keys, metadata, provider refs — not full bodies/secrets by default)
 - Retention: **≥10y** default for core business + audit; **controlled deletion** + **anonymization** where policy allows; **export/erasure** paths for legal/subject requests
 - E2E (Playwright): subdomain + auth + CSRF flows per `E2E-TESTING-STANDARDS`
@@ -100,10 +100,10 @@ Product scope, stack, and constraints. **Delivery is phased** using milestones i
 
 ## Platform capabilities (target)
 - **Identity:** register user (tenant handle + **email verification** before login — [`docs/modules/account-registration.md`](../modules/account-registration.md)), login, forgot password; future **OIDC/SSO** (M7) — email/password first.
-- **Tenancy:** multi-tenant; tenant handle subdomain + app without subdomain + auth subdomain; invitations for **non-users** and **existing users**; membership and roles **per tenant**; **privilege pool** per tenant assigned from global catalog; SuperAdmin assigns global catalog and tenant pool caps; **privilege indicating SuperAdmin**; every sensitive operation mapped to **CRUD-level** (or finer) privileges.
+- **Tenancy:** multi-tenant; tenant handle subdomain + app without subdomain + auth subdomain; invitations for **non-users** and **existing users**; membership and roles **per tenant**; role privileges assigned from global catalog; **privilege indicating SuperAdmin**; every sensitive operation mapped to **CRUD-level** (or finer) privileges.
 - **Settings:** **global** settings (SuperAdmin); **per-tenant** settings (tenant admin).
-- **Navigation:** application **menu structure in datamodel**; visibility by **privilege**, **subscription-derived feature flags**, and effective **tenant privilege pool** (pool widened by active subscription per below).
-- **Commercial:** **predefined plan features** (known to code for gating); **plan editor** from that catalog only; **subscriptions**; **billing** via **PayPal** and **Stripe**, using each provider’s **pay-as-you-go / usage-based** billing capabilities (metering, invoices, webhooks — architecture + `commercial-billing` module); support **both** providers; deployment chooses or offers both. **Active subscription** simultaneously **widens the tenant’s allowed privilege pool** (what admins may assign) **and** sets **feature flags** used for gating (two layers; both apply — resolver order in regenerated architecture).
+- **Navigation:** application **menu structure in datamodel**; visibility by **privilege** and optional **subscription-derived feature flags**.
+- **Commercial:** **predefined plan features** (known to code for gating); **plan editor** from that catalog only; **subscriptions**; **billing** via **PayPal** and **Stripe**, using each provider’s **pay-as-you-go / usage-based** billing capabilities (metering, invoices, webhooks — architecture + `commercial-billing` module); support **both** providers; deployment chooses or offers both. **Active subscription** sets **feature flags** used for gating (resolver order in regenerated architecture).
 - **Messaging:** **in-app notifications** and an **inbox** for **system-sent communications** (invites, security, billing-related notices, etc.). **Mandatory PII-free notification storage** and **central `NotificationService`** are specified in **`docs/modules/notifications-inbox.md`** (allowed columns only; no bodies/subjects/PII/free text on notification rows; email bodies only at send-time; DB keeps `external_message_id` only). See also `mail-adapter`. Audit trail for sensitive actions.
 - **Documents:** store and serve via **MinIO**; **no real-time collaborative editing**. **Sharing:** grant access by **tenant user** and/or **role**; each user has a **document hub** listing **owned** and **shared-with-me** documents. **Attachments:** any tenant business record may **link** to one or more documents (generic link pattern in schema — entity key + document id within tenant).
 - **i18n** end-to-end (API, web, Flutter).
@@ -147,7 +147,7 @@ Product scope, stack, and constraints. **Delivery is phased** using milestones i
 
 ## Commercial / subscriptions (target state)
 - **Plans:** yes — composed from **predefined feature codes** mirrored in DB
-- **Gating:** **yes** — stable plan feature codes in code + DB; **active subscription** expands (**1**) tenant **privilege pool** ceiling and (**2**) **feature flags**; both feed the access resolver (order: regenerate Phase 1 architecture — see BUILD-CHECKLIST)
+- **Gating:** **yes** — stable plan feature codes in code + DB; **active subscription** controls **feature flags** and plan-feature menu gates; authorization is role-based (order: regenerate Phase 1 architecture — see BUILD-CHECKLIST)
 - **Billing:** **PayPal** + **Stripe**; **usage / pay-as-you-go**; webhooks and reconciliation per provider; PCI and hosted checkout fields per provider docs — specify env keys and flows in `docs/modules/commercial-billing.md`
 
 ## Notes

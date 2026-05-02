@@ -39,22 +39,25 @@ public class NavigationMenuService {
 
 	@Transactional(readOnly = true)
 	public List<NavigationItemDto> effectiveMenu(UUID userId, UUID tenantId) {
-		// Platform superadmins see all nav items whose privilege is in the tenant's pool ceiling,
-		// regardless of their personal role grants in that tenant.
-		List<String> privCodes = userAccountRepository.findById(userId).map(u -> u.isPlatformSuperadmin()).orElse(false)
-				? permissionService.tenantPoolPrivilegeCodes(tenantId)
-				: permissionService.effectivePrivilegeCodes(userId, tenantId);
-		Set<String> privSet = new HashSet<>(privCodes);
+		// Platform superadmins see all tenant nav items unconditionally (they bypass the pool ceiling).
+		// Regular users are filtered to their effective privilege grants within the tenant.
+		boolean isSuperadmin = userAccountRepository.findById(userId).map(u -> u.isPlatformSuperadmin()).orElse(false);
+		Set<String> privSet;
+		if (isSuperadmin) {
+			privSet = null; // null means "bypass privilege filter"
+		} else {
+			privSet = new HashSet<>(permissionService.effectivePrivilegeCodes(userId, tenantId));
+		}
 		Set<String> activePlanFeatureCodes = new HashSet<>(subscriptionGatingService.activePlanFeatureCodesOrEmpty(tenantId));
 
-		List<NavMenuItemEntity> rows = navMenuItemRepository.findByTenantIdOrderBySortOrderAsc(tenantId);
+		List<NavMenuItemEntity> rows = navMenuItemRepository.findAllByOrderBySortOrderAsc();
 		if (rows.isEmpty()) {
 			return defaultMenuWhenTenantRowsMissing(privSet, activePlanFeatureCodes);
 		}
 		List<NavMenuItemEntity> visible = new ArrayList<>();
 		for (NavMenuItemEntity e : rows) {
 			String req = e.getRequiredPrivilegeCode();
-			if (!(req == null || req.isEmpty() || privSet.contains(req))) {
+			if (privSet != null && !(req == null || req.isEmpty() || privSet.contains(req))) {
 				continue;
 			}
 			String reqPf = e.getRequiredPlanFeatureCode();
@@ -97,7 +100,7 @@ public class NavigationMenuService {
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/users", "nav.users", 10, "USER_VIEW", null);
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/roles", "nav.roles", 12, "ROLE_VIEW", null);
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/tenant-currencies", "nav.tenant_currencies", 16,
-				"TENANT_CURRENCY_VIEW", null);
+				"TENANT_CURRENCY_VIEW", null); // no plan-feature gate — tenant currencies is a core feature
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/documents", "nav.documents", 15,
 				"DOCUMENT_VIEW", null);
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/settings", "nav.tenant_settings", 20,
@@ -109,7 +112,7 @@ public class NavigationMenuService {
 	private static void addDefaultIfVisible(List<NavigationItemDto> out, Set<String> privSet,
 			Set<String> activePlanFeatureCodes, String path, String labelKey, int sortOrder, String requiredPrivilege,
 			String requiredPlanFeature) {
-		if (requiredPrivilege != null && !requiredPrivilege.isBlank() && !privSet.contains(requiredPrivilege)) {
+		if (privSet != null && requiredPrivilege != null && !requiredPrivilege.isBlank() && !privSet.contains(requiredPrivilege)) {
 			return;
 		}
 		if (StringUtils.hasText(requiredPlanFeature) && !activePlanFeatureCodes.contains(requiredPlanFeature.trim())) {

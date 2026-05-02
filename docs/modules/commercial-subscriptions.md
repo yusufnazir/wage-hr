@@ -11,18 +11,17 @@
 - Each **tenant** has at most **one** persisted subscription row (v1 simplification): links the tenant to a **`commercial_plan`** and a **status** lifecycle enum.
 - **Platform SuperAdmin** assigns or updates the plan via platform API. **Additionally (M3):** Stripe **`checkout.session.completed`** / **`customer.subscription.deleted`** webhooks may **automatically** set `tenant_subscription` to **`ACTIVE`** / **`CANCELLED`** when tenant resolution succeeds and payload checks pass (see [`commercial-billing.md`](./commercial-billing.md) Path B); audit **`TENANT_SUBSCRIPTION_STRIPE_RECONCILED`**.
 - **Authenticated tenant members** can **read** the effective subscription (plan + resolved feature codes) for the **current tenant context** (`Host` / tenant routing).
-- **Gating (v1):** `tenant_privilege_allowance` rows are **not** auto-mutated when a subscription changes. At **authorization** time, the **effective privilege pool ceiling** is the **union** of stored allowances and **subscription-derived** privilege codes (see **Gating resolver** below). **Product feature flags** for the client are the plan’s **`planFeatureCodes`**, exposed on **`GET /api/v1/me`** as `planFeatureCodes` when the subscription is **`ACTIVE`** (empty list otherwise). Optional **`nav_menu_item.required_plan_feature_code`** (or separate flag tables) remain **out of scope** until proposed.
+- **Gating (v1):** subscription state controls **plan feature flags** and menu gating via `required_plan_feature_code`. Authorization remains role-based via tenant `role_privilege` grants (plus superadmin elevation in `PermissionService`). **`GET /api/v1/me`** exposes plan features as `planFeatureCodes` when the subscription is **`ACTIVE`** (empty list otherwise).
 
 ---
 
 ## Gating resolver (v1)
 
-**Order (tenant-scoped checks):** authentication → tenant context → membership → **effective pool** (allowances **∪** subscription-derived privileges from **`PlanFeaturePrivilegeWiring`**) → role grants on that pool → handler. **Platform SuperAdmin** elevation (global registered privilege) remains as documented in [`security.md`](./security.md).
+**Order (tenant-scoped checks):** authentication → tenant context → membership → role grants (`role_privilege`) / superadmin elevation → handler. Subscription contributes `planFeatureCodes` for feature/menu gating.
 
-- **Subscription-derived privileges:** only when `tenant_subscription.status = ACTIVE`. Plan features come from the linked `commercial_plan` + `commercial_plan_feature` → `plan_feature.code`. Each code is mapped in application code (`com.wagepayroll.plans.PlanFeaturePrivilegeWiring`) to zero or more **`privilege.code`** values that exist in the global catalog. **Example shipped mapping:** `HR_ESSENTIALS` → `USER_INVITE`. Unmapped / unknown plan feature codes are ignored for privilege expansion.
-- **`GET /api/v1/me`:** returns effective `privileges` (role ∩ effective pool) and **`planFeatureCodes`** from the active subscription (or `[]`).
-- **`GET /api/v1/tenant/privileges/pool`:** returns the **effective ceiling** (sorted union), same definition as pool checks in `PermissionService`.
-- **Navigation:** items use `required_privilege_code` **and** optional **`required_plan_feature_code`** on `nav_menu_item` (see [`navigation-menu.md`](./navigation-menu.md)); widening the effective pool can reveal privilege-gated items once the user’s role already grants the underlying privilege; plan-feature-gated items appear only when the **active** subscription’s plan includes that feature code.
+- **`GET /api/v1/me`:** returns effective `privileges` (role-derived) and **`planFeatureCodes`** from the active subscription (or `[]`).
+- **`GET /api/v1/tenant/privileges/pool`:** returns sorted global privilege catalog codes for role editor UIs.
+- **Navigation:** items use `required_privilege_code` **and** optional **`required_plan_feature_code`** on `nav_menu_item` (see [`navigation-menu.md`](./navigation-menu.md)); privilege-gated items require role grants, and plan-feature-gated items appear only when the **active** subscription’s plan includes that feature code.
 
 ---
 

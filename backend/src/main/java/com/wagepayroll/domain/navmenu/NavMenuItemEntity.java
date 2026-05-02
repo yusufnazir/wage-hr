@@ -7,14 +7,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import com.wagepayroll.domain.TenantScopedEntity;
+import com.wagepayroll.domain.AbstractUuidEntity;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "nav_menu_item")
-public class NavMenuItemEntity extends TenantScopedEntity {
+public class NavMenuItemEntity extends AbstractUuidEntity {
 
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	@Column(name = "parent_id", length = 36, nullable = true)

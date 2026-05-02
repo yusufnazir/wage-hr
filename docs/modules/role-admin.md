@@ -34,7 +34,7 @@ Also provide a platform superadmin view into the **role templates** used for new
 - Tenant-scoped **roles listing**
 - Tenant-scoped **role edit view** (separate route)
   - Rename a role
-  - Replace role’s granted privileges (within the tenant’s effective pool ceiling)
+  - Replace role’s granted privileges (validated against global privilege catalog)
 - Privilege-driven UI:
   - **ROLE_VIEW**: can view list + detail read-only
   - **ROLE_EDIT**: can edit role name/privileges and create roles
@@ -64,7 +64,7 @@ Existing tenant-scoped entities:
 - **`role`**: `{ id, tenant_id, name, created_at, updated_at }`
 - **`role_privilege`**: `{ id, tenant_id, role_id, privilege_id }`
 - **`privilege`** (global catalog): `{ id, code, action, resource, ... }`
-- **`tenant_privilege_allowance`** (+ subscription derived): defines the **effective pool ceiling** of privilege codes assignable in the tenant (see [`security.md`](./security.md))
+- **`privilege`** (global catalog): defines assignable privilege codes for tenant role editing (see [`security.md`](./security.md))
 
 ### Platform role templates (new persistence)
 
@@ -117,13 +117,13 @@ Platform superadmin access to template viewing is gated by existing platform-sup
 **Notes**
 
 - Any tenant-scoped role edits performed by a platform superadmin via elevation require **`X-Break-Glass-Reason`** per [`security.md`](./security.md) (mutations only).
-- Superadmin elevation for a tenant without membership must still respect that tenant’s **effective pool ceiling** (see [`superadmin-tenant-lens.md`](./superadmin-tenant-lens.md)).
+- Superadmin elevation for tenant APIs follows the same permission path and break-glass rules (see [`superadmin-tenant-lens.md`](./superadmin-tenant-lens.md)).
 
 ---
 
 ## 5) Business rules
 
-1. **Assignable privileges** for a role are limited to the tenant’s **effective pool ceiling** (tenant allowances ∪ subscription-derived).
+1. **Assignable privileges** for a role come from the global privilege catalog.
 2. A role may not be assigned a privilege code that is not present in the global catalog.
 3. **Role name**:
    - Required, trimmed
@@ -146,7 +146,7 @@ Base path: **`/api/v1/tenant/roles`** (requires tenant context via host or `X-Te
 |--------|------|-----------|-------------|
 | GET | `/api/v1/tenant/roles` | `ROLE_VIEW` | List roles. Query: `q` (optional contains search on name), `sort` = `NAME_ASC` \| `NAME_DESC` (default `NAME_ASC`). Response `data.items[]`: `{ id, name, privilegeCodes[], userCount }` (userCount optional for v1; if expensive, omit). |
 | POST | `/api/v1/tenant/roles` | `ROLE_EDIT` | Create role. Body: `{ "name": "...", "privilegeCodes": ["USER_VIEW", ...] }` (`privilegeCodes` optional, default empty). Response `201` with `data.role`. Errors: `400` validation, `409` duplicate name. |
-| GET | `/api/v1/tenant/roles/{roleId}` | `ROLE_VIEW` | Role detail. Response `data`: `{ role: { id, name, privilegeCodes[] }, assignablePrivilegeCodes[] }` where `assignablePrivilegeCodes` = effective pool ceiling (sorted). |
+| GET | `/api/v1/tenant/roles/{roleId}` | `ROLE_VIEW` | Role detail. Response `data`: `{ role: { id, name, privilegeCodes[] }, assignablePrivilegeCodes[] }` where `assignablePrivilegeCodes` = global privilege catalog (sorted). |
 | PATCH | `/api/v1/tenant/roles/{roleId}` | `ROLE_EDIT` | Update role. Body: `{ "name": "...", "privilegeCodes": ["..."] }` (either or both; `privilegeCodes` is full replacement when present). Errors: `400` validation, `403` `CANNOT_LOCK_OUT_SELF` (or equivalent), `409` duplicate name, `404` unknown role. |
 
 ### Error shape
@@ -202,7 +202,7 @@ Platform superadmin:
 - If **ROLE_EDIT**:
   - Edit role name
   - Multi-select of assignable privilege codes
-  - Privilege picker must make it obvious that only the tenant’s ceiling is assignable (e.g. “Assignable privileges (based on tenant plan + allowances)”)
+  - Privilege picker must make it obvious that assignable privileges come from the global catalog
   - Save button disabled while invalid / no changes
   - Surface server errors:
     - Duplicate name
@@ -227,13 +227,12 @@ For platform operators, add a synthetic platform nav item (not tenant nav_menu_i
 ## 8) Edge cases
 
 - Tenant has zero custom roles beyond seeds → list still works; creation allowed when ROLE_EDIT.
-- Tenant effective pool ceiling changes (superadmin updates pool or subscription changes):
+- Global privilege catalog changes:
   - Role detail should reflect new `assignablePrivilegeCodes`.
-  - Existing role privilege assignments that are no longer in ceiling should be treated as invalid for future edits; behavior must be explicit:
-    - v1 recommendation: server rejects PATCH when requested `privilegeCodes` contains non-assignable codes; existing assignments outside ceiling should not be silently expanded.
+  - Server rejects PATCH when requested `privilegeCodes` contains unknown codes.
 - Superadmin operator without membership:
-  - Can read roles when ROLE_VIEW is in tenant ceiling.
-  - Can mutate only with break-glass header and only when ROLE_EDIT is in tenant ceiling.
+  - Can read roles when ROLE_VIEW exists in global privilege catalog.
+  - Can mutate only with break-glass header when ROLE_EDIT exists in global privilege catalog.
 - Template visibility:
   - Non-superadmin receives 403.
   - Templates never vary by tenant.
@@ -249,10 +248,10 @@ For platform operators, add a synthetic platform nav item (not tenant nav_menu_i
 3. With `ROLE_EDIT`:
    - Can create a role; duplicate name fails with **409**.
    - Can edit a role’s name and privileges; saved state reloads correctly.
-4. Assigning privilege codes not in tenant ceiling fails with **400** (explicit error code).
+4. Assigning unknown privilege codes fails with **400** (explicit error code).
 5. Self-lockout prevention works: editing a role cannot remove the caller’s last source of `ROLE_EDIT` (request fails with **403** and a stable error code).
 6. Platform superadmin via tenant lens:
-   - Read without membership succeeds when the privilege is within tenant ceiling.
+  - Read without membership succeeds when the privilege exists in global catalog.
    - Mutations require `X-Break-Glass-Reason` and are audited per existing break-glass rules.
 7. Platform superadmin can open `/app/platform-role-templates` and see two templates (Admin, Employee) with privilege lists.
 8. Registration creating tenant (see [`account-registration.md`](./account-registration.md) for verification + API):
@@ -299,6 +298,6 @@ For platform operators, add a synthetic platform nav item (not tenant nav_menu_i
 ### Web flows (v1)
 
 - `/app/roles` lists roles; `ROLE_EDIT` users can create a role (name only) then continue editing in `/app/roles/[roleId]`.
-- `/app/roles/[roleId]` shows assignable privilege codes from the server (tenant ceiling) and allows full replacement of role privileges.
+- `/app/roles/[roleId]` shows assignable privilege codes from the server (global catalog) and allows full replacement of role privileges.
 - On `admin.{BASE_DOMAIN}` with tenant lens, the roles UI requires a break-glass reason for create/save and sends `X-Break-Glass-Reason`.
 

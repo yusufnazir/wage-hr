@@ -14,15 +14,14 @@ Foundational security model for multi-tenant systems. Backend is the authority; 
 - SuperAdmin MUST still go through the **same privilege validation** as every other user (no bypass, no hidden code paths).
 - Every new feature MUST **register** its privileges so SuperAdmin receives them in the catalog.
 
-## Privilege pools
+## Privilege catalog
 
-- **Global pool** — defined by SuperAdmin: master list of privileges that may exist in the system.
-- **Tenant pool** — subset assigned to a tenant; tenant admins assign roles from this pool.
-- **Constraint:** tenant-allowed privileges ⊆ global pool (tenant cannot invent privileges outside what SuperAdmin exposed).
+- **Global catalog** — defined by SuperAdmin: master list of privileges that may exist in the system.
+- **Tenant roles** assign privileges from that global catalog; tenant admins cannot invent unknown codes.
 
 ## Tenant admin
 
-- May create roles, assign privileges from the **allowed tenant pool**, and define tenant-specific pools only where permitted by global policy.
+- May create roles and assign privileges from the **global catalog**.
 - Cannot override SuperAdmin-defined global constraints.
 
 ## Enforcement
@@ -33,7 +32,7 @@ Foundational security model for multi-tenant systems. Backend is the authority; 
 
 ## Data model (reference)
 
-Typical tables (names may vary by implementation): `users`, `roles`, `privileges`, `role_privileges`, `user_roles`, `privilege_pools` (global + tenant-scoped definitions).
+Typical tables (names may vary by implementation): `users`, `roles`, `privileges`, `role_privileges`, `user_roles`.
 
 ## Liquibase
 

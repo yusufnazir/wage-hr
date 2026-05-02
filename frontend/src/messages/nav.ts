@@ -4,11 +4,15 @@
  */
 
 const en: Record<string, string> = {
+  "nav.group.workspace": "Workspace",
+  "nav.group.security": "Security",
+  "nav.group.administration": "Administration",
   "nav.dashboard": "Dashboard",
   "nav.users": "Users",
   "nav.tenant_settings": "Tenant settings",
   "nav.documents": "Documents",
   "nav.roles": "Roles",
+  "nav.role_admin": "Roles",
   "nav.platform_settings": "Platform settings",
   "nav.platform_tenants": "Tenants",
   "nav.platform_role_templates": "Role templates",
@@ -236,11 +240,15 @@ const en: Record<string, string> = {
 };
 
 const nl: Record<string, string> = {
+  "nav.group.workspace": "Werkruimte",
+  "nav.group.security": "Beveiliging",
+  "nav.group.administration": "Beheer",
   "nav.dashboard": "Overzicht",
   "nav.users": "Gebruikers",
   "nav.tenant_settings": "Tenantinstellingen",
   "nav.documents": "Documenten",
   "nav.roles": "Rollen",
+  "nav.role_admin": "Rollen",
   "nav.platform_settings": "Platforminstellingen",
   "nav.platform_tenants": "Tenants",
   "nav.platform_role_templates": "Roltemplates",

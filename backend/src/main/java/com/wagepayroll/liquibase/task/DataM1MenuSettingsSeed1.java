@@ -3,7 +3,6 @@ package com.wagepayroll.liquibase.task;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -28,6 +27,9 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 	private static final UUID NAV_DASH = UUID.fromString("50000000-0000-0000-0000-000000000001");
 	private static final UUID NAV_USERS = UUID.fromString("50000000-0000-0000-0000-000000000002");
 	private static final UUID NAV_SETTINGS = UUID.fromString("50000000-0000-0000-0000-000000000003");
+	private static final UUID NAV_DOCUMENTS = UUID.fromString("50000000-0000-0000-0000-000000000004");
+	private static final UUID NAV_ROLE_ADMIN = UUID.fromString("50000000-0000-0000-0000-000000000005");
+	private static final UUID NAV_TENANT_CURRENCIES = UUID.fromString("50000000-0000-0000-0000-000000000006");
 
 	@Override
 	public void execute(Database database) throws CustomChangeException {
@@ -68,10 +70,14 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 					ps.executeUpdate();
 				}
 
-				insertNav(c, NAV_DASH, TENANT_ID, null, "/app", "nav.dashboard", 0, null, ts);
-				insertNav(c, NAV_USERS, TENANT_ID, null, "/app/users", "nav.users", 10, "USER_VIEW", ts);
-				insertNav(c, NAV_SETTINGS, TENANT_ID, null, "/app/settings", "nav.tenant_settings", 20,
-						"TENANT_SETTINGS_EDIT", ts);
+				insertNav(c, NAV_DASH, "/app", "nav.dashboard", 0, null, null, ts);
+				insertNav(c, NAV_USERS, "/app/users", "nav.users", 10, "USER_VIEW", null, ts);
+				insertNav(c, NAV_TENANT_CURRENCIES, "/app/tenant-currencies", "nav.tenant_currencies", 16,
+						"TENANT_CURRENCY_VIEW", null, ts);
+				insertNav(c, NAV_SETTINGS, "/app/settings", "nav.tenant_settings", 20, "TENANT_SETTINGS_EDIT", null,
+						ts);
+				insertNav(c, NAV_DOCUMENTS, "/app/documents", "nav.documents", 30, "DOCUMENT_VIEW", null, ts);
+				insertNav(c, NAV_ROLE_ADMIN, "/app/roles", "nav.role_admin", 35, "ROLE_VIEW", null, ts);
 
 				c.commit();
 			}
@@ -85,26 +91,26 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertNav(Connection c, UUID id, UUID tenantId, UUID parentId, String path, String labelKey,
-			int sortOrder, String requiredPriv, Timestamp ts) throws Exception {
+	private static void insertNav(Connection c, UUID id, String path, String labelKey, int sortOrder,
+			String requiredPriv, String requiredPlanFeature, Timestamp ts) throws Exception {
 		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO nav_menu_item (id, tenant_id, parent_id, path, label_key, sort_order, required_privilege_code, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)")) {
+				"INSERT INTO nav_menu_item (id, parent_id, path, label_key, sort_order, required_privilege_code, required_plan_feature_code, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			if (parentId == null) {
-				ps.setNull(3, Types.VARCHAR);
-			}
-			else {
-				ps.setString(3, parentId.toString());
-			}
-			ps.setString(4, path);
-			ps.setString(5, labelKey);
-			ps.setInt(6, sortOrder);
+			ps.setObject(2, null);
+			ps.setString(3, path);
+			ps.setString(4, labelKey);
+			ps.setInt(5, sortOrder);
 			if (requiredPriv == null) {
-				ps.setNull(7, Types.VARCHAR);
+				ps.setObject(6, null);
 			}
 			else {
-				ps.setString(7, requiredPriv);
+				ps.setString(6, requiredPriv);
+			}
+			if (requiredPlanFeature == null) {
+				ps.setObject(7, null);
+			}
+			else {
+				ps.setString(7, requiredPlanFeature);
 			}
 			ps.setTimestamp(8, ts);
 			ps.setTimestamp(9, ts);

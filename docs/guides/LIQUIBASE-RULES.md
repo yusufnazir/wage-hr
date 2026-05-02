@@ -229,11 +229,11 @@ SchemaCustomChange
 
 ---
 
-### 7.3 Privilege Pool Model
+### 7.3 Privilege Catalog Model
 
-* Global privilege pool (defined by system)
-* Tenant privilege pool (subset of global pool)
-* Tenant admin can only assign within allowed pool
+* Global privilege catalog (defined by system)
+* Tenant roles assign privileges from the global catalog
+* Tenant admin can only assign existing catalog codes
 
 ---
 

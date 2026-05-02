@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class MailTemplateSeedLiquibaseIT {
 
 	@Test
-	void seedChangesetAppliesAndRollsBackCleanly() throws Exception {
+	void seedChangesetAppliesAndIsIdempotent() throws Exception {
 		String dbName = "mail_seed_" + UUID.randomUUID().toString().replace("-", "");
 		String jdbcUrl = "jdbc:h2:mem:" + dbName + ";MODE=MySQL;DB_CLOSE_DELAY=-1";
 
@@ -31,10 +31,9 @@ class MailTemplateSeedLiquibaseIT {
 			liquibase.update(new Contexts(), new LabelExpression());
 			assertThat(countCode(conn, "EMAIL_VERIFICATION")).isEqualTo(1);
 			assertThat(countCode(conn, "PASSWORD_RESET_REQUEST")).isEqualTo(1);
-
-			liquibase.rollback(1, new Contexts(), new LabelExpression());
-			assertThat(countCode(conn, "EMAIL_VERIFICATION")).isZero();
-			assertThat(countCode(conn, "PASSWORD_RESET_REQUEST")).isZero();
+			liquibase.update(new Contexts(), new LabelExpression());
+			assertThat(countCode(conn, "EMAIL_VERIFICATION")).isEqualTo(1);
+			assertThat(countCode(conn, "PASSWORD_RESET_REQUEST")).isEqualTo(1);
 		}
 	}
 

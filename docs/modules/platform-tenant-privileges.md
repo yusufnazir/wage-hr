@@ -10,7 +10,7 @@
 
 ## Superseded behavior (do not implement)
 
-The earlier “tenant privileges inspector” compared **platform superadmin effective privileges** (`GET /api/v1/me`) to **tenant pool ceiling** in lens context. That was misleading for operators: superadmin lens semantics are not a substitute for “what privileges do **role templates** grant new tenants?” That UI and **`nav.platform_tenant_privileges`** are **removed**.
+The earlier “tenant privileges inspector” compared **platform superadmin effective privileges** (`GET /api/v1/me`) to tenant-scoped behavior. That was misleading for operators: superadmin lens semantics are not a substitute for “what privileges do **role templates** grant new tenants?” That UI and **`nav.platform_tenant_privileges`** are **removed**.
 
 ---
 
@@ -19,7 +19,7 @@ The earlier “tenant privileges inspector” compared **platform superadmin eff
 | Concept | Meaning |
 |--------|--------|
 | **`role_template` + `role_template_privilege`** | Bootstrap blueprint: privilege codes **copied** into new tenant `role` / `role_privilege` when a tenant is created (e.g. registration). |
-| **`tenant_privilege_allowance` + subscription-derived ceiling** | **Assignable ceiling** inside a tenant (`PermissionService`). It can **differ** from the union of template privileges unless operations keep them aligned. |
+| **Tenant role grants (`role_privilege`)** | Runtime privileges in a tenant are derived from assigned roles. |
 
 This module’s screen is **templates only** — it does **not** require a tenant lens and does **not** use `GET /api/v1/me` `privileges` as primary content.
 
@@ -54,7 +54,7 @@ This module’s screen is **templates only** — it does **not** require a tenan
 - `GET /api/v1/platform/role-templates` — list templates with `privilegeCodes` per [`PlatformRoleTemplateDto`](../../backend/src/main/java/com/wagepayroll/api/dto/PlatformRoleTemplateDto.java).
 - `GET /api/v1/platform/privileges/catalog` — platform superadmin only.
 
-**Related but not part of this screen:** `GET /api/v1/platform/tenants/{tenantId}/privilege-pool` remains available for tooling / other features; this matrix does not call it.
+**Related but not part of this screen:** `GET /api/v1/tenant/privileges/pool` exposes the sorted global privilege catalog; this matrix does not call it.
 
 ---
 

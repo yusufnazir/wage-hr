@@ -4,9 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthSplitLayout } from "@/components/shell/AuthSplitLayout";
 import { authGlassCardClassName } from "@/components/shell/AuthShell";
-import { EmailNotVerifiedError, fetchMe, fetchMeTenants, loginJson, redirectCheck } from "@/lib/api";
+import {
+  EmailNotVerifiedError,
+  fetchMeTenants,
+  fetchPlatformPrivilegeCatalog,
+  loginJson,
+  redirectCheck,
+  type TenantSummary,
+} from "@/lib/api";
 import { defaultTenantAppUrl, getAdminWebOrigin, isAdminWebOriginUrl, tenantWebAppUrlForHandle } from "@/lib/web-origins";
-import type { MePayload } from "@/lib/api";
+
+type SessionLandingContext = {
+  isPlatformSuperadmin: boolean;
+  tenants: TenantSummary[];
+};
 
 function tenantHandleFromAbsoluteUrl(absoluteUrl: string): string | null {
   try {
@@ -22,65 +33,59 @@ function tenantHandleFromAbsoluteUrl(absoluteUrl: string): string | null {
   }
 }
 
-async function resolvePostLoginNext(me: MePayload): Promise<string> {
-  let memberships: Awaited<ReturnType<typeof fetchMeTenants>> | null = null;
-  async function loadMemberships() {
-    if (!memberships) {
-      memberships = await fetchMeTenants();
-    }
-    return memberships;
-  }
+async function resolvePostLoginNext(session: SessionLandingContext): Promise<string> {
+  const memberships = session.tenants;
 
   const returnToParam = new URLSearchParams(window.location.search).get("returnTo");
   if (returnToParam && (await redirectCheck(returnToParam))) {
-    if (!me.platformSuperadmin && isAdminWebOriginUrl(returnToParam)) {
-      return defaultTenantAppUrl();
+    if (!session.isPlatformSuperadmin && isAdminWebOriginUrl(returnToParam)) {
+      return memberships.length > 0 ? tenantWebAppUrlForHandle(memberships[0]!.handle) : defaultTenantAppUrl();
     }
 
     // Avoid landing on a tenant host where this principal has no membership.
-    if (!me.platformSuperadmin) {
+    if (!session.isPlatformSuperadmin) {
       const requestedHandle = tenantHandleFromAbsoluteUrl(returnToParam);
       if (requestedHandle) {
-        const inCurrentContext = me.tenantHandle?.toLowerCase() === requestedHandle;
-        if (!inCurrentContext) {
-          const tenantsRes = await loadMemberships();
-          const hasMembership =
-            tenantsRes.ok && tenantsRes.tenants.some((t) => t.handle.toLowerCase() === requestedHandle);
-          if (!hasMembership) {
-            if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
-              return tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
-            }
-            return defaultTenantAppUrl();
+        const hasMembership = memberships.some((t) => t.handle.toLowerCase() === requestedHandle);
+        if (!hasMembership) {
+          if (memberships.length > 0) {
+            return tenantWebAppUrlForHandle(memberships[0]!.handle);
           }
+          return defaultTenantAppUrl();
         }
       }
     }
 
     return returnToParam;
   }
-  if (me.platformSuperadmin) {
+  if (session.isPlatformSuperadmin) {
     return `${getAdminWebOrigin()}/app`;
   }
-  if (me.tenantHandle) {
-    return tenantWebAppUrlForHandle(me.tenantHandle);
-  }
-  // Auth host has no tenant context — look up the user's first tenant membership.
-  const tenantsRes = await loadMemberships();
-  if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
-    return tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
+  if (memberships.length > 0) {
+    return tenantWebAppUrlForHandle(memberships[0]!.handle);
   }
   return defaultTenantAppUrl();
 }
 
 /** Prefer resolved tenant/admin (or returnTo); if not allow-listed, fall back to `/` (session router). */
-async function goToPostAuthDestination(me: MePayload, navigation: "replace" | "assign"): Promise<void> {
-  const next = await resolvePostLoginNext(me);
+async function goToPostAuthDestination(session: SessionLandingContext, navigation: "replace" | "assign"): Promise<void> {
+  const next = await resolvePostLoginNext(session);
   const target = (await redirectCheck(next)) ? next : "/";
   if (navigation === "replace") {
     window.location.replace(target);
   } else {
     window.location.assign(target);
   }
+}
+
+async function detectSessionLandingContext(): Promise<SessionLandingContext | null> {
+  const [catalogRes, tenantsRes] = await Promise.all([fetchPlatformPrivilegeCatalog(), fetchMeTenants()]);
+  const isPlatformSuperadmin = catalogRes.ok;
+  const tenants = tenantsRes.ok ? tenantsRes.tenants : [];
+  if (!isPlatformSuperadmin && !tenantsRes.ok) {
+    return null;
+  }
+  return { isPlatformSuperadmin, tenants };
 }
 
 export default function LoginPage() {
@@ -92,11 +97,11 @@ export default function LoginPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const me = await fetchMe();
-      if (cancelled || !me.ok) {
+      const session = await detectSessionLandingContext();
+      if (cancelled || !session) {
         return;
       }
-      await goToPostAuthDestination(me.me, "replace");
+      await goToPostAuthDestination(session, "replace");
     })();
     return () => {
       cancelled = true;
@@ -109,12 +114,12 @@ export default function LoginPage() {
     setMsg(null);
     try {
       await loginJson(email, password);
-      const meRes = await fetchMe();
-      if (!meRes.ok) {
-        setMsg("Signed in but could not load profile.");
+      const session = await detectSessionLandingContext();
+      if (!session) {
+        setMsg("Signed in but could not resolve workspace.");
         return;
       }
-      await goToPostAuthDestination(meRes.me, "assign");
+      await goToPostAuthDestination(session, "assign");
     } catch (err) {
       if (err instanceof EmailNotVerifiedError) {
         setMsg("Confirm your email before signing in. Use Verify email / resend from the link below.");

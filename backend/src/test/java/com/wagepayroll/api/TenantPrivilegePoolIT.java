@@ -30,23 +30,20 @@ class TenantPrivilegePoolIT {
 	}
 
 	@Test
-	void poolListsAllowancesOnDemo() throws Exception {
+	void poolListsGlobalPrivilegeCatalogOnDemo() throws Exception {
 		mockMvc.perform(get("/api/v1/tenant/privileges/pool").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.privileges.length()").value(8))
-				.andExpect(jsonPath("$.data.privileges[0]").value("DOCUMENT_EDIT"))
-				.andExpect(jsonPath("$.data.privileges[1]").value("DOCUMENT_VIEW"))
-				.andExpect(jsonPath("$.data.privileges[2]").value("ROLE_EDIT"))
-				.andExpect(jsonPath("$.data.privileges[3]").value("ROLE_VIEW"))
-				.andExpect(jsonPath("$.data.privileges[4]").value("TENANT_SETTINGS_EDIT"))
-				.andExpect(jsonPath("$.data.privileges[5]").value("USER_EDIT"))
-				.andExpect(jsonPath("$.data.privileges[6]").value("USER_INVITE"))
-				.andExpect(jsonPath("$.data.privileges[7]").value("USER_VIEW"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("USER_VIEW")))
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("ROLE_VIEW")))
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("TENANT_SETTINGS_EDIT")));
 	}
 
 	@Test
-	void poolListsNarrowAllowancesOnAcme() throws Exception {
+	void poolListsGlobalPrivilegeCatalogOnAcme() throws Exception {
 		mockMvc.perform(get("/api/v1/tenant/privileges/pool").header("Host", "acme.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.privileges.length()").value(1))
-				.andExpect(jsonPath("$.data.privileges[0]").value("USER_VIEW"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("USER_VIEW")))
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("ROLE_VIEW")))
+				.andExpect(jsonPath("$.data.privileges", org.hamcrest.Matchers.hasItem("TENANT_SETTINGS_EDIT")));
 	}
 }

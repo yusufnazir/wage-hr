@@ -670,7 +670,7 @@ export async function fetchPublicSurface(): Promise<PublicSurfaceFetchResult> {
 
 export type NavigationItem = {
   id: string;
-  path: string;
+  path: string | null;
   labelKey: string;
   sortOrder: number;
   children: NavigationItem[];

@@ -65,34 +65,6 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="schema-tenant-privilege-allowance-1" author="wagepayroll">
-        <createTable tableName="tenant_privilege_allowance">
-            <column name="id" type="VARCHAR(36)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="tenant_id" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="privilege_id" type="VARCHAR(36)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-        <addForeignKeyConstraint baseTableName="tenant_privilege_allowance" baseColumnNames="tenant_id"
-                                 constraintName="fk_tenant_privilege_allowance_tenant"
-                                 referencedTableName="tenant" referencedColumnNames="id"/>
-        <addForeignKeyConstraint baseTableName="tenant_privilege_allowance" baseColumnNames="privilege_id"
-                                 constraintName="fk_tenant_privilege_allowance_privilege"
-                                 referencedTableName="privilege" referencedColumnNames="id"/>
-        <addUniqueConstraint tableName="tenant_privilege_allowance" columnNames="tenant_id,privilege_id"
-                             constraintName="uk_tenant_privilege_allowance_tenant_priv"/>
-    </changeSet>
-
     <changeSet id="schema-role-1" author="wagepayroll">
         <createTable tableName="role">
             <column name="id" type="VARCHAR(36)">

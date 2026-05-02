@@ -3,19 +3,14 @@ package com.wagepayroll.auth;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.wagepayroll.domain.membership.MembershipEntity;
 import com.wagepayroll.domain.membership.MembershipRepository;
-import com.wagepayroll.domain.navmenu.NavMenuItemEntity;
-import com.wagepayroll.domain.navmenu.NavMenuItemRepository;
 import com.wagepayroll.domain.privilege.PrivilegeEntity;
 import com.wagepayroll.domain.privilege.PrivilegeRepository;
-import com.wagepayroll.domain.privilege.TenantPrivilegeAllowanceEntity;
-import com.wagepayroll.domain.privilege.TenantPrivilegeAllowanceRepository;
 import com.wagepayroll.domain.role.RoleEntity;
 import com.wagepayroll.domain.role.RolePrivilegeEntity;
 import com.wagepayroll.domain.role.RolePrivilegeRepository;
@@ -52,20 +47,17 @@ public class RegistrationService {
 	private final RoleRepository roleRepository;
 	private final RolePrivilegeRepository rolePrivilegeRepository;
 	private final UserRoleRepository userRoleRepository;
-	private final NavMenuItemRepository navMenuItemRepository;
 	private final RoleTemplateRepository roleTemplateRepository;
 	private final RoleTemplatePrivilegeRepository roleTemplatePrivilegeRepository;
 	private final PrivilegeRepository privilegeRepository;
-	private final TenantPrivilegeAllowanceRepository tenantPrivilegeAllowanceRepository;
 	private final PlatformSettingRepository platformSettingRepository;
 	private final EmailVerificationService emailVerificationService;
 
 	public RegistrationService(UserAccountRepository users, PasswordEncoder passwordEncoder, TenantRepository tenantRepository,
 			TenantHandleValidator tenantHandleValidator, MembershipRepository membershipRepository, RoleRepository roleRepository,
 			RolePrivilegeRepository rolePrivilegeRepository, UserRoleRepository userRoleRepository,
-			NavMenuItemRepository navMenuItemRepository,
 			RoleTemplateRepository roleTemplateRepository, RoleTemplatePrivilegeRepository roleTemplatePrivilegeRepository,
-			PrivilegeRepository privilegeRepository, TenantPrivilegeAllowanceRepository tenantPrivilegeAllowanceRepository,
+			PrivilegeRepository privilegeRepository,
 			PlatformSettingRepository platformSettingRepository, EmailVerificationService emailVerificationService) {
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
@@ -75,11 +67,9 @@ public class RegistrationService {
 		this.roleRepository = roleRepository;
 		this.rolePrivilegeRepository = rolePrivilegeRepository;
 		this.userRoleRepository = userRoleRepository;
-		this.navMenuItemRepository = navMenuItemRepository;
 		this.roleTemplateRepository = roleTemplateRepository;
 		this.roleTemplatePrivilegeRepository = roleTemplatePrivilegeRepository;
 		this.privilegeRepository = privilegeRepository;
-		this.tenantPrivilegeAllowanceRepository = tenantPrivilegeAllowanceRepository;
 		this.platformSettingRepository = platformSettingRepository;
 		this.emailVerificationService = emailVerificationService;
 	}
@@ -159,7 +149,7 @@ public class RegistrationService {
 		}
 
 		Map<UUID, UUID> templateIdToTenantRoleId = new HashMap<>();
-		LinkedHashSet<UUID> ceilingPrivilegeIds = new LinkedHashSet<>();
+		List<UUID> seededPrivilegeIds = new ArrayList<>();
 
 		for (RoleTemplateEntity t : templates) {
 			RoleEntity r = new RoleEntity();
@@ -177,7 +167,7 @@ public class RegistrationService {
 				if (p == null) {
 					continue;
 				}
-				ceilingPrivilegeIds.add(privId);
+				seededPrivilegeIds.add(privId);
 				RolePrivilegeEntity rp = new RolePrivilegeEntity();
 				rp.setId(UUID.randomUUID());
 				rp.setTenantId(tenantId);
@@ -187,21 +177,10 @@ public class RegistrationService {
 			}
 		}
 
-		for (UUID privId : ceilingPrivilegeIds) {
-			TenantPrivilegeAllowanceEntity a = new TenantPrivilegeAllowanceEntity();
-			a.setId(UUID.randomUUID());
-			a.setTenantId(tenantId);
-			a.setPrivilegeId(privId);
-			a.setCreatedAt(now);
-			a.setUpdatedAt(now);
-			tenantPrivilegeAllowanceRepository.save(a);
-		}
-
 		UUID tenantDefaultRoleId = templateIdToTenantRoleId.get(defaultRoleTemplateId);
 		if (tenantDefaultRoleId == null) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ROLE_TEMPLATE_CONFIGURATION_INVALID");
 		}
-		bootstrapDefaultNavigation(tenantId, now);
 
 		UserRoleEntity ur = new UserRoleEntity();
 		ur.setId(UUID.randomUUID());
@@ -213,7 +192,7 @@ public class RegistrationService {
 		userRoleRepository.save(ur);
 
 		List<String> missingCodes = new ArrayList<>();
-		for (UUID pid : ceilingPrivilegeIds) {
+		for (UUID pid : seededPrivilegeIds) {
 			if (!privilegeById.containsKey(pid)) {
 				continue;
 			}
@@ -228,30 +207,5 @@ public class RegistrationService {
 		if (!missingCodes.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "PRIVILEGE_CATALOG_INCONSISTENT");
 		}
-	}
-
-	private void bootstrapDefaultNavigation(UUID tenantId, Instant now) {
-		createNavItem(tenantId, "/app", "nav.dashboard", 0, null, now);
-		createNavItem(tenantId, "/app/users", "nav.users", 10, "USER_VIEW", now);
-		createNavItem(tenantId, "/app/roles", "nav.roles", 12, "ROLE_VIEW", now);
-		createNavItem(tenantId, "/app/tenant-currencies", "nav.tenant_currencies", 16, "TENANT_CURRENCY_VIEW", now);
-		createNavItem(tenantId, "/app/documents", "nav.documents", 15, "DOCUMENT_VIEW", now);
-		createNavItem(tenantId, "/app/settings", "nav.tenant_settings", 20, "TENANT_SETTINGS_EDIT", now);
-	}
-
-	private void createNavItem(UUID tenantId, String path, String labelKey, int sortOrder, String requiredPrivilegeCode,
-			Instant now) {
-		NavMenuItemEntity item = new NavMenuItemEntity();
-		item.setId(UUID.randomUUID());
-		item.setTenantId(tenantId);
-		item.setParentId(null);
-		item.setPath(path);
-		item.setLabelKey(labelKey);
-		item.setSortOrder(sortOrder);
-		item.setRequiredPrivilegeCode(requiredPrivilegeCode);
-		item.setRequiredPlanFeatureCode(null);
-		item.setCreatedAt(now);
-		item.setUpdatedAt(now);
-		navMenuItemRepository.save(item);
 	}
 }

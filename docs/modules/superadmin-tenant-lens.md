@@ -3,7 +3,7 @@
 **Feature slug:** `superadmin-tenant-lens`  
 **Related:** [`tenancy-routing.md`](./tenancy-routing.md), [`platform-tenant-admin.md`](./platform-tenant-admin.md), [`security.md`](./security.md), [`audit.md`](./audit.md)
 
-Platform **superadmins** are not tied to a single tenant. In the browser they **use the reserved `admin.{baseDomain}` host** (not tenant subdomains) for the operator workspace. They open a **tenant lens** (`X-Tenant-Id` via BFF cookie) so normal tenant-scoped APIs and UI run **without** a `membership` row for that tenant. Elevation follows the same **privilege catalog + break-glass** rules as today; **non-member** elevation additionally respects the tenant **privilege pool ceiling** (allowances + subscription-derived privileges) so behavior matches what the tenant could ever assign.
+Platform **superadmins** are not tied to a single tenant. In the browser they **use the reserved `admin.{baseDomain}` host** (not tenant subdomains) for the operator workspace. They open a **tenant lens** (`X-Tenant-Id` via BFF cookie) so normal tenant-scoped APIs and UI run **without** a `membership` row for that tenant. Elevation follows the same **privilege catalog + break-glass** rules as today.
 
 ---
 
@@ -23,9 +23,9 @@ Invalid UUID / unknown id: same problem+json codes as [`tenancy-routing.md`](./t
 
 ## Authorization (`PermissionService`)
 
-1. **Membership present:** Unchanged: role pool + `effectivePoolContains`; if not granted and user is platform superadmin and privilege exists in global catalog → `SUPERADMIN_ELEVATED` (no pool check on this path — existing product behavior).
-2. **No membership:** If user is **not** platform superadmin → `AccessDeniedException("No membership for tenant")`. If **platform superadmin** → grant `SUPERADMIN_ELEVATED` only when privilege exists in catalog **and** `effectivePoolContains(tenant, privilege)`; else deny (`PrivilegeGrant.DENIED` → aspect → missing privilege).
-3. **`effectivePrivilegeCodes` (e.g. `GET /me`, navigation):** With membership → unchanged. Without membership, if platform superadmin → return `tenantPoolPrivilegeCodes(tenantId)` (pool + subscription ceiling, sorted). Otherwise throw `No membership for tenant`.
+1. **Membership present:** Role-based grants from assigned tenant roles; if denied and user is platform superadmin and privilege exists in global catalog → `SUPERADMIN_ELEVATED`.
+2. **No membership:** If user is **not** platform superadmin → `AccessDeniedException("No membership for tenant")`. If **platform superadmin** and privilege exists in catalog → `SUPERADMIN_ELEVATED`; otherwise deny (`PrivilegeGrant.DENIED`).
+3. **`effectivePrivilegeCodes` (e.g. `GET /me`, navigation):** With membership → role-derived codes. Without membership, platform superadmin receives global catalog privilege codes.
 
 `@RequiresPrivilege` / `PrivilegeAuthorizationAspect`: unchanged break-glass + `SUPERADMIN_TENANT_ELEVATED_ACCESS` audit.
 
@@ -69,11 +69,11 @@ Out of scope for v1 (mirror later: stored tenant id + `X-Tenant-Id` on API clien
 
 ## Acceptance criteria
 
-1. Platform superadmin **without** membership in tenant **T** may `GET` a tenant route requiring privilege **P** when `P` is in **T**’s effective pool and `TenantContext` is **T** (e.g. `admin.{base}` + `X-Tenant-Id`), and receives **200**; read elevation is audited when the aspect applies.
-2. Same user on **P** **not** in **T**’s pool receives **403** (missing privilege), not membership error.
+1. Platform superadmin **without** membership in tenant **T** may `GET` a tenant route requiring privilege **P** when `P` exists in global privilege catalog and `TenantContext` is **T** (e.g. `admin.{base}` + `X-Tenant-Id`), and receives **200**; read elevation is audited when the aspect applies.
+2. Same user on unknown **P** receives **403** (missing privilege), not membership error.
 3. Mutating calls still require break-glass headers when elevation applies; audit metadata unchanged.
 4. Non–platform-superadmin cannot use `X-Tenant-Id` to access a tenant they are not a member of → **403** `No membership for tenant` on tenant-privileged routes.
-5. `GET /me` with lens returns `privileges` / `planFeatureCodes` consistent with pool ceiling for non-member superadmin.
+5. `GET /me` with lens returns `privileges` / `planFeatureCodes` consistent with global-catalog superadmin elevation behavior.
 6. BFF does not attach `X-Tenant-Id` for `/api/v1/platform/**` or `/api/v1/auth/**` upstream calls.
 7. `GET /me/navigation` on **admin** host **without** tenant returns **200** for platform superadmin with only platform items.
 

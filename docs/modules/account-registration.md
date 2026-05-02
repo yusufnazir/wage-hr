@@ -106,7 +106,7 @@ On successful registration (before verification):
 
 1. Create **`user_account`** with `email_verified_at = NULL`, password hash, normalized email (trim + lower case; same as today), **`first_name`** / **`last_name`** (trimmed), and require **`agreeToTermsOfService`** + **`agreeToPrivacyPolicy`** both **true** in the register API body (**400** `REGISTRATION_CONSENT_REQUIRED` otherwise). Consent is not persisted as separate columns (acknowledgment at signup time only).
 2. Create **`tenant`** with **`handle` = client-supplied normalized handle** (validated); **409 `TENANT_HANDLE_TAKEN`** if handle exists.
-3. Create **`membership`** (`ACTIVE`) and copy **all** role templates to tenant roles + `tenant_privilege_allowance` union (same semantics as `RegistrationService` today).
+3. Create **`membership`** (`ACTIVE`) and copy **all** role templates to tenant roles and role-privilege grants (same semantics as `RegistrationService` today).
 4. Resolve **default role template** (§6): find `role_template` by **code**; map to the **copied tenant `role.id`** for that template; insert **`user_role`** for the new user to that role. If template code missing or template not found at registration time → **500** `ROLE_TEMPLATE_CONFIGURATION_INVALID` (or **400** if product prefers failing closed before write — pick one in implementation; document in OpenAPI).
 5. Create **`email_verification_token`** row and send email.
 

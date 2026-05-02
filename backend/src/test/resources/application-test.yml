@@ -1,6 +1,8 @@
 spring:
   datasource:
-    # Unique DB per Spring test context so Liquibase never collides when the context cache rebuilds
+    # ${random.uuid} is resolved ONCE per context creation — identical @SpringBootTest configurations share the
+    # same cached context (and the same DB URL), while differently-configured contexts each get their own fresh
+    # H2 instance. This prevents Liquibase from colliding when multiple distinct context configurations exist.
     url: jdbc:h2:mem:payroll_${random.uuid};MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
     username: sa
     password:

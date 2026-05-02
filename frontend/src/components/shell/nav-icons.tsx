@@ -68,6 +68,9 @@ export function NavMenuIcon({ labelKey }: { labelKey: string }) {
 }
 
 export function navItemActive(pathname: string, item: NavigationItem): boolean {
+  if (!item.path) {
+    return item.children?.some((child) => navItemActive(pathname, child)) ?? false;
+  }
   if (pathname === item.path) {
     return true;
   }

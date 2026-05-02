@@ -24,8 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Platform superadmin tenant lens: {@code admin.{base}} host + {@code X-Tenant-Id} without membership, pool ceiling for
- * non-member elevation.
+ * Platform superadmin tenant lens: {@code admin.{base}} host + {@code X-Tenant-Id} without membership under
+ * global-catalog elevation behavior.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -67,12 +67,12 @@ class SuperadminTenantLensIT {
 	}
 
 	@Test
-	void meReturnsAcmePoolPrivilegesForSuperadminLensWithoutMembership() throws Exception {
+	void meReturnsGlobalCatalogPrivilegesForSuperadminLensWithoutMembership() throws Exception {
 		mockMvc.perform(get("/api/v1/me").header("Host", "admin.lvh.me").header("X-Tenant-Id", ACME_TENANT_ID.toString())
 				.with(user(ADMIN_USER_ID))).andExpect(status().isOk()).andExpect(jsonPath("$.data.tenantHandle").value("acme"))
 				.andExpect(jsonPath("$.data.tenantId").value(ACME_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.data.privileges", hasItem("USER_VIEW")))
-				.andExpect(jsonPath("$.data.privileges.length()").value(1));
+				.andExpect(jsonPath("$.data.privileges.length()").value(14));
 	}
 
 	@Test
@@ -82,13 +82,13 @@ class SuperadminTenantLensIT {
 	}
 
 	@Test
-	void superadminCannotPatchTenantSettingsWhenPrivilegeOutsidePoolWithoutMembership() throws Exception {
+	void superadminCanPatchTenantSettingsWithBreakGlassWithoutMembership() throws Exception {
 		String body = "{\"entries\":[{\"key\":\"tenant.acme_superadmin_probe\",\"value\":\"1\"}]}";
 		mockMvc.perform(
 				patch("/api/v1/tenant/settings").header("Host", "admin.lvh.me").header("X-Tenant-Id", ACME_TENANT_ID.toString())
 						.contentType(MediaType.APPLICATION_JSON).content(body)
 						.header(BreakGlassHeaders.REASON, "Support ticket ACME-99 — attempt patch without pool privilege")
 						.with(user(ADMIN_USER_ID)).with(csrf()))
-				.andExpect(status().isForbidden());
+				.andExpect(status().isNoContent());
 	}
 }

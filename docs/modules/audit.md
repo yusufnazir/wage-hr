@@ -32,7 +32,6 @@
 | `TENANT_SETTINGS_PATCHED` | After successful `PATCH /api/v1/tenant/settings` |
 | `PLATFORM_SETTINGS_PATCHED` | After successful `PATCH /api/v1/platform/settings` |
 | `SUPERADMIN_TENANT_ELEVATED_ACCESS` | After successful tenant-scoped `@RequiresPrivilege` handler when access was **only** via platform superadmin elevation (`PrivilegeAuthorizationAspect`) |
-| `TENANT_PRIVILEGE_POOL_REPLACED` | After successful `PUT /api/v1/platform/tenants/{tenantId}/privilege-pool` (metadata: sorted `privilege` codes) |
 | `SUBJECT_DATA_EXPORTED` | After successful `GET /api/v1/me/privacy/export` (metadata: `exportSchemaVersion` only) |
 | `SUBJECT_ERASURE_REQUESTED` | After accepted `POST /api/v1/me/privacy/erasure-request` (optional `noteLength` + `noteSha256`) |
 | `PLATFORM_TENANT_CREATED` | After successful `POST /api/v1/platform/tenants` (metadata: `handle`) |

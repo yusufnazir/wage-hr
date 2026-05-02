@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AuthShell } from "@/components/shell/AuthShell";
-import { fetchMe, redirectCheck } from "@/lib/api";
-import { authLoginUrlWithReturnTo, defaultTenantAppUrl, getAdminWebOrigin } from "@/lib/web-origins";
+import { fetchMeTenants, fetchPlatformPrivilegeCatalog, redirectCheck } from "@/lib/api";
+import { authLoginUrlWithReturnTo, getAdminWebOrigin, tenantWebAppUrlForHandle } from "@/lib/web-origins";
 
 /**
  * Root `/` is not a product surface: resolve session and send users to the app or auth login.
@@ -17,20 +17,24 @@ export default function HomePage() {
       const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
       const goLogin = () => window.location.replace(authLoginUrlWithReturnTo(returnTo));
 
-      let me: Awaited<ReturnType<typeof fetchMe>>;
       try {
-        me = await fetchMe();
+        const [catalogRes, tenantsRes] = await Promise.all([fetchPlatformPrivilegeCatalog(), fetchMeTenants()]);
+        let next: string | null = null;
+        if (catalogRes.ok) {
+          next = `${getAdminWebOrigin()}/app`;
+        } else if (tenantsRes.ok && tenantsRes.tenants.length > 0) {
+          next = tenantWebAppUrlForHandle(tenantsRes.tenants[0]!.handle);
+        }
+        if (!next) {
+          goLogin();
+          return;
+        }
+        if (await redirectCheck(next)) {
+          window.location.replace(next);
+          return;
+        }
       } catch {
         goLogin();
-        return;
-      }
-      if (!me.ok) {
-        goLogin();
-        return;
-      }
-      const next = me.me.platformSuperadmin ? `${getAdminWebOrigin()}/app` : defaultTenantAppUrl();
-      if (await redirectCheck(next)) {
-        window.location.replace(next);
         return;
       }
       goLogin();

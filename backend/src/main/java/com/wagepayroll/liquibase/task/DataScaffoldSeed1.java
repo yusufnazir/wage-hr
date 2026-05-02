@@ -51,10 +51,6 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 
 				insertTenant(c, TENANT_ID, "demo", "Demo tenant", ts);
 
-				insertTpa(c, UUID.randomUUID(), TENANT_ID, PRIV_USER_VIEW, ts);
-				insertTpa(c, UUID.randomUUID(), TENANT_ID, PRIV_USER_EDIT, ts);
-				insertTpa(c, UUID.randomUUID(), TENANT_ID, PRIV_TENANT_SETTINGS, ts);
-
 				insertUser(c, USER_ADMIN, "admin@demo.lvh.me", passwordHash, ts);
 				insertUser(c, USER_VIEWER, "viewer@demo.lvh.me", passwordHash, ts);
 				insertUser(c, USER_NOCODE, "nocode@demo.lvh.me", passwordHash, ts);
@@ -104,18 +100,6 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 			ps.setString(1, id.toString());
 			ps.setString(2, handle);
 			ps.setString(3, name);
-			ps.setTimestamp(4, ts);
-			ps.setTimestamp(5, ts);
-			ps.executeUpdate();
-		}
-	}
-
-	private static void insertTpa(Connection c, UUID id, UUID tenantId, UUID privId, Timestamp ts) throws Exception {
-		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO tenant_privilege_allowance (id, tenant_id, privilege_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
-			ps.setString(2, tenantId.toString());
-			ps.setString(3, privId.toString());
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
 			ps.executeUpdate();

@@ -596,7 +596,7 @@ function NavTree({
           <span className="text-muted"> · </span>
           <span className="font-mono text-xs text-muted">{n.labelKey}</span>
           <span className="text-muted"> · </span>
-          <span className="font-mono text-muted">{n.path}</span>
+          <span className="font-mono text-muted">{n.path ?? "(group)"}</span>
           {n.children?.length ? <NavTree items={n.children} locale={locale} depth={depth + 1} /> : null}
         </li>
       ))}
