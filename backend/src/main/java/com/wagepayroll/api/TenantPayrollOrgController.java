@@ -18,6 +18,8 @@ import com.wagepayroll.api.dto.TenantEmployeeStatusPatchRequest;
 import com.wagepayroll.api.dto.TenantEmployeeUpsertRequest;
 import com.wagepayroll.api.dto.TenantJobItemDto;
 import com.wagepayroll.api.dto.TenantJobUpsertRequest;
+import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
+import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
 import com.wagepayroll.common.api.ApiResponse;
 import com.wagepayroll.common.api.RequestIdFilter;
 import com.wagepayroll.org.TenantPayrollOrgService;
@@ -270,6 +272,49 @@ public class TenantPayrollOrgController {
 			@Valid @RequestBody TenantActivePatchRequest request) {
 		TenantEmployeeItemDto item = service.patchEmployeeActive(TenantContext.requireTenantId(), id, request);
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.employee.active.updated"));
+	}
+
+	@GetMapping("/work-times")
+	@RequiresPrivilege("WORK_TIME_VIEW")
+	public ResponseEntity<ApiResponse<Object>> listWorkTimes(@RequestParam(name = "companyId") UUID companyId,
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "20") int size,
+			@RequestParam(name = "sort", defaultValue = "name,asc") String sort,
+			@RequestParam(name = "active", required = false) Boolean active) {
+		Page<TenantWorkTimeItemDto> result = service.listWorkTimes(TenantContext.requireTenantId(), companyId, page, size,
+				sort, active);
+		return ResponseEntity.ok(ApiResponse.of(pagePayload(result), "tenant.work_time.listed"));
+	}
+
+	@GetMapping("/work-times/{id}")
+	@RequiresPrivilege("WORK_TIME_VIEW")
+	public ResponseEntity<ApiResponse<Object>> getWorkTime(@PathVariable("id") UUID id) {
+		TenantWorkTimeItemDto item = service.getWorkTime(TenantContext.requireTenantId(), id);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.work_time.fetched"));
+	}
+
+	@PostMapping("/work-times")
+	@RequiresPrivilege("WORK_TIME_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> createWorkTime(@Valid @RequestBody TenantWorkTimeUpsertRequest request) {
+		TenantWorkTimeItemDto item = service.createWorkTime(TenantContext.requireTenantId(), request);
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.of(Map.of("item", item), "tenant.work_time.created"));
+	}
+
+	@PutMapping("/work-times/{id}")
+	@RequiresPrivilege("WORK_TIME_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> updateWorkTime(@PathVariable("id") UUID id,
+			@Valid @RequestBody TenantWorkTimeUpsertRequest request) {
+		TenantWorkTimeItemDto item = service.updateWorkTime(TenantContext.requireTenantId(), id, request);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.work_time.updated"));
+	}
+
+	@PatchMapping("/work-times/{id}/active")
+	@RequiresPrivilege("WORK_TIME_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> patchWorkTimeActive(@PathVariable("id") UUID id,
+			@Valid @RequestBody TenantActivePatchRequest request) {
+		TenantWorkTimeItemDto item = service.patchWorkTimeActive(TenantContext.requireTenantId(), id, request);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.work_time.active.updated"));
 	}
 
 	private Map<String, Object> pagePayload(Page<?> pageResult) {
