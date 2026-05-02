@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.wagepayroll.security.DefinedPrivilege;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,13 +33,9 @@ class PlatformPrivilegeCatalogIT {
 	@Test
 	void catalogReturnsEntriesForPlatformSuperadmin() throws Exception {
 		mockMvc.perform(get("/api/v1/platform/privileges/catalog").with(user(ADMIN_USER_ID))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.entries.length()").value(14))
-				.andExpect(jsonPath("$.data.entries[0].code").value("DOCUMENT_EDIT"))
-				.andExpect(jsonPath("$.data.entries[0].action").value("EDIT"))
-				.andExpect(jsonPath("$.data.entries[0].resource").value("DOCUMENT"))
-				.andExpect(jsonPath("$.data.entries[1].code").value("DOCUMENT_VIEW"))
-				.andExpect(jsonPath("$.data.entries[1].action").value("VIEW"))
-				.andExpect(jsonPath("$.data.entries[1].resource").value("DOCUMENT"))
+				.andExpect(jsonPath("$.data.entries.length()").value(DefinedPrivilege.values().length))
+				.andExpect(jsonPath("$.data.entries[*].code").value(org.hamcrest.Matchers.hasItem("COMPANY_MANAGE")))
+				.andExpect(jsonPath("$.data.entries[*].code").value(org.hamcrest.Matchers.hasItem("COMPANY_VIEW")))
 				.andExpect(jsonPath("$.data.entries[*].code").value(org.hamcrest.Matchers.hasItem("ROLE_EDIT")))
 				.andExpect(jsonPath("$.data.entries[*].code").value(org.hamcrest.Matchers.hasItem("ROLE_VIEW")))
 				.andExpect(jsonPath("$.data.entries[*].code").value(org.hamcrest.Matchers.hasItem("TENANT_SETTINGS_EDIT")))

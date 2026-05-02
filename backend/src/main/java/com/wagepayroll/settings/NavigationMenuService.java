@@ -105,6 +105,16 @@ public class NavigationMenuService {
 				"DOCUMENT_VIEW", null);
 		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/settings", "nav.tenant_settings", 20,
 				"TENANT_SETTINGS_EDIT", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/companies", "nav.companies", 40,
+				"COMPANY_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/departments", "nav.departments", 41,
+				"DEPARTMENT_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/jobs", "nav.jobs", 42,
+				"JOB_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/employee-groups", "nav.employee_groups", 43,
+				"EMPLOYEE_GROUP_VIEW", null);
+		addDefaultIfVisible(defaults, privSet, activePlanFeatureCodes, "/app/employees", "nav.employees", 44,
+				"EMPLOYEE_VIEW", null);
 		defaults.sort(Comparator.comparingInt(NavigationItemDto::sortOrder));
 		return defaults;
 	}

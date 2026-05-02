@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.UUID;
 
 import com.wagepayroll.security.BreakGlassHeaders;
+import com.wagepayroll.security.DefinedPrivilege;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class SuperadminTenantLensIT {
 				.with(user(ADMIN_USER_ID))).andExpect(status().isOk()).andExpect(jsonPath("$.data.tenantHandle").value("acme"))
 				.andExpect(jsonPath("$.data.tenantId").value(ACME_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.data.privileges", hasItem("USER_VIEW")))
-				.andExpect(jsonPath("$.data.privileges.length()").value(14));
+				.andExpect(jsonPath("$.data.privileges.length()").value(DefinedPrivilege.values().length));
 	}
 
 	@Test

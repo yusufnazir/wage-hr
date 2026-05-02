@@ -1369,6 +1369,569 @@ export async function createDocumentUploadSession(args: {
   return { ok: true, session: body.data };
 }
 
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Companies
+// ---------------------------------------------------------------------------
+
+export type TenantCompanyItem = {
+  id: string;
+  name: string;
+  legalName: string | null;
+  registrationNumber: string | null;
+  taxId: string | null;
+  payrollCountry: string;
+  currency: string;
+  payrollFrequency: string;
+  timezone: string;
+  dateFormat: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  stateRegion: string | null;
+  postalCode: string | null;
+  country: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantCompanyPageResult =
+  | { ok: true; items: TenantCompanyItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantCompanies(args?: {
+  page?: number;
+  size?: number;
+  q?: string;
+  active?: boolean | null;
+}): Promise<TenantCompanyPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.q?.trim()) q.set("q", args.q.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/companies?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantCompanyItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantCompany(id: string): Promise<{ ok: true; item: TenantCompanyItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/companies/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantCompanyUpsertPayload = {
+  name: string;
+  legalName?: string | null;
+  registrationNumber?: string | null;
+  taxId?: string | null;
+  payrollCountry: string;
+  currency: string;
+  payrollFrequency: string;
+  timezone: string;
+  dateFormat: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateRegion?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  active?: boolean;
+};
+
+export async function createTenantCompany(payload: TenantCompanyUpsertPayload): Promise<TenantCompanyItem> {
+  const r = await fetch(bffUrl("/api/v1/companies"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return body.data.item;
+}
+
+export async function putTenantCompany(id: string, payload: TenantCompanyUpsertPayload): Promise<TenantCompanyItem> {
+  const r = await fetch(bffUrl(`/api/v1/companies/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantCompanyActive(id: string, active: boolean): Promise<TenantCompanyItem> {
+  const r = await fetch(bffUrl(`/api/v1/companies/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return body.data.item;
+}
+
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Departments
+// ---------------------------------------------------------------------------
+
+export type TenantDepartmentItem = {
+  id: string;
+  companyId: string;
+  name: string;
+  code: string;
+  description: string | null;
+  parentDepartmentId: string | null;
+  managerEmployeeId: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantDepartmentPageResult =
+  | { ok: true; items: TenantDepartmentItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantDepartments(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  q?: string;
+  active?: boolean | null;
+}): Promise<TenantDepartmentPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (args?.q?.trim()) q.set("q", args.q.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/departments?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantDepartmentItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantDepartment(id: string): Promise<{ ok: true; item: TenantDepartmentItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/departments/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantDepartmentItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantDepartmentUpsertPayload = {
+  companyId: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  parentDepartmentId?: string | null;
+  managerEmployeeId?: string | null;
+  active?: boolean;
+};
+
+export async function createTenantDepartment(payload: TenantDepartmentUpsertPayload): Promise<TenantDepartmentItem> {
+  const r = await fetch(bffUrl("/api/v1/departments"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantDepartmentItem }>;
+  return body.data.item;
+}
+
+export async function putTenantDepartment(id: string, payload: TenantDepartmentUpsertPayload): Promise<TenantDepartmentItem> {
+  const r = await fetch(bffUrl(`/api/v1/departments/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantDepartmentItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantDepartmentActive(id: string, active: boolean): Promise<TenantDepartmentItem> {
+  const r = await fetch(bffUrl(`/api/v1/departments/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantDepartmentItem }>;
+  return body.data.item;
+}
+
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Jobs
+// ---------------------------------------------------------------------------
+
+export type TenantJobItem = {
+  id: string;
+  companyId: string;
+  departmentId: string;
+  title: string;
+  code: string;
+  description: string | null;
+  salaryType: "HOURLY" | "MONTHLY";
+  defaultSalary: number | null;
+  defaultHourlyRate: number | null;
+  standardHoursPerWeek: number | null;
+  jobLevel: string | null;
+  jobCategory: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantJobPageResult =
+  | { ok: true; items: TenantJobItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantJobs(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  departmentId?: string;
+  q?: string;
+  active?: boolean | null;
+}): Promise<TenantJobPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (args?.departmentId) q.set("departmentId", args.departmentId);
+  if (args?.q?.trim()) q.set("q", args.q.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/jobs?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantJobItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantJob(id: string): Promise<{ ok: true; item: TenantJobItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/jobs/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantJobItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantJobUpsertPayload = {
+  companyId: string;
+  departmentId: string;
+  title: string;
+  code: string;
+  description?: string | null;
+  salaryType: "HOURLY" | "MONTHLY";
+  defaultSalary?: number | null;
+  defaultHourlyRate?: number | null;
+  standardHoursPerWeek?: number | null;
+  jobLevel?: string | null;
+  jobCategory?: string | null;
+  active?: boolean;
+};
+
+export async function createTenantJob(payload: TenantJobUpsertPayload): Promise<TenantJobItem> {
+  const r = await fetch(bffUrl("/api/v1/jobs"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantJobItem }>;
+  return body.data.item;
+}
+
+export async function putTenantJob(id: string, payload: TenantJobUpsertPayload): Promise<TenantJobItem> {
+  const r = await fetch(bffUrl(`/api/v1/jobs/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantJobItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantJobActive(id: string, active: boolean): Promise<TenantJobItem> {
+  const r = await fetch(bffUrl(`/api/v1/jobs/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantJobItem }>;
+  return body.data.item;
+}
+
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Employee Groups
+// ---------------------------------------------------------------------------
+
+export type TenantEmployeeGroupItem = {
+  id: string;
+  companyId: string;
+  name: string;
+  code: string;
+  description: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantEmployeeGroupPageResult =
+  | { ok: true; items: TenantEmployeeGroupItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantEmployeeGroups(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  q?: string;
+  active?: boolean | null;
+}): Promise<TenantEmployeeGroupPageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (args?.q?.trim()) q.set("q", args.q.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/employee-groups?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantEmployeeGroupItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantEmployeeGroup(id: string): Promise<{ ok: true; item: TenantEmployeeGroupItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/employee-groups/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeGroupItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantEmployeeGroupUpsertPayload = {
+  companyId: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  active?: boolean;
+};
+
+export async function createTenantEmployeeGroup(payload: TenantEmployeeGroupUpsertPayload): Promise<TenantEmployeeGroupItem> {
+  const r = await fetch(bffUrl("/api/v1/employee-groups"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeGroupItem }>;
+  return body.data.item;
+}
+
+export async function putTenantEmployeeGroup(id: string, payload: TenantEmployeeGroupUpsertPayload): Promise<TenantEmployeeGroupItem> {
+  const r = await fetch(bffUrl(`/api/v1/employee-groups/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeGroupItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantEmployeeGroupActive(id: string, active: boolean): Promise<TenantEmployeeGroupItem> {
+  const r = await fetch(bffUrl(`/api/v1/employee-groups/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeGroupItem }>;
+  return body.data.item;
+}
+
+// ---------------------------------------------------------------------------
+// Payroll Org Structure — Employees
+// ---------------------------------------------------------------------------
+
+export type TenantEmployeeItem = {
+  id: string;
+  companyId: string;
+  departmentId: string;
+  jobId: string;
+  employeeGroupId: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string | null;
+  hireDate: string;
+  email: string | null;
+  phone: string | null;
+  status: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantEmployeePageResult =
+  | { ok: true; items: TenantEmployeeItem[]; page: number; size: number; totalElements: number; totalPages: number }
+  | { ok: false; status: number };
+
+export async function fetchTenantEmployees(args?: {
+  page?: number;
+  size?: number;
+  companyId?: string;
+  departmentId?: string;
+  jobId?: string;
+  employeeGroupId?: string;
+  status?: string;
+  q?: string;
+  active?: boolean | null;
+}): Promise<TenantEmployeePageResult> {
+  const q = new URLSearchParams({ page: String(args?.page ?? 0), size: String(args?.size ?? 20) });
+  if (args?.companyId) q.set("companyId", args.companyId);
+  if (args?.departmentId) q.set("departmentId", args.departmentId);
+  if (args?.jobId) q.set("jobId", args.jobId);
+  if (args?.employeeGroupId) q.set("employeeGroupId", args.employeeGroupId);
+  if (args?.status) q.set("status", args.status);
+  if (args?.q?.trim()) q.set("q", args.q.trim());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/employees?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    data: TenantEmployeeItem[];
+    page: { number: number; size: number; totalElements: number; totalPages: number };
+  }>;
+  return {
+    ok: true,
+    items: body.data.data,
+    page: body.data.page.number,
+    size: body.data.page.size,
+    totalElements: body.data.page.totalElements,
+    totalPages: body.data.page.totalPages,
+  };
+}
+
+export async function fetchTenantEmployee(id: string): Promise<{ ok: true; item: TenantEmployeeItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export type TenantEmployeeUpsertPayload = {
+  companyId: string;
+  departmentId: string;
+  jobId: string;
+  employeeGroupId: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string | null;
+  hireDate: string;
+  email?: string | null;
+  phone?: string | null;
+  status: string;
+  active?: boolean;
+};
+
+export async function createTenantEmployee(payload: TenantEmployeeUpsertPayload): Promise<TenantEmployeeItem> {
+  const r = await fetch(bffUrl("/api/v1/employees"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return body.data.item;
+}
+
+export async function putTenantEmployee(id: string, payload: TenantEmployeeUpsertPayload): Promise<TenantEmployeeItem> {
+  const r = await fetch(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantEmployeeStatus(id: string, status: string): Promise<TenantEmployeeItem> {
+  const r = await fetch(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}/status`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return body.data.item;
+}
+
+export async function patchTenantEmployeeActive(id: string, active: boolean): Promise<TenantEmployeeItem> {
+  const r = await fetch(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}/active`), {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ active }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return body.data.item;
+}
+
 /** POST /api/v1/tenant/documents/complete — DOCUMENT_EDIT after successful PUT to presigned URL. */
 export async function completeDocumentUpload(args: {
   documentId: string;

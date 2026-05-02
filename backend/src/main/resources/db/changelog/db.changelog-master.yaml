@@ -93,6 +93,12 @@ databaseChangeLog:
       file: dml/data-m5-platform-integration-settings-1.xml
       relativeToChangelogFile: true
   - include:
+      file: ddl/schema-m5-payroll-org-structure-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m5-payroll-org-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: ddl/schema-m6-membership-status-last-active-1.xml
       relativeToChangelogFile: true
   - include:
@@ -154,4 +160,7 @@ databaseChangeLog:
       relativeToChangelogFile: true
   - include:
       file: dml/data-fix-nav-tenant-currencies-plan-feature-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m5-payroll-org-nav-1.xml
       relativeToChangelogFile: true

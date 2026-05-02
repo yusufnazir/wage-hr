@@ -189,9 +189,9 @@ Pick the **active** module from [`docs/product/MODULE-INDEX.md`](../product/MODU
 
 | Field | Value |
 |-------|--------|
-| **Feature slug / module doc path** | `docs/modules/mail-templates.md` |
-| **Feature name** | Platform mail template catalog (list + HTML edit, `en`/`nl`) |
-| **What the feature should do** | **Platform superadmin** maintains **`mail_template`** + **`mail_template_locale`** rows (`code`, `content_version`, `active`, per-locale `subject` + `body_html`). **APIs:** `GET /api/v1/platform/mail-templates`, `GET .../{id}`, `PUT .../{id}` with optimistic `ifUpdatedAt`. **Web:** `/app/platform-mail-templates` list and `/app/platform-mail-templates/{id}` edit (locale tabs, HTML textarea, sandboxed preview). **Send path:** `TENANT_INVITATION` uses catalog when active + valid locales; placeholders `{{tenantHandle}}`, `{{inviteLink}}`; `nl-sr` → `nl` → `en` fallback; HTTP mail JSON includes **`html`** when present. **Audit:** `PLATFORM_MAIL_TEMPLATES_UPDATED`. Tenant overrides and Flutter operator UI are **out of scope** for this slice (see module doc). |
+| **Feature slug / module doc path** | `docs/modules/payroll-org-structure.md` |
+| **Feature name** | Payroll organization structure (Company -> Department -> Job -> Employee + Employee Group) |
+| **What the feature should do** | Implement tenant-scoped payroll organizational foundations with strict company boundaries. Add entities and APIs for Company, Department, Job, Employee Group, and Employee. Company stores legal/payroll metadata (tax_id, payroll_country, currency, frequency, timezone). Departments and Jobs define organizational structure, Employees belong to one company/department/job, and each Employee belongs to exactly one Employee Group for non-structural classification. Include pagination, filtering by companyId, validation, and tenant/company isolation safeguards in persistence and service layers. |
 
 *Previous slice (still documented):* **`docs/modules/account-registration.md`** — register + verify-email + default role; **`docs/modules/role-admin.md`** — tenant roles UI + role templates CRUD; **`docs/modules/tenant-web-vertical-slice.md`** — tenant app shell + demo read.
 

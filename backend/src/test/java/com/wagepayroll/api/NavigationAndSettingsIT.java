@@ -82,7 +82,7 @@ class NavigationAndSettingsIT {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.items.length()").value(3))
 				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.group.workspace"))
-				.andExpect(jsonPath("$.data.items[0].children.length()").value(4))
+				.andExpect(jsonPath("$.data.items[0].children.length()").value(9))
 				.andExpect(jsonPath("$.data.items[1].labelKey").value("nav.group.security"))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
 				.andExpect(jsonPath("$.data.items[2].labelKey").value("nav.group.administration"))
@@ -96,7 +96,7 @@ class NavigationAndSettingsIT {
 		navMenuItemRepository.save(dash);
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(3))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(8))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
 				.andExpect(jsonPath("$.data.items[2].children.length()").value(6));
 
@@ -113,7 +113,7 @@ class NavigationAndSettingsIT {
 				.content(subBody).with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(4))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(9))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
 				.andExpect(jsonPath("$.data.items[2].children.length()").value(6));
 	}

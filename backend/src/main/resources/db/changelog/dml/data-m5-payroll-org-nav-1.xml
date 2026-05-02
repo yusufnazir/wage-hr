@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m5-payroll-org-nav-1" author="wagepayroll">
+        <comment>Navigation menu items for payroll org structure: companies, departments, jobs, employee-groups, employees.</comment>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000010"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/companies"/>
+            <column name="label_key" value="nav.companies"/>
+            <column name="sort_order" value="40"/>
+            <column name="required_privilege_code" value="COMPANY_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000011"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/departments"/>
+            <column name="label_key" value="nav.departments"/>
+            <column name="sort_order" value="41"/>
+            <column name="required_privilege_code" value="DEPARTMENT_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000012"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/jobs"/>
+            <column name="label_key" value="nav.jobs"/>
+            <column name="sort_order" value="42"/>
+            <column name="required_privilege_code" value="JOB_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000013"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/employee-groups"/>
+            <column name="label_key" value="nav.employee_groups"/>
+            <column name="sort_order" value="43"/>
+            <column name="required_privilege_code" value="EMPLOYEE_GROUP_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000014"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/employees"/>
+            <column name="label_key" value="nav.employees"/>
+            <column name="sort_order" value="44"/>
+            <column name="required_privilege_code" value="EMPLOYEE_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
