@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.wagepayroll.api.dto.TenantCurrenciesDto;
 import com.wagepayroll.api.dto.TenantCurrenciesReplaceRequest;
@@ -68,8 +69,9 @@ public class TenantCurrencyService {
 			normalized.add(code.trim().toUpperCase());
 		}
 		Instant now = Instant.now();
+		List<TenantCurrencyEntity> existingRows = tenantCurrencyRepository.findByTenantIdOrderByCreatedAtAsc(tenantId);
 		if (normalized.isEmpty()) {
-			tenantCurrencyRepository.deleteByTenantId(tenantId);
+			tenantCurrencyRepository.deleteAll(existingRows);
 			return List.of();
 		}
 
@@ -84,13 +86,31 @@ public class TenantCurrencyService {
 			}
 		}
 
-		tenantCurrencyRepository.deleteByTenantId(tenantId);
-		for (String code : normalized) {
-			PlatformCurrencyEntity platform = byCode.get(code);
+		Set<UUID> targetPlatformIds = normalized.stream().map((code) -> byCode.get(code).getId())
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+		Map<UUID, TenantCurrencyEntity> existingByPlatformId = new HashMap<>();
+		for (TenantCurrencyEntity existing : existingRows) {
+			existingByPlatformId.put(existing.getPlatformCurrencyId(), existing);
+		}
+
+		List<TenantCurrencyEntity> toDelete = new ArrayList<>();
+		for (TenantCurrencyEntity existing : existingRows) {
+			if (!targetPlatformIds.contains(existing.getPlatformCurrencyId())) {
+				toDelete.add(existing);
+			}
+		}
+		if (!toDelete.isEmpty()) {
+			tenantCurrencyRepository.deleteAll(toDelete);
+		}
+
+		for (UUID platformId : targetPlatformIds) {
+			if (existingByPlatformId.containsKey(platformId)) {
+				continue;
+			}
 			TenantCurrencyEntity row = new TenantCurrencyEntity();
 			row.setId(UUID.randomUUID());
 			row.setTenantId(tenantId);
-			row.setPlatformCurrencyId(platform.getId());
+			row.setPlatformCurrencyId(platformId);
 			row.setCreatedAt(now);
 			row.setUpdatedAt(now);
 			tenantCurrencyRepository.save(row);

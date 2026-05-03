@@ -168,11 +168,32 @@ databaseChangeLog:
       file: ddl/schema-m8-work-time-1.xml
       relativeToChangelogFile: true
   - include:
+      file: ddl/schema-m8-work-time-work-days-int-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-m8-work-time-privileges-1.xml
       relativeToChangelogFile: true
   - include:
       file: ddl/schema-m9-pay-period-1.xml
       relativeToChangelogFile: true
   - include:
+      file: ddl/schema-m9-pay-period-year-int-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m9-pay-period-run-number-int-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-m9-pay-period-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m10-platform-country-payroll-enabled-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m10-platform-country-payroll-enabled-sr-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m10-company-logo-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m10-company-pay-period-config-1.xml
       relativeToChangelogFile: true

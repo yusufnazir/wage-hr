@@ -21,7 +21,7 @@ public class TenantPayPeriodEntity extends TenantScopedEntity {
 	@Column(name = "company_id", length = 36, nullable = false)
 	private UUID companyId;
 
-	@Column(name = "year", nullable = false)
+	@Column(name = "`year`", nullable = false)
 	private int year;
 
 	@Column(name = "start_date", nullable = false)

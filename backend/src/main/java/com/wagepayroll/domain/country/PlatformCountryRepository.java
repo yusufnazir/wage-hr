@@ -14,6 +14,7 @@ public interface PlatformCountryRepository extends JpaRepository<PlatformCountry
 	@Query("""
 			select c from PlatformCountryEntity c
 			where (:active is null or c.active = :active)
+			and (:payrollEnabled is null or c.payrollEnabled = :payrollEnabled)
 			and (
 				:search = ''
 				or lower(c.isoAlpha2) like lower(concat('%', :search, '%'))
@@ -29,9 +30,18 @@ public interface PlatformCountryRepository extends JpaRepository<PlatformCountry
 			""")
 	Page<PlatformCountryEntity> search(
 			@Param("active") Boolean active,
+			@Param("payrollEnabled") Boolean payrollEnabled,
 			@Param("search") String search,
 			@Param("searchLocales") Set<String> searchLocales,
 			Pageable pageable);
+
+	@Query("""
+			select count(c) > 0 from PlatformCountryEntity c
+			where lower(c.isoAlpha2) = lower(:isoAlpha2)
+			and c.active = true
+			and c.payrollEnabled = true
+			""")
+	boolean existsActivePayrollEnabledByIsoAlpha2(@Param("isoAlpha2") String isoAlpha2);
 
 	@Query("select count(c) > 0 from PlatformCountryEntity c where lower(c.isoAlpha2) = lower(:value)")
 	boolean existsByIsoAlpha2IgnoreCase(@Param("value") String value);

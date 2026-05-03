@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -58,6 +59,16 @@ public class TenantDocumentsController {
 		this.tenantDocumentShareService = tenantDocumentShareService;
 		this.tenantDocumentAttachmentService = tenantDocumentAttachmentService;
 		this.tenantDocumentLifecycleService = tenantDocumentLifecycleService;
+	}
+
+	@GetMapping("/by-entity")
+	@RequiresPrivilege("DOCUMENT_VIEW")
+	public ResponseEntity<ApiResponse<Map<String, List<DocumentHubItemDto>>>> listByEntity(
+			@RequestParam("entityType") String entityType, @RequestParam("entityId") UUID entityId,
+			HttpServletRequest request) {
+		UUID tenantId = TenantContext.requireTenantId();
+		List<DocumentHubItemDto> items = tenantDocumentAttachmentService.listByEntity(tenantId, entityType, entityId);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("items", items), RequestIdFilter.currentRequestId(request)));
 	}
 
 	@GetMapping

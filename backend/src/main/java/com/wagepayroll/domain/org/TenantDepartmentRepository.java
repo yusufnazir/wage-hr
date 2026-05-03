@@ -9,6 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TenantDepartmentRepository extends JpaRepository<TenantDepartmentEntity, UUID> {
 
+	Page<TenantDepartmentEntity> findByTenantId(UUID tenantId, Pageable pageable);
+
+	Page<TenantDepartmentEntity> findByTenantIdAndActive(UUID tenantId, boolean active, Pageable pageable);
+
 	Page<TenantDepartmentEntity> findByTenantIdAndCompanyId(UUID tenantId, UUID companyId, Pageable pageable);
 
 	Page<TenantDepartmentEntity> findByTenantIdAndCompanyIdAndActive(UUID tenantId, UUID companyId, boolean active,

@@ -29,8 +29,7 @@ export default function PlatformCountriesPage() {
 
   const active = useMemo(() => (activeFilter === "active" ? true : null), [activeFilter]);
 
-  const reload = useCallback(async (p = 0, s = search) => {
-    setLoad("loading");
+  const reload = useCallback(async (p: number, s: string) => {
     setMsg(null);
     const r = await fetchPlatformCountries({
       page: p,
@@ -46,7 +45,7 @@ export default function PlatformCountriesPage() {
     setItems(r.items);
     setTotalPages(r.totalPages);
     setLoad("ready");
-  }, [active, me.locale, search]);
+  }, [active, me.locale]);
 
   useEffect(() => {
     void reload(page, search);
@@ -177,6 +176,7 @@ export default function PlatformCountriesPage() {
               <th className="px-3 py-2">{t("platformCountries.col.alpha3")}</th>
               <th className="px-3 py-2">{t("platformCountries.col.numeric")}</th>
               <th className="px-3 py-2">{t("platformCountries.col.dialCode")}</th>
+              <th className="px-3 py-2">{t("platformCountries.col.payrollEnabled")}</th>
               <th className="px-3 py-2">{t("platformCountries.col.status")}</th>
               <th className="px-3 py-2" />
             </tr>
@@ -189,6 +189,9 @@ export default function PlatformCountriesPage() {
                 <td className="px-3 py-2 font-mono text-foreground">{row.isoAlpha3}</td>
                 <td className="px-3 py-2 font-mono text-foreground">{row.isoNumeric}</td>
                 <td className="px-3 py-2 text-foreground">{row.dialCode ?? "\u2014"}</td>
+                <td className="px-3 py-2 text-foreground">
+                  {row.payrollEnabled ? t("platformCountries.status.payrollEnabled") : t("platformCountries.status.payrollDisabled")}
+                </td>
                 <td className="px-3 py-2 text-foreground">
                   {row.active ? t("platformCountries.status.active") : t("platformCountries.status.inactive")}
                 </td>

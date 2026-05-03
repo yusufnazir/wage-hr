@@ -25,6 +25,7 @@ export default function PlatformCountryEditPage() {
   const [nameEn, setNameEn] = useState("");
   const [nameNl, setNameNl] = useState("");
   const [active, setActive] = useState(true);
+  const [payrollEnabled, setPayrollEnabled] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +42,7 @@ export default function PlatformCountryEditPage() {
       setIsoNumeric(r.item.isoNumeric);
       setDialCode(r.item.dialCode ?? "");
       setActive(r.item.active);
+      setPayrollEnabled(r.item.payrollEnabled);
       const en = r.item.translations.find((x) => x.locale === "en")?.name ?? "";
       const nl = r.item.translations.find((x) => x.locale === "nl")?.name ?? "";
       setNameEn(en);
@@ -98,6 +100,7 @@ export default function PlatformCountryEditPage() {
         isoNumeric: isoNumeric.trim(),
         dialCode: dialCode.trim() ? dialCode.trim() : null,
         active,
+        payrollEnabled,
         translations: [
           { locale: "en", name: nameEn.trim() },
           { locale: "nl", name: nameNl.trim() },
@@ -209,6 +212,19 @@ export default function PlatformCountryEditPage() {
           />
           <label htmlFor="country-active" className="text-sm text-foreground">
             {t("platformCountries.label.active")}
+          </label>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="country-payroll-enabled"
+            type="checkbox"
+            checked={payrollEnabled}
+            onChange={(e) => setPayrollEnabled(e.target.checked)}
+            data-testid="platform-country-payroll-enabled"
+          />
+          <label htmlFor="country-payroll-enabled" className="text-sm text-foreground">
+            {t("platformCountries.label.payrollEnabled")}
           </label>
         </div>
 

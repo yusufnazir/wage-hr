@@ -1,6 +1,7 @@
 package com.wagepayroll.domain.org;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -62,6 +63,15 @@ public class TenantCompanyEntity extends TenantScopedEntity {
 
 	@Column(name = "country", length = 2, columnDefinition = "CHAR(2)")
 	private String country;
+
+	@Column(name = "pay_period_end_date")
+	private LocalDate payPeriodEndDate;
+
+	@Column(name = "timesheet_end_date")
+	private LocalDate timesheetEndDate;
+
+	@Column(name = "logo_storage_key", length = 512)
+	private String logoStorageKey;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;
@@ -208,6 +218,22 @@ public class TenantCompanyEntity extends TenantScopedEntity {
 		this.country = country;
 	}
 
+	public LocalDate getPayPeriodEndDate() {
+		return payPeriodEndDate;
+	}
+
+	public void setPayPeriodEndDate(LocalDate payPeriodEndDate) {
+		this.payPeriodEndDate = payPeriodEndDate;
+	}
+
+	public LocalDate getTimesheetEndDate() {
+		return timesheetEndDate;
+	}
+
+	public void setTimesheetEndDate(LocalDate timesheetEndDate) {
+		this.timesheetEndDate = timesheetEndDate;
+	}
+
 	public boolean isActive() {
 		return active;
 	}
@@ -230,5 +256,13 @@ public class TenantCompanyEntity extends TenantScopedEntity {
 
 	public void setUpdatedAt(Instant updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getLogoStorageKey() {
+		return logoStorageKey;
+	}
+
+	public void setLogoStorageKey(String logoStorageKey) {
+		this.logoStorageKey = logoStorageKey;
 	}
 }

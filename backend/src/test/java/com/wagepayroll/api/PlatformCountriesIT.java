@@ -45,6 +45,7 @@ class PlatformCountriesIT {
 				  "isoNumeric": "999",
 				  "dialCode": "+999",
 				  "active": true,
+				  "payrollEnabled": true,
 				  "translations": [
 				    { "locale": "en", "name": "Zeta Zone" },
 				    { "locale": "nl", "name": "Zeta Zone NL" }
@@ -59,6 +60,7 @@ class PlatformCountriesIT {
 				.with(csrf()))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.data.item.isoAlpha2").value("ZZ"))
+				.andExpect(jsonPath("$.data.item.payrollEnabled").value(true))
 				.andExpect(jsonPath("$.data.item.translations.length()").value(2))
 				.andReturn();
 
@@ -75,6 +77,7 @@ class PlatformCountriesIT {
 				  "isoNumeric": "998",
 				  "dialCode": "+998",
 				  "active": true,
+				  "payrollEnabled": false,
 				  "translations": [
 				    { "locale": "en", "name": "Zeta Zone Updated" },
 				    { "locale": "nl", "name": "Zeta Zone Bijgewerkt" }
@@ -89,6 +92,7 @@ class PlatformCountriesIT {
 				.with(csrf()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.item.isoAlpha3").value("ZZX"))
+				.andExpect(jsonPath("$.data.item.payrollEnabled").value(false))
 				.andExpect(jsonPath("$.data.item.name").value("Zeta Zone Updated"));
 
 		mockMvc.perform(patch("/api/v1/platform/countries/" + id + "/deactivate")

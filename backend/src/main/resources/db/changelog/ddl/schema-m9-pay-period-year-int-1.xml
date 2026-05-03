@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m9-pay-period-year-int-1" author="wagepayroll">
+        <validCheckSum>9:a8e5ec20b86d3690bcd55526e01c60e1</validCheckSum>
+        <validCheckSum>9:7969f1009ee8180561456da2ce6aa8e0</validCheckSum>
+        <sql>ALTER TABLE tenant_pay_period MODIFY COLUMN `year` INT NOT NULL</sql>
+    </changeSet>
+</databaseChangeLog>

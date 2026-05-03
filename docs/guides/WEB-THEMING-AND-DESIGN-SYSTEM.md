@@ -122,7 +122,59 @@ All resource management UIs follow a consistent routing shape:
 
 ---
 
-## 9. Where this is decided in your methodology
+## 9. CRUD feedback: notifications and confirmation dialogs
+
+All resource management UIs must provide consistent, predictable feedback for every mutating action.
+
+### 9.1 Toast / inline notifications
+
+Show a **success notification** after every successful mutation. Show an **error notification** (or inline error message) when the mutation fails.
+
+| Action | Success message pattern | Error message pattern |
+|--------|------------------------|-----------------------|
+| **Create** | `"{Name}" created successfully.` | `Could not create {resource}. Please try again.` |
+| **Update / edit** | `"{Name}" updated successfully.` | `Could not save changes. Please try again.` |
+| **Toggle active/inactive** | `"{Name}" set to active.` / `"{Name}" set to inactive.` | `Could not update status. Please try again.` |
+| **Delete (hard)** | `"{Name}" deleted.` | `Could not delete {resource}. Please try again.` |
+| **Soft delete / deactivate** | covered by toggle active row above | same |
+
+**Rules:**
+- Notifications are **transient** (auto-dismiss after ~4 s for success; persistent or longer for errors).
+- Success notifications are **non-blocking** — do not stop the user's workflow.
+- Error notifications must remain visible until dismissed or a subsequent action clears them; never auto-dismiss an error.
+- Use a **consistent toast component** across all modules — do not invent per-page inline banners for standard CRUD feedback.
+- If a page already has an **inline error area** (e.g. a form), the form's own error display is acceptable for validation errors (`400`). Use the toast for post-submit success or unexpected server errors (`5xx`).
+
+**wage-payroll implementation note:** pages currently display inline `<p className="text-sm font-medium text-destructive">` messages for errors and rely on redirect-plus-reload for implicit success. A shared `useToast` / `ToastProvider` should be wired to replace this pattern; until that component is shipped, inline feedback is acceptable as a temporary measure — but the UX contract above applies to the final UI.
+
+### 9.2 Confirmation dialogs for destructive actions
+
+Any action that **permanently removes data** or **deactivates a record** (soft delete / toggle inactive) **must** be preceded by a confirmation dialog before the API call is made.
+
+**Trigger rule:**
+- Hard delete → always confirm.
+- Soft delete / deactivate (toggle `active = false`) → always confirm.
+- Reactivate (toggle `active = true`) → no confirmation required.
+- Create / update → no confirmation required.
+
+**Dialog content:**
+- **Title:** short, action-oriented — e.g. `"Deactivate department?"` or `"Delete job?"`
+- **Body:** one sentence describing the consequence — e.g. `"This will deactivate \"HR\" and hide it from all payroll operations."` or `"This will permanently delete \"HR-A\". This cannot be undone."`
+- **Confirm button:** destructive styling (`bg-destructive text-destructive-foreground`) — e.g. `"Deactivate"` / `"Delete"`
+- **Cancel button:** neutral — e.g. `"Cancel"`
+
+**Rules:**
+- The dialog must be **modal** — it must block interaction with the page behind it.
+- Clicking outside the dialog or pressing `Escape` cancels the action (same as clicking Cancel).
+- The confirm button must be **disabled and show a loading state** while the API call is in flight to prevent double-submission.
+- After a confirmed destructive action, show the appropriate toast (§9.1) and refresh the list.
+- Never make a destructive API call on first click (no "click once to delete" with only a hover tooltip as protection).
+
+**wage-payroll implementation note:** current list pages use an inline `onClick` that calls the API directly for active-toggle without confirmation. This must be updated to route through a confirmation dialog. A shared `ConfirmDialog` component (or `useConfirm` hook) should be added to `frontend/src/components/ui/` and reused across all modules.
+
+---
+
+## 10. Where this is decided in your methodology
 
 | Artifact | What to capture |
 |----------|-----------------|

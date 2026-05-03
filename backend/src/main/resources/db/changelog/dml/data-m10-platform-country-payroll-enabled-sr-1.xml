@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m10-platform-country-payroll-enabled-sr-1" author="wagepayroll">
+        <!-- Disable payroll for all countries, then enable only Suriname -->
+        <sql>UPDATE platform_country SET payroll_enabled = false</sql>
+        <sql>UPDATE platform_country SET payroll_enabled = true WHERE iso_alpha2 = 'SR'</sql>
+    </changeSet>
+
+</databaseChangeLog>

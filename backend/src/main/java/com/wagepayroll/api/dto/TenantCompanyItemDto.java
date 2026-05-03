@@ -22,7 +22,10 @@ public record TenantCompanyItemDto(
 		String stateRegion,
 		String postalCode,
 		String country,
+		String payPeriodEndDate,
+		String timesheetEndDate,
 		boolean active,
+		String logoUrl,
 		Instant createdAt,
 		Instant updatedAt) {
 }

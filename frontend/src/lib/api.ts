@@ -535,6 +535,7 @@ export type PlatformCountryRow = {
   isoNumeric: string;
   dialCode: string | null;
   active: boolean;
+  payrollEnabled: boolean;
   name: string;
   translations: PlatformCountryTranslation[];
   updatedAt: string;
@@ -557,6 +558,7 @@ export async function fetchPlatformCountries(args?: {
   size?: number;
   search?: string;
   active?: boolean | null;
+  payrollEnabled?: boolean | null;
   locale?: string;
 }): Promise<PlatformCountriesResult> {
   const q = new URLSearchParams({
@@ -566,6 +568,7 @@ export async function fetchPlatformCountries(args?: {
   });
   if (args?.search?.trim()) q.set("search", args.search.trim());
   if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  if (typeof args?.payrollEnabled === "boolean") q.set("payrollEnabled", String(args.payrollEnabled));
   const r = await fetch(bffUrl(`/api/v1/platform/countries?${q}`), { credentials: "same-origin" });
   if (!r.ok) return { ok: false, status: r.status };
   const body = (await r.json()) as ApiEnvelope<{
@@ -606,6 +609,7 @@ export type PlatformCountryUpsertRequest = {
   isoNumeric: string;
   dialCode?: string | null;
   active?: boolean;
+  payrollEnabled?: boolean;
   translations: PlatformCountryTranslation[];
 };
 
@@ -673,6 +677,7 @@ export async function fetchCountries(args?: {
   page?: number;
   size?: number;
   search?: string;
+  payrollEnabled?: boolean | null;
   locale?: string;
 }): Promise<CountriesResult> {
   const q = new URLSearchParams({
@@ -681,6 +686,7 @@ export async function fetchCountries(args?: {
     locale: args?.locale ?? "en",
   });
   if (args?.search?.trim()) q.set("search", args.search.trim());
+  if (typeof args?.payrollEnabled === "boolean") q.set("payrollEnabled", String(args.payrollEnabled));
   const r = await fetch(bffUrl(`/api/v1/countries?${q}`), { credentials: "same-origin" });
   if (!r.ok) return { ok: false, status: r.status };
   const body = (await r.json()) as ApiEnvelope<{
@@ -1317,6 +1323,20 @@ export async function fetchTenantDocumentsHub(): Promise<DocumentsHubFetchResult
   return { ok: true, items: body.data.items };
 }
 
+/** GET /api/v1/tenant/documents/by-entity — requires DOCUMENT_VIEW. */
+export async function fetchTenantDocumentsByEntity(
+  entityType: string,
+  entityId: string,
+): Promise<DocumentsHubFetchResult> {
+  const q = new URLSearchParams({ entityType, entityId });
+  const r = await fetch(bffUrl(`/api/v1/tenant/documents/by-entity?${q}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ items: DocumentHubItem[] }>;
+  return { ok: true, items: body.data.items };
+}
+
 export type DocumentDownloadUrlResult =
   | { ok: true; downloadUrl: string; expiresAt: string }
   | { ok: false; status: number };
@@ -1392,7 +1412,10 @@ export type TenantCompanyItem = {
   stateRegion: string | null;
   postalCode: string | null;
   country: string | null;
+  payPeriodEndDate: string | null;
+  timesheetEndDate: string | null;
   active: boolean;
+  logoUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -1451,6 +1474,8 @@ export type TenantCompanyUpsertPayload = {
   stateRegion?: string | null;
   postalCode?: string | null;
   country?: string | null;
+  payPeriodEndDate?: string | null;
+  timesheetEndDate?: string | null;
   active?: boolean;
 };
 
@@ -1488,6 +1513,34 @@ export async function patchTenantCompanyActive(id: string, active: boolean): Pro
   if (!r.ok) throw new Error(await readFailureMessage(r));
   const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
   return body.data.item;
+}
+
+export async function uploadCompanyLogo(
+  id: string,
+  file: File,
+): Promise<{ ok: true; item: TenantCompanyItem } | { ok: false; status: number; message?: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  const r = await fetch(bffUrl(`/api/v1/companies/${encodeURIComponent(id)}/logo`), {
+    method: "POST",
+    credentials: "same-origin",
+    body: form,
+  });
+  if (!r.ok) return { ok: false, status: r.status, message: await readFailureMessage(r) };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return { ok: true, item: body.data.item };
+}
+
+export async function deleteCompanyLogo(
+  id: string,
+): Promise<{ ok: true; item: TenantCompanyItem } | { ok: false; status: number }> {
+  const r = await fetch(bffUrl(`/api/v1/companies/${encodeURIComponent(id)}/logo`), {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantCompanyItem }>;
+  return { ok: true, item: body.data.item };
 }
 
 // ---------------------------------------------------------------------------

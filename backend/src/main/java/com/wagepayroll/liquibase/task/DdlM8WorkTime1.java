@@ -30,7 +30,7 @@ public class DdlM8WorkTime1 implements CustomTaskChange {
 						  name VARCHAR(120) NOT NULL,
 						  code VARCHAR(40) NOT NULL,
 						  hours_per_day DECIMAL(4,2) NOT NULL,
-						  work_days_per_week SMALLINT NOT NULL,
+						  work_days_per_week INT NOT NULL,
 						  description VARCHAR(500) NULL,
 						  active BOOLEAN NOT NULL,
 						  created_at TIMESTAMP NOT NULL,

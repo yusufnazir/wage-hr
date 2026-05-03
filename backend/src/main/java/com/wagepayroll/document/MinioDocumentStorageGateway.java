@@ -1,5 +1,6 @@
 package com.wagepayroll.document;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -190,5 +192,12 @@ public class MinioDocumentStorageGateway {
 
 	public boolean isVerifyObjectBeforeComplete() {
 		return minioStorageProperties.isVerifyObjectBeforeComplete();
+	}
+
+	public void putObject(String objectKey, InputStream data, long contentLength, String contentType) {
+		requireOperational();
+		PutObjectRequest put = PutObjectRequest.builder().bucket(resolvedBucket).key(objectKey).contentType(contentType)
+				.contentLength(contentLength).build();
+		s3Client.putObject(put, RequestBody.fromInputStream(data, contentLength));
 	}
 }

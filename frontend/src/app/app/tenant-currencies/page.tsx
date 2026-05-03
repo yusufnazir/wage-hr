@@ -116,9 +116,26 @@ export default function TenantCurrenciesPage() {
     setMsg(null);
   }
 
-  function addCurrency(code: string) {
-    if (selected.has(code)) return;
-    toggle(code);
+  async function addCurrency(code: string) {
+    if (selected.has(code) || busy) return;
+
+    const previous = new Set(selected);
+    const next = new Set(selected);
+    next.add(code);
+
+    setSelected(next);
+    setBusy(true);
+    setMsg(null);
+    try {
+      await replaceTenantCurrencies(Array.from(next));
+      setInitialSelected(new Set(next));
+      setMsg(t("tenantCurrencies.msg.saved"));
+    } catch {
+      setSelected(previous);
+      setMsg(t("tenantCurrencies.msg.saveFailed"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   function removeCurrency(code: string) {
@@ -549,7 +566,7 @@ export default function TenantCurrenciesPage() {
                       {canEdit ? (
                         <button
                           type="button"
-                          onClick={() => addCurrency(row.code)}
+                          onClick={() => void addCurrency(row.code)}
                           disabled={busy}
                           className="text-sm font-medium text-primary hover:underline disabled:opacity-60"
                         >

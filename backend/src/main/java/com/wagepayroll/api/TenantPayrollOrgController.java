@@ -28,7 +28,9 @@ import com.wagepayroll.tenant.TenantContext;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -89,9 +92,31 @@ public class TenantPayrollOrgController {
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.company.active.updated"));
 	}
 
+	@PostMapping(value = "/companies/{id}/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@RequiresPrivilege("COMPANY_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> uploadCompanyLogo(@PathVariable("id") UUID id,
+			@RequestParam("file") MultipartFile file) {
+		try {
+			TenantCompanyItemDto item = service.uploadCompanyLogo(TenantContext.requireTenantId(), id,
+					file.getInputStream(), file.getSize(), file.getContentType());
+			return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.company.logo.uploaded"));
+		}
+		catch (java.io.IOException e) {
+			throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+					"LOGO_READ_FAILED");
+		}
+	}
+
+	@DeleteMapping("/companies/{id}/logo")
+	@RequiresPrivilege("COMPANY_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> removeCompanyLogo(@PathVariable("id") UUID id) {
+		TenantCompanyItemDto item = service.removeCompanyLogo(TenantContext.requireTenantId(), id);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.company.logo.removed"));
+	}
+
 	@GetMapping("/departments")
 	@RequiresPrivilege("DEPARTMENT_VIEW")
-	public ResponseEntity<ApiResponse<Object>> listDepartments(@RequestParam(name = "companyId") UUID companyId,
+	public ResponseEntity<ApiResponse<Object>> listDepartments(@RequestParam(name = "companyId", required = false) UUID companyId,
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "20") int size,
 			@RequestParam(name = "sort", defaultValue = "name,asc") String sort,
@@ -134,7 +159,7 @@ public class TenantPayrollOrgController {
 
 	@GetMapping("/jobs")
 	@RequiresPrivilege("JOB_VIEW")
-	public ResponseEntity<ApiResponse<Object>> listJobs(@RequestParam(name = "companyId") UUID companyId,
+	public ResponseEntity<ApiResponse<Object>> listJobs(@RequestParam(name = "companyId", required = false) UUID companyId,
 			@RequestParam(name = "departmentId", required = false) UUID departmentId,
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "20") int size,
@@ -177,7 +202,7 @@ public class TenantPayrollOrgController {
 
 	@GetMapping("/employee-groups")
 	@RequiresPrivilege("EMPLOYEE_GROUP_VIEW")
-	public ResponseEntity<ApiResponse<Object>> listEmployeeGroups(@RequestParam(name = "companyId") UUID companyId,
+	public ResponseEntity<ApiResponse<Object>> listEmployeeGroups(@RequestParam(name = "companyId", required = false) UUID companyId,
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "20") int size,
 			@RequestParam(name = "sort", defaultValue = "name,asc") String sort,
@@ -276,7 +301,7 @@ public class TenantPayrollOrgController {
 
 	@GetMapping("/work-times")
 	@RequiresPrivilege("WORK_TIME_VIEW")
-	public ResponseEntity<ApiResponse<Object>> listWorkTimes(@RequestParam(name = "companyId") UUID companyId,
+	public ResponseEntity<ApiResponse<Object>> listWorkTimes(@RequestParam(name = "companyId", required = false) UUID companyId,
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "20") int size,
 			@RequestParam(name = "sort", defaultValue = "name,asc") String sort,

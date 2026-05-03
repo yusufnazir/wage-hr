@@ -50,11 +50,12 @@ public class PlatformCountriesController {
 			@RequestParam(name = "size", defaultValue = "50") int size,
 			@RequestParam(name = "search", required = false) String search,
 			@RequestParam(name = "active", required = false) Boolean active,
+			@RequestParam(name = "payrollEnabled", required = false) Boolean payrollEnabled,
 			@RequestParam(name = "locale", required = false, defaultValue = "en") String locale,
 			HttpServletRequest request) {
 		requirePlatformSuperadmin();
 		String rid = RequestIdFilter.currentRequestId(request);
-		return ApiResponse.of(platformCountryService.listPlatform(page, size, search, active, locale), rid);
+		return ApiResponse.of(platformCountryService.listPlatform(page, size, search, active, payrollEnabled, locale), rid);
 	}
 
 	@GetMapping("/{id}")

@@ -27,6 +27,9 @@ public class PlatformCountryEntity extends AbstractUuidEntity {
 	@Column(name = "active", nullable = false)
 	private boolean active;
 
+	@Column(name = "payroll_enabled", nullable = false)
+	private boolean payrollEnabled;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -71,6 +74,14 @@ public class PlatformCountryEntity extends AbstractUuidEntity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public boolean isPayrollEnabled() {
+		return payrollEnabled;
+	}
+
+	public void setPayrollEnabled(boolean payrollEnabled) {
+		this.payrollEnabled = payrollEnabled;
 	}
 
 	public Instant getCreatedAt() {

@@ -10,6 +10,7 @@ public record PlatformCountryDto(
 		String isoNumeric,
 		String dialCode,
 		boolean active,
+		boolean payrollEnabled,
 		String name,
 		List<PlatformCountryTranslationDto> translations,
 		String updatedAt) {

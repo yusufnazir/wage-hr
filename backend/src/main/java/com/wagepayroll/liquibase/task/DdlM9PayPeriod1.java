@@ -23,11 +23,11 @@ public class DdlM9PayPeriod1 implements CustomTaskChange {
 			c.setAutoCommit(false);
 			try (Statement s = c.createStatement()) {
 				s.execute("""
-						CREATE TABLE tenant_pay_period (
+						CREATE TABLE IF NOT EXISTS tenant_pay_period (
 						  id VARCHAR(36) PRIMARY KEY,
 						  tenant_id VARCHAR(36) NOT NULL,
 						  company_id VARCHAR(36) NOT NULL,
-						  year SMALLINT NOT NULL,
+						  `year` INT NOT NULL,
 						  start_date DATE NOT NULL,
 						  end_date DATE NOT NULL,
 						  status VARCHAR(20) NOT NULL,
@@ -37,25 +37,26 @@ public class DdlM9PayPeriod1 implements CustomTaskChange {
 						    REFERENCES tenant_company(id, tenant_id)
 						)
 						""");
-				s.execute("CREATE UNIQUE INDEX uidx_tenant_pay_period_id_company_tenant ON tenant_pay_period (id, company_id, tenant_id)");
-				s.execute("CREATE INDEX idx_tenant_pay_period_tenant_company_year ON tenant_pay_period (tenant_id, company_id, year)");
+				s.execute("CREATE UNIQUE INDEX IF NOT EXISTS uidx_tenant_pay_period_id_tenant ON tenant_pay_period (id, tenant_id)");
+				s.execute("CREATE UNIQUE INDEX IF NOT EXISTS uidx_tenant_pay_period_id_company_tenant ON tenant_pay_period (id, company_id, tenant_id)");
+				s.execute("CREATE INDEX IF NOT EXISTS idx_tenant_pay_period_tenant_company_year ON tenant_pay_period (tenant_id, company_id, `year`)");
 
 				s.execute("""
-						CREATE TABLE tenant_pay_period_run (
+						CREATE TABLE IF NOT EXISTS tenant_pay_period_run (
 						  id VARCHAR(36) PRIMARY KEY,
 						  tenant_id VARCHAR(36) NOT NULL,
 						  pay_period_id VARCHAR(36) NOT NULL,
 						  run_type VARCHAR(20) NOT NULL,
-						  run_number SMALLINT NOT NULL,
+						  run_number INT NOT NULL,
 						  created_at TIMESTAMP NOT NULL,
 						  updated_at TIMESTAMP NOT NULL,
 						  CONSTRAINT fk_tenant_pay_period_run_period FOREIGN KEY (pay_period_id, tenant_id)
 						    REFERENCES tenant_pay_period(id, tenant_id)
 						)
 						""");
-				s.execute("CREATE UNIQUE INDEX uidx_tenant_pay_period_run_id_period_tenant ON tenant_pay_period_run (id, pay_period_id, tenant_id)");
-				s.execute("CREATE INDEX idx_tenant_pay_period_run_tenant_period ON tenant_pay_period_run (tenant_id, pay_period_id)");
-				s.execute("CREATE UNIQUE INDEX uidx_tenant_pay_period_run_period_number ON tenant_pay_period_run (pay_period_id, run_number)");
+				s.execute("CREATE UNIQUE INDEX IF NOT EXISTS uidx_tenant_pay_period_run_id_period_tenant ON tenant_pay_period_run (id, pay_period_id, tenant_id)");
+				s.execute("CREATE INDEX IF NOT EXISTS idx_tenant_pay_period_run_tenant_period ON tenant_pay_period_run (tenant_id, pay_period_id)");
+				s.execute("CREATE UNIQUE INDEX IF NOT EXISTS uidx_tenant_pay_period_run_period_number ON tenant_pay_period_run (pay_period_id, run_number)");
 
 				c.commit();
 			}

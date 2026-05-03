@@ -40,7 +40,6 @@ Excluded (this slice):
 - Country-specific payroll calculation rules
 - Payroll run execution
 - Mobile UI implementation
-- Web UI implementation
 
 ---
 
@@ -322,8 +321,7 @@ Department:
 Job:
 - company_id, department_id, title, code, salary_type required
 - salary_type in {HOURLY, MONTHLY}
-- MONTHLY requires default_salary > 0
-- HOURLY requires default_hourly_rate > 0
+- default_salary and default_hourly_rate are optional (null-safe); salary UI fields are deferred
 
 Employee Group:
 - company_id, name, code required
@@ -356,6 +354,42 @@ Employee:
 6. Service and DB constraints prevent cross-company and cross-tenant linkage.
 7. Privileges are seeded and enforced on endpoints.
 8. Build and tests pass after integration.
+
+---
+
+## Web UI
+
+All five resources (Companies, Departments, Jobs, Employee Groups, Employees) follow the **route-based CRUD** pattern from `docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md` §8:
+
+| Route | Purpose |
+|-------|---------|
+| `/app/companies` | List + company filter |
+| `/app/companies/new` | Create form |
+| `/app/companies/{id}/edit` | Edit form |
+| `/app/departments` | List + company filter |
+| `/app/departments/new` | Create form |
+| `/app/departments/{id}/edit` | Edit form |
+| `/app/jobs` | List + company filter |
+| `/app/jobs/new` | Create form |
+| `/app/jobs/{id}/edit` | Edit form |
+| `/app/employee-groups` | List + company filter |
+| `/app/employee-groups/new` | Create form |
+| `/app/employee-groups/{id}/edit` | Edit form |
+
+### Feedback and confirmation rules
+
+Follow `docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md` §9 for all mutating actions:
+
+- **Create / update:** show a success toast on redirect back to the list page.
+- **Toggle active/inactive (soft delete):** show a **confirmation dialog** before calling the API. Dialog title: `"Deactivate {resource}?"`. After confirmation, show a success toast and refresh the list.
+- **Hard delete (if introduced):** always confirm with a destructive-styled dialog; show a success toast after.
+- Error conditions: display an inline error or error toast; never silently fail.
+
+### Privilege-gated UI
+
+- List pages visible to any user with `{RESOURCE}_VIEW`.
+- New / Edit buttons shown only when `{RESOURCE}_MANAGE` is present in `me.privileges`.
+- Toggle active button shown only to `{RESOURCE}_MANAGE` holders.
 
 ---
 

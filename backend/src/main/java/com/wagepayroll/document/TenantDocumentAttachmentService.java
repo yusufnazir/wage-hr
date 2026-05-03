@@ -4,8 +4,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import com.wagepayroll.api.dto.DocumentAttachmentListItemDto;
+import com.wagepayroll.api.dto.DocumentHubItemDto;
 import com.wagepayroll.domain.document.DocumentAttachmentEntity;
 import com.wagepayroll.domain.document.DocumentAttachmentRepository;
+import com.wagepayroll.domain.document.TenantDocumentRepository;
 import com.wagepayroll.domain.document.TenantDocumentEntity;
 
 import org.springframework.http.HttpStatus;
@@ -19,12 +21,15 @@ public class TenantDocumentAttachmentService {
 	private final DocumentAttachmentRepository documentAttachmentRepository;
 	private final TenantDocumentMutationPolicy mutationPolicy;
 	private final DocumentAccessService documentAccessService;
+	private final TenantDocumentRepository tenantDocumentRepository;
 
 	public TenantDocumentAttachmentService(DocumentAttachmentRepository documentAttachmentRepository,
-			TenantDocumentMutationPolicy mutationPolicy, DocumentAccessService documentAccessService) {
+			TenantDocumentMutationPolicy mutationPolicy, DocumentAccessService documentAccessService,
+			TenantDocumentRepository tenantDocumentRepository) {
 		this.documentAttachmentRepository = documentAttachmentRepository;
 		this.mutationPolicy = mutationPolicy;
 		this.documentAccessService = documentAccessService;
+		this.tenantDocumentRepository = tenantDocumentRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -33,6 +38,18 @@ public class TenantDocumentAttachmentService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DOCUMENT_NOT_FOUND"));
 		return documentAttachmentRepository.findByTenantIdAndDocumentIdOrderByCreatedAtAsc(tenantId, documentId).stream()
 				.map(this::toDto).toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<DocumentHubItemDto> listByEntity(UUID tenantId, String entityType, UUID entityId) {
+		List<UUID> docIds = documentAttachmentRepository
+				.findByTenantIdAndEntityTypeAndEntityIdOrderByCreatedAtDesc(tenantId, entityType, entityId).stream()
+				.map(DocumentAttachmentEntity::getDocumentId).toList();
+		if (docIds.isEmpty()) return List.of();
+		return tenantDocumentRepository.findByTenantIdAndIdInAndDeletedAtIsNullOrderByCreatedAtDesc(tenantId, docIds).stream()
+				.map(d -> new DocumentHubItemDto(d.getId().toString(), d.getOriginalFilename(), d.getContentType(),
+						d.getSizeBytes(), d.getCreatedAt(), "entity"))
+				.toList();
 	}
 
 	@Transactional

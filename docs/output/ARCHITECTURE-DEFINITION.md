@@ -172,6 +172,13 @@ Aligned with **`docs/product/BUILD-CHECKLIST.md`** (detail and checkboxes there)
 - **Proxy trust:** When Spring sits behind a trusted edge, set forward-headers strategy and **`app.forwarding.trust-proxy`** per **`CROSS-CUTTING-SECURITY`**. The BFF always sets **`X-Forwarded-Host`** from the incoming browser host for tenant resolution.
 - **Rate limits:** Login and password reset throttled (per `application.yml`); **429** with generic message.
 
+### 8.1 Web CRUD view convention
+
+- **Default pattern for new web CRUD features:** build a **listing page** and separate **create/edit pages** (route-based forms), instead of modal-heavy CRUD.
+- **Why:** keeps URLs shareable/bookmarkable, improves validation and accessibility, and scales better for larger forms.
+- **Routes:** list at `/app/{resource}`; create at `/app/{resource}/new`; edit at `/app/{resource}/{id}/edit`.
+- **Modals:** reserved for lightweight, single-purpose actions (confirmations, tiny patches), not full entity forms.
+
 ---
 
 ## 9. Key design decisions

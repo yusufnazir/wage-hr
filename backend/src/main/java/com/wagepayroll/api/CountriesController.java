@@ -28,9 +28,10 @@ public class CountriesController {
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "50") int size,
 			@RequestParam(name = "search", required = false) String search,
+			@RequestParam(name = "payrollEnabled", required = false) Boolean payrollEnabled,
 			@RequestParam(name = "locale", required = false, defaultValue = "en") String locale,
 			HttpServletRequest request) {
 		String rid = RequestIdFilter.currentRequestId(request);
-		return ApiResponse.of(platformCountryService.listActive(page, size, search, locale), rid);
+		return ApiResponse.of(platformCountryService.listActive(page, size, search, payrollEnabled, locale), rid);
 	}
 }

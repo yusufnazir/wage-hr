@@ -1,7 +1,9 @@
 package com.wagepayroll.org;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +22,8 @@ import com.wagepayroll.api.dto.TenantJobItemDto;
 import com.wagepayroll.api.dto.TenantJobUpsertRequest;
 import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
 import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
+import com.wagepayroll.document.MinioDocumentStorageGateway;
+import com.wagepayroll.domain.country.PlatformCountryRepository;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
 import com.wagepayroll.domain.org.TenantCompanyRepository;
 import com.wagepayroll.domain.org.TenantDepartmentEntity;
@@ -54,22 +58,31 @@ public class TenantPayrollOrgService {
 	private static final Set<String> ALLOWED_EMPLOYEE_STATUS = Set.of("ACTIVE", "ON_LEAVE", "SUSPENDED",
 			"TERMINATED");
 
+	private static final long MAX_LOGO_BYTES = 256 * 1024L;
+	private static final Set<String> ALLOWED_LOGO_CONTENT_TYPES = Set.of("image/png", "image/jpeg", "image/webp",
+			"image/gif", "image/svg+xml");
+
 	private final TenantCompanyRepository companyRepository;
 	private final TenantDepartmentRepository departmentRepository;
 	private final TenantJobRepository jobRepository;
 	private final TenantEmployeeGroupRepository employeeGroupRepository;
 	private final TenantEmployeeRepository employeeRepository;
 	private final TenantWorkTimeRepository workTimeRepository;
+	private final PlatformCountryRepository platformCountryRepository;
+	private final MinioDocumentStorageGateway storageGateway;
 
 	public TenantPayrollOrgService(TenantCompanyRepository companyRepository, TenantDepartmentRepository departmentRepository,
 			TenantJobRepository jobRepository, TenantEmployeeGroupRepository employeeGroupRepository,
-			TenantEmployeeRepository employeeRepository, TenantWorkTimeRepository workTimeRepository) {
+			TenantEmployeeRepository employeeRepository, TenantWorkTimeRepository workTimeRepository,
+			PlatformCountryRepository platformCountryRepository, MinioDocumentStorageGateway storageGateway) {
 		this.companyRepository = companyRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobRepository = jobRepository;
 		this.employeeGroupRepository = employeeGroupRepository;
 		this.employeeRepository = employeeRepository;
 		this.workTimeRepository = workTimeRepository;
+		this.platformCountryRepository = platformCountryRepository;
+		this.storageGateway = storageGateway;
 	}
 
 	@Transactional(readOnly = true)
@@ -117,12 +130,18 @@ public class TenantPayrollOrgService {
 	@Transactional(readOnly = true)
 	public Page<TenantDepartmentItemDto> listDepartments(UUID tenantId, UUID companyId, int page, int size, String sort,
 			Boolean active) {
-		requireCompany(tenantId, companyId);
 		Pageable pageable = pageable(page, size, sort, Set.of("name", "code", "updatedAt", "createdAt"), "name");
+		if (companyId != null) {
+			requireCompany(tenantId, companyId);
+			Page<TenantDepartmentEntity> rows = active == null
+					? departmentRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
+					: departmentRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
+							pageable);
+			return rows.map(this::toDepartmentDto);
+		}
 		Page<TenantDepartmentEntity> rows = active == null
-				? departmentRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
-				: departmentRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
-						pageable);
+				? departmentRepository.findByTenantId(tenantId, pageable)
+				: departmentRepository.findByTenantIdAndActive(tenantId, active.booleanValue(), pageable);
 		return rows.map(this::toDepartmentDto);
 	}
 
@@ -169,20 +188,22 @@ public class TenantPayrollOrgService {
 	@Transactional(readOnly = true)
 	public Page<TenantJobItemDto> listJobs(UUID tenantId, UUID companyId, UUID departmentId, int page, int size,
 			String sort, Boolean active) {
-		requireCompany(tenantId, companyId);
-		if (departmentId != null) {
-			requireDepartment(tenantId, departmentId, companyId);
-		}
 		Pageable pageable = pageable(page, size, sort, Set.of("title", "code", "updatedAt", "createdAt"), "title");
 		Page<TenantJobEntity> rows;
-		if (departmentId != null) {
-			rows = jobRepository.findByTenantIdAndCompanyIdAndDepartmentId(tenantId, companyId, departmentId, pageable);
-		}
-		else if (active != null) {
-			rows = jobRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(), pageable);
-		}
-		else {
-			rows = jobRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable);
+		if (companyId != null) {
+			requireCompany(tenantId, companyId);
+			if (departmentId != null) {
+				requireDepartment(tenantId, departmentId, companyId);
+				rows = jobRepository.findByTenantIdAndCompanyIdAndDepartmentId(tenantId, companyId, departmentId, pageable);
+			} else if (active != null) {
+				rows = jobRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(), pageable);
+			} else {
+				rows = jobRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable);
+			}
+		} else {
+			rows = active != null
+					? jobRepository.findByTenantIdAndActive(tenantId, active.booleanValue(), pageable)
+					: jobRepository.findByTenantId(tenantId, pageable);
 		}
 		return rows.map(this::toJobDto);
 	}
@@ -236,12 +257,19 @@ public class TenantPayrollOrgService {
 	@Transactional(readOnly = true)
 	public Page<TenantEmployeeGroupItemDto> listEmployeeGroups(UUID tenantId, UUID companyId, int page, int size,
 			String sort, Boolean active) {
-		requireCompany(tenantId, companyId);
 		Pageable pageable = pageable(page, size, sort, Set.of("name", "code", "updatedAt", "createdAt"), "name");
-		Page<TenantEmployeeGroupEntity> rows = active == null
-				? employeeGroupRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
-				: employeeGroupRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
-						pageable);
+		Page<TenantEmployeeGroupEntity> rows;
+		if (companyId != null) {
+			requireCompany(tenantId, companyId);
+			rows = active == null
+					? employeeGroupRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
+					: employeeGroupRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
+							pageable);
+		} else {
+			rows = active == null
+					? employeeGroupRepository.findByTenantId(tenantId, pageable)
+					: employeeGroupRepository.findByTenantIdAndActive(tenantId, active.booleanValue(), pageable);
+		}
 		return rows.map(this::toEmployeeGroupDto);
 	}
 
@@ -394,12 +422,19 @@ public class TenantPayrollOrgService {
 	@Transactional(readOnly = true)
 	public Page<TenantWorkTimeItemDto> listWorkTimes(UUID tenantId, UUID companyId, int page, int size, String sort,
 			Boolean active) {
-		requireCompany(tenantId, companyId);
 		Pageable pageable = pageable(page, size, sort, Set.of("name", "code", "updatedAt", "createdAt"), "name");
-		Page<TenantWorkTimeEntity> rows = active == null
-				? workTimeRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
-				: workTimeRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
-						pageable);
+		Page<TenantWorkTimeEntity> rows;
+		if (companyId != null) {
+			requireCompany(tenantId, companyId);
+			rows = active == null
+					? workTimeRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable)
+					: workTimeRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, active.booleanValue(),
+							pageable);
+		}
+		else {
+			rows = active == null ? workTimeRepository.findByTenantId(tenantId, pageable)
+					: workTimeRepository.findByTenantIdAndActive(tenantId, active.booleanValue(), pageable);
+		}
 		return rows.map(this::toWorkTimeDto);
 	}
 
@@ -452,6 +487,9 @@ public class TenantPayrollOrgService {
 		entity.setRegistrationNumber(trimToNull(request.registrationNumber()));
 		entity.setTaxId(requireText(request.taxId(), "taxId", 80));
 		entity.setPayrollCountry(normalizeIso2(request.payrollCountry(), "payrollCountry"));
+		if (!platformCountryRepository.existsActivePayrollEnabledByIsoAlpha2(entity.getPayrollCountry())) {
+			throw badRequest("payrollCountry must be active and payroll-enabled");
+		}
 		entity.setCurrency(normalizeIso3(request.currency(), "currency"));
 		entity.setPayrollFrequency(normalizePayrollFrequency(request.payrollFrequency()));
 		entity.setTimezone(requireText(request.timezone(), "timezone", 60));
@@ -464,6 +502,29 @@ public class TenantPayrollOrgService {
 		entity.setStateRegion(trimToNull(request.stateRegion()));
 		entity.setPostalCode(trimToNull(request.postalCode()));
 		entity.setCountry(request.country() == null ? null : normalizeIso2(request.country(), "country"));
+
+		LocalDate payPeriodEndDate = request.payPeriodEndDate();
+		if (payPeriodEndDate == null) {
+			if (create || entity.getPayPeriodEndDate() == null) {
+				throw badRequest("payPeriodEndDate is required");
+			}
+			payPeriodEndDate = entity.getPayPeriodEndDate();
+		}
+		LocalDate timesheetEndDate = request.timesheetEndDate();
+		if (timesheetEndDate == null) {
+			if (create || entity.getTimesheetEndDate() == null) {
+				throw badRequest("timesheetEndDate is required");
+			}
+			timesheetEndDate = entity.getTimesheetEndDate();
+		}
+
+		// For monthly payroll, selecting a month-end anchor means "last day of every month".
+		if ("MONTHLY".equals(entity.getPayrollFrequency()) && isLastDayOfMonth(payPeriodEndDate)) {
+			payPeriodEndDate = payPeriodEndDate.withDayOfMonth(payPeriodEndDate.lengthOfMonth());
+		}
+
+		entity.setPayPeriodEndDate(payPeriodEndDate);
+		entity.setTimesheetEndDate(timesheetEndDate);
 		if (create) {
 			entity.setActive(request.active() == null ? true : request.active().booleanValue());
 		}
@@ -523,12 +584,11 @@ public class TenantPayrollOrgService {
 		String salaryType = normalizeSalaryType(request.salaryType());
 		entity.setSalaryType(salaryType);
 		if (salaryType.equals("MONTHLY")) {
-			entity.setDefaultSalary(requirePositive(request.defaultSalary(), "defaultSalary is required for MONTHLY"));
+			entity.setDefaultSalary(positiveOrNull(request.defaultSalary()));
 			entity.setDefaultHourlyRate(request.defaultHourlyRate());
 		}
 		else {
-			entity.setDefaultHourlyRate(
-					requirePositive(request.defaultHourlyRate(), "defaultHourlyRate is required for HOURLY"));
+			entity.setDefaultHourlyRate(positiveOrNull(request.defaultHourlyRate()));
 			entity.setDefaultSalary(request.defaultSalary());
 		}
 		if (request.standardHoursPerWeek() != null) {
@@ -846,9 +906,20 @@ public class TenantPayrollOrgService {
 		return email.toLowerCase(Locale.ROOT);
 	}
 
+	private boolean isLastDayOfMonth(LocalDate date) {
+		return date != null && date.getDayOfMonth() == date.lengthOfMonth();
+	}
+
 	private BigDecimal requirePositive(BigDecimal value, String message) {
 		if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
 			throw badRequest(message);
+		}
+		return value;
+	}
+
+	private BigDecimal positiveOrNull(BigDecimal value) {
+		if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+			return null;
 		}
 		return value;
 	}
@@ -876,10 +947,63 @@ public class TenantPayrollOrgService {
 	}
 
 	private TenantCompanyItemDto toCompanyDto(TenantCompanyEntity e) {
+		String logoUrl = null;
+		if (e.getLogoStorageKey() != null && storageGateway.isOperational()) {
+			try {
+				logoUrl = storageGateway.presignGet(e.getLogoStorageKey(), storageGateway.getDownloadPresignTtl());
+			}
+			catch (RuntimeException ignored) {
+				// storage may have become unavailable; return null URL rather than failing the whole request
+			}
+		}
 		return new TenantCompanyItemDto(e.getId(), e.getName(), e.getLegalName(), e.getRegistrationNumber(), e.getTaxId(),
 				e.getPayrollCountry(), e.getCurrency(), e.getPayrollFrequency(), e.getTimezone(), e.getDateFormat(),
 				e.getContactEmail(), e.getContactPhone(), e.getAddressLine1(), e.getAddressLine2(), e.getCity(),
-				e.getStateRegion(), e.getPostalCode(), e.getCountry(), e.isActive(), e.getCreatedAt(), e.getUpdatedAt());
+				e.getStateRegion(), e.getPostalCode(), e.getCountry(),
+				e.getPayPeriodEndDate() != null ? e.getPayPeriodEndDate().toString() : null,
+				e.getTimesheetEndDate() != null ? e.getTimesheetEndDate().toString() : null,
+				e.isActive(), logoUrl, e.getCreatedAt(),
+				e.getUpdatedAt());
+	}
+
+	@Transactional
+	public TenantCompanyItemDto uploadCompanyLogo(UUID tenantId, UUID companyId, InputStream inputStream,
+			long contentLength, String contentType) {
+		if (!ALLOWED_LOGO_CONTENT_TYPES.contains(contentType)) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "LOGO_INVALID_CONTENT_TYPE");
+		}
+		if (contentLength <= 0 || contentLength > MAX_LOGO_BYTES) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "LOGO_SIZE_EXCEEDS_LIMIT");
+		}
+		if (!storageGateway.isOperational()) {
+			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_NOT_CONFIGURED");
+		}
+		TenantCompanyEntity entity = requireCompany(tenantId, companyId);
+		String objectKey = "tenants/" + tenantId + "/company-logos/" + companyId + "/logo";
+		storageGateway.putObject(objectKey, inputStream, contentLength, contentType);
+		entity.setLogoStorageKey(objectKey);
+		entity.setUpdatedAt(Instant.now());
+		return toCompanyDto(companyRepository.save(entity));
+	}
+
+	@Transactional
+	public TenantCompanyItemDto removeCompanyLogo(UUID tenantId, UUID companyId) {
+		TenantCompanyEntity entity = requireCompany(tenantId, companyId);
+		String key = entity.getLogoStorageKey();
+		if (key != null) {
+			entity.setLogoStorageKey(null);
+			entity.setUpdatedAt(Instant.now());
+			companyRepository.save(entity);
+			if (storageGateway.isOperational()) {
+				try {
+					storageGateway.deleteObject(key);
+				}
+				catch (RuntimeException ex) {
+					// log and continue — DB is authoritative; orphan will be cleaned up later
+				}
+			}
+		}
+		return toCompanyDto(entity);
 	}
 
 	private TenantDepartmentItemDto toDepartmentDto(TenantDepartmentEntity e) {

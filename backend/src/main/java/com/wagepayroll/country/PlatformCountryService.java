@@ -50,10 +50,12 @@ public class PlatformCountryService {
 	}
 
 	@Transactional(readOnly = true)
-	public Map<String, Object> listPlatform(int page, int size, String search, Boolean active, String localeRaw) {
+	public Map<String, Object> listPlatform(int page, int size, String search, Boolean active, Boolean payrollEnabled,
+			String localeRaw) {
 		String locale = normalizeReadLocale(localeRaw);
 		Set<String> searchLocales = searchLocales(locale);
-		Page<PlatformCountryEntity> p = platformCountryRepository.search(active, normalizedSearch(search), searchLocales,
+		Page<PlatformCountryEntity> p = platformCountryRepository.search(active, payrollEnabled, normalizedSearch(search),
+				searchLocales,
 				PageRequest.of(safePage(page), safeSize(size)));
 		List<PlatformCountryEntity> rows = p.getContent();
 		Map<UUID, List<PlatformCountryTranslationEntity>> translations = loadTranslations(rows);
@@ -69,10 +71,11 @@ public class PlatformCountryService {
 	}
 
 	@Transactional(readOnly = true)
-	public Map<String, Object> listActive(int page, int size, String search, String localeRaw) {
+	public Map<String, Object> listActive(int page, int size, String search, Boolean payrollEnabled, String localeRaw) {
 		String locale = normalizeReadLocale(localeRaw);
 		Set<String> searchLocales = searchLocales(locale);
-		Page<PlatformCountryEntity> p = platformCountryRepository.search(true, normalizedSearch(search), searchLocales,
+		Page<PlatformCountryEntity> p = platformCountryRepository.search(true, payrollEnabled, normalizedSearch(search),
+				searchLocales,
 				PageRequest.of(safePage(page), safeSize(size)));
 		List<PlatformCountryEntity> rows = p.getContent();
 		Map<UUID, List<PlatformCountryTranslationEntity>> translations = loadTranslations(rows);
@@ -120,6 +123,7 @@ public class PlatformCountryService {
 		row.setIsoNumeric(isoNumeric);
 		row.setDialCode(dialCode);
 		row.setActive(body.active() == null ? true : body.active());
+		row.setPayrollEnabled(body.payrollEnabled() == null ? true : body.payrollEnabled());
 		row.setCreatedAt(now);
 		row.setUpdatedAt(now);
 		platformCountryRepository.save(row);
@@ -150,6 +154,7 @@ public class PlatformCountryService {
 		row.setIsoNumeric(isoNumeric);
 		row.setDialCode(dialCode);
 		row.setActive(body.active() == null ? row.isActive() : body.active());
+		row.setPayrollEnabled(body.payrollEnabled() == null ? row.isPayrollEnabled() : body.payrollEnabled());
 		row.setUpdatedAt(Instant.now());
 		saveTranslations(row.getId(), translations);
 		return get(id, localeRaw);
@@ -203,7 +208,16 @@ public class PlatformCountryService {
 				? translations.stream().map(t -> new PlatformCountryTranslationDto(t.getLocale(), t.getName())).toList()
 				: List.of();
 		return new PlatformCountryDto(row.getId(), row.getIsoAlpha2(), row.getIsoAlpha3(), row.getIsoNumeric(), row.getDialCode(),
-				row.isActive(), resolvedName, translationItems, DateTimeFormatter.ISO_INSTANT.format(row.getUpdatedAt()));
+				row.isActive(), row.isPayrollEnabled(), resolvedName, translationItems,
+				DateTimeFormatter.ISO_INSTANT.format(row.getUpdatedAt()));
+	}
+
+	@Transactional(readOnly = true)
+	public boolean existsActivePayrollCountryByIsoAlpha2(String isoAlpha2) {
+		if (isoAlpha2 == null || isoAlpha2.isBlank()) {
+			return false;
+		}
+		return platformCountryRepository.existsActivePayrollEnabledByIsoAlpha2(isoAlpha2.trim().toUpperCase(Locale.ROOT));
 	}
 
 	private static String resolveName(String locale, Map<String, String> names) {

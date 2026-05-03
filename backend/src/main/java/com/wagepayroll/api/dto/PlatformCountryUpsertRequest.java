@@ -8,5 +8,6 @@ public record PlatformCountryUpsertRequest(
 		String isoNumeric,
 		String dialCode,
 		Boolean active,
+		Boolean payrollEnabled,
 		List<PlatformCountryTranslationRequest> translations) {
 }

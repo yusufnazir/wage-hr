@@ -66,3 +66,12 @@
 ## Ports (authoritative)
 
 From `docs/prompts/PROJECT-CONTEXT.md`: API **8300**, Next.js **3007**.
+
+## Web CRUD scaffolding convention
+
+- For new web CRUD features, scaffold a **list view** and separate **create/edit views**.
+- Preferred route pattern:
+	- List: `/app/{resource}`
+	- Create: `/app/{resource}/new`
+	- Edit: `/app/{resource}/{id}/edit`
+- Avoid full-entity CRUD inside modals; reserve modals for short confirmations or tiny patch actions.

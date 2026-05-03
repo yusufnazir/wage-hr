@@ -1,5 +1,7 @@
 package com.wagepayroll.api.dto;
 
+import java.time.LocalDate;
+
 public record TenantCompanyUpsertRequest(
 		String name,
 		String legalName,
@@ -18,5 +20,7 @@ public record TenantCompanyUpsertRequest(
 		String stateRegion,
 		String postalCode,
 		String country,
+		LocalDate payPeriodEndDate,
+		LocalDate timesheetEndDate,
 		Boolean active) {
 }
