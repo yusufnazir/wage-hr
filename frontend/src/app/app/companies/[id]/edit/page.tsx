@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
-import { CompanyFormSections, type CompanyFormState } from "@/components/company/CompanyFormSections";
+import {
+  CompanyFormSections,
+  ValidationSummary,
+  focusField,
+  useUnsavedChangesGuard,
+  type CompanyFormState,
+  type ValidationIssue,
+} from "@/components/company/CompanyFormSections";
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
 import { EntityDocumentsTab } from "@/components/ui/EntityDocumentsTab";
 import {
@@ -23,11 +30,6 @@ import { navLabel } from "@/messages/nav";
 const FREQUENCIES = ["WEEKLY", "BIWEEKLY", "SEMIMONTHLY", "MONTHLY"] as const;
 
 type LoadState = "loading" | "ready" | "forbidden" | "notFound" | "error";
-
-type ValidationIssue = {
-  fieldId: string;
-  message: string;
-};
 
 function parseGmtOffset(value: string): string | null {
   if (value === "GMT" || value === "UTC") return "UTC+00:00";
@@ -131,43 +133,7 @@ export default function CompanyEditPage() {
     return JSON.stringify(form) !== initialSnapshot;
   }, [form, initialSnapshot]);
 
-  useEffect(() => {
-    if (!isDirty || busy) return;
-    const confirmLeave = () => window.confirm("You have unsaved changes. Leave this page?");
-    const beforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    const onDocumentClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
-      if (!anchor) return;
-      const href = anchor.getAttribute("href");
-      if (!href || href.startsWith("#")) return;
-      if (anchor.target && anchor.target !== "_self") return;
-      if (anchor.hasAttribute("download")) return;
-      if (!confirmLeave()) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    window.addEventListener("beforeunload", beforeUnload);
-    document.addEventListener("click", onDocumentClick, true);
-    return () => {
-      window.removeEventListener("beforeunload", beforeUnload);
-      document.removeEventListener("click", onDocumentClick, true);
-    };
-  }, [isDirty, busy]);
-
-  function focusField(fieldId: string) {
-    const el = document.getElementById(fieldId) as HTMLElement | null;
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    if ("focus" in el) {
-      (el as HTMLInputElement | HTMLSelectElement).focus();
-    }
-  }
+  useUnsavedChangesGuard(isDirty, busy);
 
   useEffect(() => {
     if (!canManage) return;
@@ -384,24 +350,7 @@ export default function CompanyEditPage() {
         <EntityDocumentsTab entityType="COMPANY" entityId={id} canEdit={canManage} />
       ) : (
         <>
-          {validationIssues.length > 0 ? (
-            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
-              <p className="text-sm font-semibold text-destructive">Please fix the following fields:</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-destructive">
-                {validationIssues.map((issue) => (
-                  <li key={issue.fieldId}>
-                    <button
-                      type="button"
-                      onClick={() => focusField(issue.fieldId)}
-                      className="underline underline-offset-2 hover:no-underline"
-                    >
-                      {issue.message}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+          <ValidationSummary issues={validationIssues} onFocus={focusField} />
 
           {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
 

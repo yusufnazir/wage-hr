@@ -1,8 +1,80 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import type { PlatformCountryRow, TenantCurrencyItem } from "@/lib/api";
+
+// ─── Shared validation types & utilities ────────────────────────────────────
+
+export type ValidationIssue = {
+  fieldId: string;
+  message: string;
+};
+
+export function focusField(fieldId: string): void {
+  const el = document.getElementById(fieldId) as HTMLElement | null;
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  if ("focus" in el) (el as HTMLInputElement | HTMLSelectElement).focus();
+}
+
+export function useUnsavedChangesGuard(isDirty: boolean, busy: boolean): void {
+  useEffect(() => {
+    if (!isDirty || busy) return;
+    const confirmLeave = () => window.confirm("You have unsaved changes. Leave this page?");
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    const onDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (anchor.hasAttribute("download")) return;
+      if (!confirmLeave()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", onDocumentClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", onDocumentClick, true);
+    };
+  }, [isDirty, busy]);
+}
+
+export function ValidationSummary({
+  issues,
+  onFocus,
+}: {
+  issues: ValidationIssue[];
+  onFocus: (fieldId: string) => void;
+}) {
+  if (issues.length === 0) return null;
+  return (
+    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
+      <p className="text-sm font-semibold text-destructive">Please fix the following fields:</p>
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-destructive">
+        {issues.map((issue) => (
+          <li key={issue.fieldId}>
+            <button
+              type="button"
+              onClick={() => onFocus(issue.fieldId)}
+              className="underline underline-offset-2 hover:no-underline"
+            >
+              {issue.message}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export type CompanyFormState = {
   name: string;
