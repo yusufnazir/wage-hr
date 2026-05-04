@@ -197,3 +197,15 @@ databaseChangeLog:
   - include:
       file: ddl/schema-m10-company-pay-period-config-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m11-platform-bank-templates-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m11-platform-bank-template-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m11-platform-bank-templates-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m11-bank-templates-nav-1.xml
+      relativeToChangelogFile: true

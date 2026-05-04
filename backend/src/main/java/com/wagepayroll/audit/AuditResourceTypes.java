@@ -26,6 +26,10 @@ public final class AuditResourceTypes {
 
 	public static final String EXCHANGE_RATE = "EXCHANGE_RATE";
 
+	public static final String PLATFORM_BANK_TEMPLATE = "PLATFORM_BANK_TEMPLATE";
+
+	public static final String TENANT_BANK_TEMPLATE = "TENANT_BANK_TEMPLATE";
+
 	private AuditResourceTypes() {
 	}
 }

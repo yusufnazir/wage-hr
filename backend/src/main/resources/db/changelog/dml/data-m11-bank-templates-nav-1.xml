@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m11-bank-templates-nav-1" author="wagepayroll">
+        <comment>Tenant navigation: bank templates (company-scoped).</comment>
+
+        <insert tableName="nav_menu_item">
+            <column name="id" value="50000000-0000-0000-0000-000000000017"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="path" value="/app/bank-templates"/>
+            <column name="label_key" value="nav.bank_templates"/>
+            <column name="sort_order" value="45"/>
+            <column name="required_privilege_code" value="BANK_TEMPLATE_VIEW"/>
+            <column name="required_plan_feature_code" valueComputed="NULL"/>
+            <column name="created_at" valueDate="now()"/>
+            <column name="updated_at" valueDate="now()"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

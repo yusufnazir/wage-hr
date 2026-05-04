@@ -6,6 +6,41 @@
 
 ---
 
+## Implementation Snapshot (M11)
+
+Implemented backend + web (mobile excluded) in this repository.
+
+- Backend API and services:
+  - `backend/src/main/java/com/wagepayroll/api/PlatformBankTemplatesController.java`
+  - `backend/src/main/java/com/wagepayroll/api/TenantBankTemplatesController.java`
+  - `backend/src/main/java/com/wagepayroll/banktemplate/PlatformBankTemplateService.java`
+  - `backend/src/main/java/com/wagepayroll/banktemplate/TenantBankTemplateService.java`
+  - `backend/src/main/java/com/wagepayroll/banktemplate/BankTemplateCopyService.java` (invoked from `TenantPayrollOrgService.createCompany`)
+- Backend persistence:
+  - `backend/src/main/java/com/wagepayroll/domain/banktemplate/PlatformBankTemplateEntity.java`
+  - `backend/src/main/java/com/wagepayroll/domain/banktemplate/TenantBankTemplateEntity.java`
+  - `backend/src/main/java/com/wagepayroll/domain/banktemplate/PlatformBankTemplateRepository.java`
+  - `backend/src/main/java/com/wagepayroll/domain/banktemplate/TenantBankTemplateRepository.java`
+- Liquibase:
+  - `backend/src/main/resources/db/changelog/ddl/schema-m11-platform-bank-templates-1.xml`
+  - `backend/src/main/resources/db/changelog/dml/data-m11-platform-bank-template-privileges-1.xml`
+  - `backend/src/main/resources/db/changelog/dml/data-m11-platform-bank-templates-seed-1.xml`
+  - `backend/src/main/resources/db/changelog/dml/data-m11-bank-templates-nav-1.xml`
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DdlM11PlatformBankTemplates1.java`
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DataM11PlatformBankTemplatePrivileges1.java`
+  - `backend/src/main/java/com/wagepayroll/liquibase/task/DataM11PlatformBankTemplatesSeed1.java`
+- Web (Next.js):
+  - `frontend/src/app/app/platform-bank-templates/page.tsx`, `new/page.tsx`, `[id]/edit/page.tsx`
+  - `frontend/src/app/app/bank-templates/page.tsx`, `[id]/edit/page.tsx`
+  - `frontend/src/lib/api.ts`
+  - `frontend/src/messages/nav.ts`
+  - `backend/src/main/java/com/wagepayroll/api/NavigationController.java` (platform sidebar item)
+- Test coverage:
+  - `backend/src/test/java/com/wagepayroll/api/PlatformBankTemplatesIT.java`
+  - `backend/src/test/java/com/wagepayroll/api/TenantBankTemplatesIT.java`
+
+---
+
 ## 1. Objective
 
 Provide a **platform-managed global catalog of bank templates per country** that defines standard bank and account information formats used for payroll disbursement. When a **company is created** inside a tenant, the system automatically **copies all active platform bank templates** for the company's `payroll_country` into the tenant's own bank template collection (scoped to that company). Tenant admins can then view and customize their copies as needed.

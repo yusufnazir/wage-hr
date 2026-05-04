@@ -661,6 +661,282 @@ export async function patchDeactivatePlatformCountry(id: string): Promise<Platfo
   return body.data.item;
 }
 
+export type PlatformBankTemplateRow = {
+  id: string;
+  countryCode: string;
+  name: string;
+  bankName: string | null;
+  swiftBic: string | null;
+  bankCode: string | null;
+  accountNumberFormat: string | null;
+  currencyCode: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlatformBankTemplatesResult =
+  | {
+      ok: true;
+      items: PlatformBankTemplateRow[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/platform/bank-templates — platform superadmin only. */
+export async function fetchPlatformBankTemplates(args?: {
+  page?: number;
+  size?: number;
+  country?: string | null;
+  active?: boolean | null;
+}): Promise<PlatformBankTemplatesResult> {
+  const q = new URLSearchParams({
+    page: String(args?.page ?? 0),
+    size: String(args?.size ?? 20),
+  });
+  if (args?.country?.trim()) q.set("country", args.country.trim().toUpperCase());
+  if (typeof args?.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/platform/bank-templates?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    items: PlatformBankTemplateRow[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
+export async function fetchPlatformBankTemplate(id: string): Promise<
+  { ok: true; template: PlatformBankTemplateRow } | { ok: false; status: number }
+> {
+  const r = await fetch(bffUrl(`/api/v1/platform/bank-templates/${encodeURIComponent(id)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ template: PlatformBankTemplateRow }>;
+  return { ok: true, template: body.data.template };
+}
+
+export async function postPlatformBankTemplate(payload: {
+  countryCode: string;
+  name: string;
+  bankName?: string | null;
+  swiftBic?: string | null;
+  bankCode?: string | null;
+  accountNumberFormat?: string | null;
+  currencyCode?: string | null;
+  active?: boolean;
+}): Promise<PlatformBankTemplateRow> {
+  const r = await fetch(bffUrl("/api/v1/platform/bank-templates"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: PlatformBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function putPlatformBankTemplate(
+  id: string,
+  payload: {
+    name: string;
+    bankName?: string | null;
+    swiftBic?: string | null;
+    bankCode?: string | null;
+    accountNumberFormat?: string | null;
+    currencyCode?: string | null;
+    active: boolean;
+  },
+): Promise<PlatformBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/bank-templates/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: PlatformBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function patchActivatePlatformBankTemplate(id: string): Promise<PlatformBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/bank-templates/${encodeURIComponent(id)}/activate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: PlatformBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function patchDeactivatePlatformBankTemplate(id: string): Promise<PlatformBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/platform/bank-templates/${encodeURIComponent(id)}/deactivate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: PlatformBankTemplateRow }>;
+  return body.data.template;
+}
+
+export type TenantBankTemplateRow = {
+  id: string;
+  companyId: string;
+  platformBankTemplateId: string | null;
+  countryCode: string;
+  name: string;
+  bankName: string | null;
+  swiftBic: string | null;
+  bankCode: string | null;
+  accountNumberFormat: string | null;
+  currencyCode: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantBankTemplatesResult =
+  | {
+      ok: true;
+      items: TenantBankTemplateRow[];
+      totalElements: number;
+      page: number;
+      size: number;
+      totalPages: number;
+    }
+  | { ok: false; status: number };
+
+/** GET /api/v1/tenant/bank-templates — BANK_TEMPLATE_VIEW; companyId required. */
+export async function fetchTenantBankTemplates(args: {
+  companyId: string;
+  page?: number;
+  size?: number;
+  active?: boolean | null;
+}): Promise<TenantBankTemplatesResult> {
+  const q = new URLSearchParams({
+    companyId: args.companyId,
+    page: String(args.page ?? 0),
+    size: String(args.size ?? 20),
+  });
+  if (typeof args.active === "boolean") q.set("active", String(args.active));
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{
+    items: TenantBankTemplateRow[];
+    totalElements: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  }>;
+  const d = body.data;
+  return {
+    ok: true,
+    items: d.items,
+    totalElements: d.totalElements,
+    page: d.page,
+    size: d.size,
+    totalPages: d.totalPages,
+  };
+}
+
+export async function fetchTenantBankTemplate(id: string): Promise<
+  { ok: true; template: TenantBankTemplateRow } | { ok: false; status: number }
+> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/${encodeURIComponent(id)}`), {
+    credentials: "same-origin",
+  });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ template: TenantBankTemplateRow }>;
+  return { ok: true, template: body.data.template };
+}
+
+export async function postTenantBankTemplate(payload: {
+  companyId: string;
+  name: string;
+  bankName?: string | null;
+  swiftBic?: string | null;
+  bankCode?: string | null;
+  accountNumberFormat?: string | null;
+  currencyCode?: string | null;
+  active?: boolean;
+}): Promise<TenantBankTemplateRow> {
+  const r = await fetch(bffUrl("/api/v1/tenant/bank-templates"), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (r.status !== 201) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: TenantBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function putTenantBankTemplate(
+  id: string,
+  payload: {
+    name: string;
+    bankName?: string | null;
+    swiftBic?: string | null;
+    bankCode?: string | null;
+    accountNumberFormat?: string | null;
+    currencyCode?: string | null;
+    active: boolean;
+  },
+): Promise<TenantBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: TenantBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function patchActivateTenantBankTemplate(id: string): Promise<TenantBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/${encodeURIComponent(id)}/activate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: TenantBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function patchDeactivateTenantBankTemplate(id: string): Promise<TenantBankTemplateRow> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/${encodeURIComponent(id)}/deactivate`), {
+    method: "PATCH",
+    credentials: "same-origin",
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ template: TenantBankTemplateRow }>;
+  return body.data.template;
+}
+
+export async function deleteTenantBankTemplate(id: string): Promise<void> {
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (r.status !== 204) throw new Error(await readFailureMessage(r));
+}
+
 export type CountriesResult =
   | {
       ok: true;

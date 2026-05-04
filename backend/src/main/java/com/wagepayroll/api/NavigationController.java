@@ -40,6 +40,7 @@ public class NavigationController {
 	private static final UUID NAV_PLATFORM_MAIL_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000096");
 	private static final UUID NAV_PLATFORM_CURRENCIES_ID = UUID.fromString("50000000-0000-0000-0000-000000000095");
 	private static final UUID NAV_PLATFORM_COUNTRIES_ID = UUID.fromString("50000000-0000-0000-0000-000000000094");
+	private static final UUID NAV_PLATFORM_BANK_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000090");
 
 	private final NavigationMenuService navigationMenuService;
 	private final UserAccountRepository userAccountRepository;
@@ -105,9 +106,11 @@ public class NavigationController {
 				"nav.platform_currencies", 29, List.of()));
 		items.add(new NavigationItemDto(NAV_PLATFORM_COUNTRIES_ID, "/app/platform-countries",
 				"nav.platform_countries", 30, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_BANK_TEMPLATES_ID, "/app/platform-bank-templates",
+				"nav.platform_bank_templates", 31, List.of()));
 		items.add(new NavigationItemDto(NAV_PLATFORM_MAIL_TEMPLATES_ID, "/app/platform-mail-templates",
-				"nav.platform_mail_templates", 31, List.of()));
-		items.add(new NavigationItemDto(NAV_PLATFORM_SETTINGS_ID, "/app/platform-settings", "nav.platform_settings", 32,
+				"nav.platform_mail_templates", 32, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_SETTINGS_ID, "/app/platform-settings", "nav.platform_settings", 33,
 				List.of()));
 		items.sort(Comparator.comparingInt(NavigationItemDto::sortOrder));
 		return items;

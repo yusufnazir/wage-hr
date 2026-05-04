@@ -22,6 +22,7 @@ import com.wagepayroll.api.dto.TenantJobItemDto;
 import com.wagepayroll.api.dto.TenantJobUpsertRequest;
 import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
 import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
+import com.wagepayroll.banktemplate.BankTemplateCopyService;
 import com.wagepayroll.document.MinioDocumentStorageGateway;
 import com.wagepayroll.domain.country.PlatformCountryRepository;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
@@ -70,11 +71,13 @@ public class TenantPayrollOrgService {
 	private final TenantWorkTimeRepository workTimeRepository;
 	private final PlatformCountryRepository platformCountryRepository;
 	private final MinioDocumentStorageGateway storageGateway;
+	private final BankTemplateCopyService bankTemplateCopyService;
 
 	public TenantPayrollOrgService(TenantCompanyRepository companyRepository, TenantDepartmentRepository departmentRepository,
 			TenantJobRepository jobRepository, TenantEmployeeGroupRepository employeeGroupRepository,
 			TenantEmployeeRepository employeeRepository, TenantWorkTimeRepository workTimeRepository,
-			PlatformCountryRepository platformCountryRepository, MinioDocumentStorageGateway storageGateway) {
+			PlatformCountryRepository platformCountryRepository, MinioDocumentStorageGateway storageGateway,
+			BankTemplateCopyService bankTemplateCopyService) {
 		this.companyRepository = companyRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobRepository = jobRepository;
@@ -83,6 +86,7 @@ public class TenantPayrollOrgService {
 		this.workTimeRepository = workTimeRepository;
 		this.platformCountryRepository = platformCountryRepository;
 		this.storageGateway = storageGateway;
+		this.bankTemplateCopyService = bankTemplateCopyService;
 	}
 
 	@Transactional(readOnly = true)
@@ -108,7 +112,9 @@ public class TenantPayrollOrgService {
 		Instant now = Instant.now();
 		entity.setCreatedAt(now);
 		entity.setUpdatedAt(now);
-		return toCompanyDto(saveWithConflict(entity));
+		TenantCompanyEntity saved = saveWithConflict(entity);
+		bankTemplateCopyService.copyForCompany(tenantId, saved.getId(), saved.getPayrollCountry());
+		return toCompanyDto(saved);
 	}
 
 	@Transactional

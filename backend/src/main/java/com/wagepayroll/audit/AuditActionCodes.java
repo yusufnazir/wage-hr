@@ -82,6 +82,24 @@ public final class AuditActionCodes {
 	/** Tenant admin deleted a tenant-scoped exchange rate. */
 	public static final String EXCHANGE_RATE_DELETED = "EXCHANGE_RATE_DELETED";
 
+	public static final String PLATFORM_BANK_TEMPLATE_CREATED = "PLATFORM_BANK_TEMPLATE_CREATED";
+
+	public static final String PLATFORM_BANK_TEMPLATE_UPDATED = "PLATFORM_BANK_TEMPLATE_UPDATED";
+
+	public static final String PLATFORM_BANK_TEMPLATE_ACTIVATED = "PLATFORM_BANK_TEMPLATE_ACTIVATED";
+
+	public static final String PLATFORM_BANK_TEMPLATE_DEACTIVATED = "PLATFORM_BANK_TEMPLATE_DEACTIVATED";
+
+	public static final String TENANT_BANK_TEMPLATE_UPDATED = "TENANT_BANK_TEMPLATE_UPDATED";
+
+	public static final String TENANT_BANK_TEMPLATE_CREATED = "TENANT_BANK_TEMPLATE_CREATED";
+
+	public static final String TENANT_BANK_TEMPLATE_ACTIVATED = "TENANT_BANK_TEMPLATE_ACTIVATED";
+
+	public static final String TENANT_BANK_TEMPLATE_DEACTIVATED = "TENANT_BANK_TEMPLATE_DEACTIVATED";
+
+	public static final String TENANT_BANK_TEMPLATE_DELETED = "TENANT_BANK_TEMPLATE_DELETED";
+
 	private AuditActionCodes() {
 	}
 }
