@@ -5,7 +5,39 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-exchange-rate-privileges-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataExchangeRatePrivileges1"/>
+    <changeSet id="data-exchange-rate-priv-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000013"/>
+            <param name="code" value="EXCHANGE_RATE_VIEW"/>
+            <param name="description" value="View tenant exchange rates"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-exchange-rate-priv-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000014"/>
+            <param name="code" value="EXCHANGE_RATE_MANAGE"/>
+            <param name="description" value="Manage tenant exchange rates"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-exchange-rate-grant-rp-demo-admin-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000013"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-exchange-rate-grant-rp-demo-admin-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000014"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-exchange-rate-grant-rp-demo-viewer-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000013"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

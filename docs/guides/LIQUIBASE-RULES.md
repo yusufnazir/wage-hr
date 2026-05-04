@@ -96,11 +96,11 @@ A new version MUST be created when:
 
 ### 4.1 Required Approach
 
-All DML MUST use:
+All DML MUST use the **parameterized `CustomDataTaskChange` pattern**:
 
-```
-CustomDataTaskChange
-```
+* One **reusable task class** per entity type (e.g. `DataUpsertPrivilege`, `DataGrantRolePrivilege`)
+* Data values are injected as **`<param>` tags in XML** — the XML changeset is the data record
+* Task classes contain **zero hardcoded data** — all values arrive via Liquibase setter injection
 
 ---
 
@@ -108,7 +108,9 @@ CustomDataTaskChange
 
 * No raw SQL in DML changeSets
 * No inline insert/update/delete operations in XML/YAML
-* All DML logic must be implemented in Java
+* All DML logic must be implemented in Java, extending `CustomDataTaskChange`
+* **Each changeset inserts/updates exactly one logical row** (one privilege, one nav item, one user, etc.)
+* Task classes MUST be idempotent (upsert or insert-if-missing)
 
 ---
 
@@ -117,10 +119,20 @@ CustomDataTaskChange
 ```java
 public abstract class CustomDataTaskChange implements CustomTaskChange {
 
+    protected JdbcConnection connection;
+    protected Timestamp ts;
+
+    /** Subclasses implement DML here — connection and ts are already set. */
     public abstract void handleUpdate() throws Exception;
 
-    protected void setData(PreparedStatement ps, int index, Object value) {
-        // Handles null safety and type conversion
+    /** Null-safe, type-aware param binding. */
+    protected void setData(PreparedStatement ps, int index, Object value) throws SQLException {
+        // Handles String, Boolean, Integer, Long, Double, BigDecimal, Timestamp, null
+    }
+
+    @Override
+    public final void execute(Database database) throws CustomChangeException {
+        // wires connection, sets ts, calls handleUpdate(), commits
     }
 }
 ```
@@ -129,44 +141,78 @@ public abstract class CustomDataTaskChange implements CustomTaskChange {
 
 ### 4.4 Implementation Rules
 
-* One class per entity or cohesive domain concern
-* Must be stateless
-* Must be idempotent where possible
-* Must support safe re-execution behavior
+* One class per **entity type or relation** (not per migration)
+* The class must declare **private fields + public getters+setters** for every `<param>` Liquibase needs to inject
+* Must be stateless across different Liquibase runs
+* Must be idempotent: upsert by `id`, or insert-if-missing by composite key
 
 ---
 
-### 4.5 Example Implementation
+### 4.5 Example Task Class
 
 ```java
-public class DataPermission extends CustomDataTaskChange {
+public class DataUpsertPrivilege extends CustomDataTaskChange {
 
     private String id;
     private String code;
     private String description;
-    private String category;
+
+    public void setId(String id) { this.id = id; }
+    public String getId() { return id; }
+    public void setCode(String code) { this.code = code; }
+    public String getCode() { return code; }
+    public void setDescription(String description) { this.description = description; }
+    public String getDescription() { return description; }
 
     @Override
-    public void handleUpdate() {
-        // insert or update logic
+    public void handleUpdate() throws Exception {
+        // upsert privilege row using this.id, this.code, this.description
+    }
+
+    @Override
+    public String getConfirmationMessage() {
+        return "Upserted privilege " + code;
     }
 }
 ```
 
 ---
 
-### 4.6 Example ChangeSet
+### 4.6 Example Changeset (parameterized)
+
+Each changeset represents **one row of data**. Use `onValidationFail="MARK_RAN"` on seed changesets
+so an existing database with a checksum mismatch (e.g. after content was updated) skips gracefully
+instead of failing.
 
 ```xml
-<changeSet id="data-permission-1" author="system">
-    <customChange class="com.example.liquibase.DataPermission">
-        <param name="id"><![CDATA[1]]></param>
-        <param name="code"><![CDATA[dashboard.view]]></param>
-        <param name="description"><![CDATA[View dashboard]]></param>
-        <param name="category"><![CDATA[dashboard]]></param>
+<changeSet id="data-scaffold-priv-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+        <param name="id" value="20000000-0000-0000-0000-000000000001"/>
+        <param name="code" value="USER_VIEW"/>
+        <param name="description" value="View users"/>
     </customChange>
 </changeSet>
 ```
+
+---
+
+### 4.7 Reusable Task Classes (reference)
+
+| Class | Entity | Key params |
+|---|---|---|
+| `DataUpsertPrivilege` | `privilege` | `id`, `code`, `description` |
+| `DataGrantRolePrivilege` | `role_privilege` | `tenantId`, `roleId`, `privilegeId` |
+| `DataUpsertTenant` | `tenant` | `id`, `handle`, `name` |
+| `DataUpsertUser` | `user_account` | `id`, `email`, `passwordHash` |
+| `DataUpsertRole` | `role` | `id`, `tenantId`, `name` |
+| `DataGrantMembership` | `membership` | `tenantId`, `userId` |
+| `DataGrantUserRole` | `user_role` | `tenantId`, `userId`, `roleId` |
+| `DataUpsertNavMenuItem` | `nav_menu_item` | `id`, `path`, `labelKey`, `sortOrder`, `requiredPrivilegeCode`, `requiredPlanFeatureCode` |
+| `DataUpsertPlatformSetting` | `platform_setting` | `id`, `key`, `valueText` |
+| `DataUpsertTenantSetting` | `tenant_setting` | `id`, `tenantId`, `key`, `valueText` |
+| `DataUpsertRoleTemplate` | `role_template` | `id`, `code`, `displayName` |
+| `DataGrantRoleTemplatePrivilege` | `role_template_privilege` | `roleTemplateId`, `privilegeCode` |
+| `DataSetUserPlatformSuperadmin` | `user_account` | `userId` |
 
 ---
 
@@ -362,11 +408,28 @@ private static void upsert(Connection c, String id, ..., Timestamp ts) throws Ex
 }
 ```
 
-### 11.4 What NOT to do
+### 11.4 `onValidationFail="MARK_RAN"` on seed changesets
+
+All DML changesets that use parameterized `CustomDataTaskChange` tasks MUST set `onValidationFail="MARK_RAN"`
+on the `<changeSet>` element:
+
+```xml
+<changeSet id="data-scaffold-priv-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+```
+
+**Why:** When a seed changeset's content is updated (e.g. description text changed, param reordered),
+Liquibase detects a checksum mismatch on databases that already ran the old version. `MARK_RAN` tells
+Liquibase to accept the mismatch and mark it as run without re-executing — preventing false failures
+on existing environments. Fresh databases always execute the current content.
+
+**Exception:** Pure-SQL native changesets (e.g. `<update>` backfills) do not need this attribute
+because Liquibase manages their checksum natively.
+
+### 11.5 What NOT to do
 
 * Do **not** use `if (COUNT(*) >= N) return` guards that skip the entire changeset — this causes missed updates when a newer version of the data is needed
 * Do **not** modify an already-executed changeset to fix data — always create a new versioned changeset
-* Do **not** use `onFail="MARK_RAN"` preConditions on seed data — the upsert pattern makes them unnecessary
+* Do **not** embed data directly in Java task classes — all seed values MUST come from `<param>` tags in the XML
 
 ---
 

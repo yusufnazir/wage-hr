@@ -5,7 +5,39 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-m11-platform-bank-template-privileges-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM11PlatformBankTemplatePrivileges1"/>
+    <changeSet id="data-m11-priv-bank-template-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000031"/>
+            <param name="code" value="BANK_TEMPLATE_VIEW"/>
+            <param name="description" value="View company bank templates"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m11-priv-bank-template-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000032"/>
+            <param name="code" value="BANK_TEMPLATE_MANAGE"/>
+            <param name="description" value="Manage company bank templates"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m11-grant-rp-demo-admin-bank-template-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000031"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m11-grant-rp-demo-admin-bank-template-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000032"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m11-grant-rp-demo-viewer-bank-template-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000031"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

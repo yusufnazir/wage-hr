@@ -9,4 +9,8 @@
         <customChange class="com.wagepayroll.liquibase.task.DdlM11PlatformBankTemplates1"/>
     </changeSet>
 
+    <changeSet id="schema-m11-bank-templates-drop-currency-1" author="wagepayroll">
+        <customChange class="com.wagepayroll.liquibase.task.DdlM11BankTemplatesDropCurrency1"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -93,12 +93,12 @@ Platform SuperAdmin manages the catalog. Tenant users manage their company-scope
 2. System displays a paginated table of all platform bank templates, sorted by `country_code` ASC, then `name` ASC.
 3. A filter allows narrowing by country (ISO alpha-2 code).
 4. An **Active only / All** toggle defaults to **All** for superadmin.
-5. Each row shows: Country, Name, Bank Name, SWIFT/BIC, Bank Code, Currency, Status badge (Active / Inactive), Actions (Edit, Activate/Deactivate).
+5. Each row shows: Country, Name, Bank Name, SWIFT/BIC, Bank Code, Status badge (Active / Inactive), Actions (Edit, Activate/Deactivate).
 
 ### 4.2 SuperAdmin — Create Platform Bank Template
 
 1. SuperAdmin clicks **+ Add Bank Template**.
-2. A form opens with fields: Country (required, dropdown of `payroll_enabled` platform countries), Name (required), Bank Name (optional), SWIFT/BIC (optional), Bank Code (optional), Account Number Format (optional), Currency Code (optional, ISO-4217), Active (default: true).
+2. A form opens with fields: Country (required, dropdown of `payroll_enabled` platform countries), Name (required), Bank Name (optional), SWIFT/BIC (optional), Bank Code (optional), Account Number Format (optional), Active (default: true).
 3. On submit, system validates required fields and format rules.
 4. On success: template appears in the list; audit event recorded.
 5. On error: inline field-level errors shown.
@@ -123,13 +123,13 @@ Platform SuperAdmin manages the catalog. Tenant users manage their company-scope
 1. Tenant admin navigates to **Settings → Bank Templates** within a company context.
 2. System displays a paginated list of `tenant_bank_template` records for the selected company.
 3. Records are pre-populated from the platform catalog at company creation time.
-4. Each row shows: Name, Bank Name, SWIFT/BIC, Bank Code, Account Number Format, Currency, Active status, Actions.
+4. Each row shows: Name, Bank Name, SWIFT/BIC, Bank Code, Account Number Format, Active status, Actions.
 
 ### 4.6 Tenant Admin — Edit (Customise) a Tenant Bank Template
 
 1. Tenant admin clicks **Edit** on a template row.
 2. Form pre-fills with current values. `country_code` and `platform_bank_template_id` are read-only.
-3. Editable fields: `name`, `bank_name`, `swift_bic`, `bank_code`, `account_number_format`, `currency_code`, `active`.
+3. Editable fields: `name`, `bank_name`, `swift_bic`, `bank_code`, `account_number_format`, `active`.
 4. On success: list refreshes; audit event `TENANT_BANK_TEMPLATE_UPDATED` recorded.
 
 ### 4.7 Copy on Company Create (internal — no user action)
@@ -155,7 +155,6 @@ Platform SuperAdmin manages the catalog. Tenant users manage their company-scope
 | `swift_bic` | VARCHAR(11) | NULLABLE | SWIFT/BIC code. When provided must match `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$`. |
 | `bank_code` | VARCHAR(30) | NULLABLE | Local bank identifier (country-specific). Trimmed; max 30 chars. |
 | `account_number_format` | VARCHAR(100) | NULLABLE | Descriptive pattern or regex hint for account number validation (e.g. `^\d{10}$`). Max 100 chars. |
-| `currency_code` | CHAR(3) | NULLABLE | ISO 4217 currency code (e.g. `SRD`). Stored uppercase. NULL = not currency-specific. |
 | `active` | BOOLEAN | NOT NULL, DEFAULT true | When false: excluded from future company-creation copies; visible in superadmin list only. |
 | `created_at` | TIMESTAMP | NOT NULL | Set on insert. |
 | `updated_at` | TIMESTAMP | NOT NULL | Set on insert and update. |
@@ -182,7 +181,6 @@ Platform SuperAdmin manages the catalog. Tenant users manage their company-scope
 | `swift_bic` | VARCHAR(11) | NULLABLE | Editable. Same format validation as platform table. |
 | `bank_code` | VARCHAR(30) | NULLABLE | Editable. Trimmed; max 30 chars. |
 | `account_number_format` | VARCHAR(100) | NULLABLE | Editable. Max 100 chars. |
-| `currency_code` | CHAR(3) | NULLABLE | Editable. ISO 4217 uppercase. |
 | `active` | BOOLEAN | NOT NULL, DEFAULT true | Tenant can deactivate a template they do not use. |
 | `created_at` | TIMESTAMP | NOT NULL | Set on insert (time of copy). |
 | `updated_at` | TIMESTAMP | NOT NULL | Set on insert and update. |

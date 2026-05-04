@@ -5,7 +5,91 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-menu-settings-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM1MenuSettingsSeed1"/>
+    <!-- mark scaffold admin as platform superadmin -->
+    <changeSet id="data-menu-superadmin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataSetUserPlatformSuperadmin">
+            <param name="userId" value="30000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+
+    <!-- platform setting -->
+    <changeSet id="data-menu-platform-setting-product-name-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPlatformSetting">
+            <param name="id" value="51000000-0000-0000-0000-000000000001"/>
+            <param name="key" value="platform.product_name"/>
+            <param name="valueText" value="Wage Payroll"/>
+        </customChange>
+    </changeSet>
+
+    <!-- tenant setting -->
+    <changeSet id="data-menu-tenant-setting-demo-flag-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantSetting">
+            <param name="id" value="52000000-0000-0000-0000-000000000001"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="key" value="tenant.demo_flag"/>
+            <param name="valueText" value="1"/>
+        </customChange>
+    </changeSet>
+
+    <!-- nav menu items -->
+    <changeSet id="data-menu-nav-dashboard-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000001"/>
+            <param name="path" value="/app"/>
+            <param name="labelKey" value="nav.dashboard"/>
+            <param name="sortOrder" value="0"/>
+            <param name="requiredPrivilegeCode" value=""/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-menu-nav-users-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000002"/>
+            <param name="path" value="/app/users"/>
+            <param name="labelKey" value="nav.users"/>
+            <param name="sortOrder" value="10"/>
+            <param name="requiredPrivilegeCode" value="USER_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-menu-nav-tenant-currencies-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000006"/>
+            <param name="path" value="/app/tenant-currencies"/>
+            <param name="labelKey" value="nav.tenant_currencies"/>
+            <param name="sortOrder" value="16"/>
+            <param name="requiredPrivilegeCode" value="TENANT_CURRENCY_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-menu-nav-settings-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000003"/>
+            <param name="path" value="/app/settings"/>
+            <param name="labelKey" value="nav.tenant_settings"/>
+            <param name="sortOrder" value="20"/>
+            <param name="requiredPrivilegeCode" value="TENANT_SETTINGS_EDIT"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-menu-nav-documents-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000004"/>
+            <param name="path" value="/app/documents"/>
+            <param name="labelKey" value="nav.documents"/>
+            <param name="sortOrder" value="30"/>
+            <param name="requiredPrivilegeCode" value="DOCUMENT_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-menu-nav-role-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000005"/>
+            <param name="path" value="/app/roles"/>
+            <param name="labelKey" value="nav.role_admin"/>
+            <param name="sortOrder" value="35"/>
+            <param name="requiredPrivilegeCode" value="ROLE_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

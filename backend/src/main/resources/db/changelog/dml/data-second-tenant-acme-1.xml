@@ -5,7 +5,38 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-second-tenant-acme-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM1SecondTenantAcmeSeed1"/>
+    <changeSet id="data-acme-tenant-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenant">
+            <param name="id" value="10000000-0000-0000-0000-000000000002"/>
+            <param name="handle" value="acme"/>
+            <param name="name" value="Acme Corp"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-acme-role-reader-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertRole">
+            <param name="id" value="40000000-0000-0000-0000-000000000003"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000002"/>
+            <param name="name" value="Reader"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-acme-grant-rp-reader-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000002"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000003"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-acme-membership-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantMembership">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000002"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-acme-user-role-admin-reader-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantUserRole">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000002"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000003"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

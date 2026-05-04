@@ -148,11 +148,12 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 				rs.next();
 				if (rs.getInt(1) > 0) {
 					try (PreparedStatement ps = c.prepareStatement(
-							"UPDATE user_account SET email = ?, password_hash = ?, updated_at = ? WHERE id = ?")) {
+							"UPDATE user_account SET email = ?, password_hash = ?, email_verified_at = ?, updated_at = ? WHERE id = ?")) {
 						ps.setString(1, email);
 						ps.setString(2, hash);
 						ps.setTimestamp(3, ts);
-						ps.setString(4, id.toString());
+						ps.setTimestamp(4, ts);
+						ps.setString(5, id.toString());
 						ps.executeUpdate();
 					}
 					return;
@@ -160,12 +161,13 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 			}
 		}
 		try (PreparedStatement ps = c.prepareStatement(
-				"INSERT INTO user_account (id, email, password_hash, created_at, updated_at) VALUES (?,?,?,?,?)")) {
+				"INSERT INTO user_account (id, email, password_hash, email_verified_at, created_at, updated_at) VALUES (?,?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
 			ps.setString(2, email);
 			ps.setString(3, hash);
 			ps.setTimestamp(4, ts);
 			ps.setTimestamp(5, ts);
+			ps.setTimestamp(6, ts);
 			ps.executeUpdate();
 		}
 	}

@@ -5,7 +5,146 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-m5-payroll-org-privileges-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM5PayrollOrgPrivileges1"/>
+    <!-- privileges -->
+    <changeSet id="data-m5-priv-company-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000015"/>
+            <param name="code" value="COMPANY_VIEW"/>
+            <param name="description" value="View payroll companies"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-company-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000016"/>
+            <param name="code" value="COMPANY_MANAGE"/>
+            <param name="description" value="Create and manage payroll companies"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-department-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000017"/>
+            <param name="code" value="DEPARTMENT_VIEW"/>
+            <param name="description" value="View company departments"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-department-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000018"/>
+            <param name="code" value="DEPARTMENT_MANAGE"/>
+            <param name="description" value="Create and manage company departments"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-job-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000019"/>
+            <param name="code" value="JOB_VIEW"/>
+            <param name="description" value="View company jobs"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-job-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000020"/>
+            <param name="code" value="JOB_MANAGE"/>
+            <param name="description" value="Create and manage company jobs"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-employee-group-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000021"/>
+            <param name="code" value="EMPLOYEE_GROUP_VIEW"/>
+            <param name="description" value="View employee groups"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-employee-group-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000022"/>
+            <param name="code" value="EMPLOYEE_GROUP_MANAGE"/>
+            <param name="description" value="Create and manage employee groups"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-employee-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000023"/>
+            <param name="code" value="EMPLOYEE_VIEW"/>
+            <param name="description" value="View employees"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-priv-employee-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000024"/>
+            <param name="code" value="EMPLOYEE_MANAGE"/>
+            <param name="description" value="Create and manage employees"/>
+        </customChange>
+    </changeSet>
+    <!-- demo Admin role grants -->
+    <changeSet id="data-m5-grant-rp-demo-admin-company-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000015"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-company-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000016"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-department-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000017"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-department-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000018"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-job-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000019"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-job-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000020"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-employee-group-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000021"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-employee-group-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000022"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-employee-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000023"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m5-grant-rp-demo-admin-employee-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000024"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

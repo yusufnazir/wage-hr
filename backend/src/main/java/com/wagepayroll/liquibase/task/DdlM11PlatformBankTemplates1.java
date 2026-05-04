@@ -31,8 +31,7 @@ public class DdlM11PlatformBankTemplates1 implements CustomTaskChange {
 						  swift_bic VARCHAR(11) NULL,
 						  bank_code VARCHAR(30) NULL,
 						  account_number_format VARCHAR(100) NULL,
-						  currency_code CHAR(3) NULL,
-						  active BOOLEAN NOT NULL DEFAULT true,
+												  active BOOLEAN NOT NULL DEFAULT true,
 						  created_at TIMESTAMP NOT NULL,
 						  updated_at TIMESTAMP NOT NULL
 						)
@@ -52,8 +51,7 @@ public class DdlM11PlatformBankTemplates1 implements CustomTaskChange {
 						  swift_bic VARCHAR(11) NULL,
 						  bank_code VARCHAR(30) NULL,
 						  account_number_format VARCHAR(100) NULL,
-						  currency_code CHAR(3) NULL,
-						  active BOOLEAN NOT NULL DEFAULT true,
+												  active BOOLEAN NOT NULL DEFAULT true,
 						  created_at TIMESTAMP NOT NULL,
 						  updated_at TIMESTAMP NOT NULL,
 						  CONSTRAINT fk_tenant_bank_template_tenant FOREIGN KEY (tenant_id) REFERENCES tenant(id),

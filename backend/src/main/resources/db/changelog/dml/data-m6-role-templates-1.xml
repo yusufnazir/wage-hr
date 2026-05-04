@@ -5,9 +5,78 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-m6-role-templates-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM6RoleTemplates1"/>
+    <!-- role templates -->
+    <changeSet id="data-m6-role-template-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertRoleTemplate">
+            <param name="id" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="code" value="ADMIN"/>
+            <param name="displayName" value="Admin"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-role-template-employee-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertRoleTemplate">
+            <param name="id" value="60000000-0000-0000-0000-000000000002"/>
+            <param name="code" value="EMPLOYEE"/>
+            <param name="displayName" value="Employee"/>
+        </customChange>
     </changeSet>
 
+    <!-- ADMIN template privileges -->
+    <changeSet id="data-m6-rtp-admin-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="USER_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-user-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="USER_EDIT"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-user-invite-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="USER_INVITE"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-tenant-settings-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="TENANT_SETTINGS_EDIT"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-role-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="ROLE_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-role-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="ROLE_EDIT"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-document-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="DOCUMENT_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m6-rtp-admin-document-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="DOCUMENT_EDIT"/>
+        </customChange>
+    </changeSet>
+
+    <!-- EMPLOYEE template privileges -->
+    <changeSet id="data-m6-rtp-employee-document-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeCode" value="DOCUMENT_VIEW"/>
+        </customChange>
+    </changeSet>
 </databaseChangeLog>
 

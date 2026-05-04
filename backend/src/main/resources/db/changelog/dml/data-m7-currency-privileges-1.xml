@@ -5,7 +5,46 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-m7-currency-privileges-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM7CurrencyPrivileges1"/>
+    <changeSet id="data-m7-priv-platform-currency-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000009"/>
+            <param name="code" value="PLATFORM_CURRENCY_VIEW"/>
+            <param name="description" value="View platform currency catalog"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m7-priv-platform-currency-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000010"/>
+            <param name="code" value="PLATFORM_CURRENCY_EDIT"/>
+            <param name="description" value="Create and update platform currency catalog"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m7-priv-tenant-currency-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000011"/>
+            <param name="code" value="TENANT_CURRENCY_VIEW"/>
+            <param name="description" value="View tenant currency assignments"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m7-priv-tenant-currency-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000012"/>
+            <param name="code" value="TENANT_CURRENCY_EDIT"/>
+            <param name="description" value="Assign platform currencies to a tenant"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m7-grant-rp-demo-admin-tenant-currency-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000011"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m7-grant-rp-demo-admin-tenant-currency-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000012"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

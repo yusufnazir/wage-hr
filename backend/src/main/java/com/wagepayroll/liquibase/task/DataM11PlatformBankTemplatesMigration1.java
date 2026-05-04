@@ -42,17 +42,17 @@ public class DataM11PlatformBankTemplatesMigration1 implements CustomTaskChange 
 			Connection c = ((JdbcConnection) database.getConnection()).getUnderlyingConnection();
 			c.setAutoCommit(false);
 			try {
-				upsert(c, ID_HAKRIN,           "SR", "Standard Bank Transfer — Hakrinbank",                    "Hakrinbank N.V.",                               "HAKRSRPA", "SRD", ts);
-				upsert(c, ID_DSB,              "SR", "Standard Bank Transfer — DSB Bank",                      "De Surinaamsche Bank N.V.",                      "SURBSRPA", "SRD", ts);
-				upsert(c, ID_FINABANK,         "SR", "Standard Bank Transfer — Finabank",                      "Finabank N.V.",                                  "FBNASRPA", "SRD", ts);
-				upsert(c, ID_REPUBLIC,         "SR", "Standard Bank Transfer — Republic Bank",                 "Republic Bank (Suriname) N.V.",                  "RBNKSRPA", "SRD", ts);
-				upsert(c, ID_CENTRALE_BANK,    "SR", "Standard Bank Transfer — Centrale Bank van Suriname",    "Centrale Bank van Suriname",                     "CBVSSRPA", "SRD", ts);
-				upsert(c, ID_GODO,             "SR", "Standard Bank Transfer — GODO",                          "Cooperatieve Spaar- en Kredietbank GODO U.A.",   "GODOSRPA", "SRD", ts);
-				upsert(c, ID_FINATRUST,        "SR", "Standard Bank Transfer — Finatrust",                     "Finatrust, De Trustbank N.V.",                   "ICTBSRPA", "SRD", ts);
-				upsert(c, ID_SOUTHERN,         "SR", "Standard Bank Transfer — Southern Commercial Bank",      "Southern Commercial Bank N.V.",                  "SOUOSRPP", "SRD", ts);
-				upsert(c, ID_SURICHANGE,       "SR", "Standard Bank Transfer — Surichange Bank",               "Surichange Bank N.V.",                           "SURCSRPA", "SRD", ts);
-				upsert(c, ID_POSTSPAARBANK,    "SR", "Standard Bank Transfer — Surinaamse Postspaarbank",      "Surinaamse Postspaarbank",                       "SDPOSRPA", "SRD", ts);
-				upsert(c, ID_VOLKSCREDIETBANK, "SR", "Standard Bank Transfer — Surinaamse Volkscredietbank",   "Surinaamse Volkscredietbank",                    "VCBSSRPA", "SRD", ts);
+				upsert(c, ID_HAKRIN,           "SR", "Standard Bank Transfer — Hakrinbank",                    "Hakrinbank N.V.",                               "HAKRSRPA", ts);
+				upsert(c, ID_DSB,              "SR", "Standard Bank Transfer — DSB Bank",                      "De Surinaamsche Bank N.V.",                      "SURBSRPA", ts);
+				upsert(c, ID_FINABANK,         "SR", "Standard Bank Transfer — Finabank",                      "Finabank N.V.",                                  "FBNASRPA", ts);
+				upsert(c, ID_REPUBLIC,         "SR", "Standard Bank Transfer — Republic Bank",                 "Republic Bank (Suriname) N.V.",                  "RBNKSRPA", ts);
+				upsert(c, ID_CENTRALE_BANK,    "SR", "Standard Bank Transfer — Centrale Bank van Suriname",    "Centrale Bank van Suriname",                     "CBVSSRPA", ts);
+				upsert(c, ID_GODO,             "SR", "Standard Bank Transfer — GODO",                          "Cooperatieve Spaar- en Kredietbank GODO U.A.",   "GODOSRPA", ts);
+				upsert(c, ID_FINATRUST,        "SR", "Standard Bank Transfer — Finatrust",                     "Finatrust, De Trustbank N.V.",                   "ICTBSRPA", ts);
+				upsert(c, ID_SOUTHERN,         "SR", "Standard Bank Transfer — Southern Commercial Bank",      "Southern Commercial Bank N.V.",                  "SOUOSRPP", ts);
+				upsert(c, ID_SURICHANGE,       "SR", "Standard Bank Transfer — Surichange Bank",               "Surichange Bank N.V.",                           "SURCSRPA", ts);
+				upsert(c, ID_POSTSPAARBANK,    "SR", "Standard Bank Transfer — Surinaamse Postspaarbank",      "Surinaamse Postspaarbank",                       "SDPOSRPA", ts);
+				upsert(c, ID_VOLKSCREDIETBANK, "SR", "Standard Bank Transfer — Surinaamse Volkscredietbank",   "Surinaamse Volkscredietbank",                    "VCBSSRPA", ts);
 
 				c.commit();
 			}
@@ -67,7 +67,7 @@ public class DataM11PlatformBankTemplatesMigration1 implements CustomTaskChange 
 	}
 
 	private static void upsert(Connection c, UUID id, String countryCode, String name, String bankName,
-			String swiftBic, String currencyCode, Timestamp ts) throws Exception {
+			String swiftBic, Timestamp ts) throws Exception {
 		try (PreparedStatement check = c.prepareStatement(
 				"SELECT COUNT(*) FROM platform_bank_template WHERE id = ?")) {
 			check.setString(1, id.toString());
@@ -76,15 +76,14 @@ public class DataM11PlatformBankTemplatesMigration1 implements CustomTaskChange 
 				if (rs.getInt(1) > 0) {
 					try (PreparedStatement ps = c.prepareStatement("""
 							UPDATE platform_bank_template
-							SET name = ?, bank_name = ?, swift_bic = ?, currency_code = ?, updated_at = ?
+							SET name = ?, bank_name = ?, swift_bic = ?, updated_at = ?
 							WHERE id = ?
 							""")) {
 						ps.setString(1, name);
 						ps.setString(2, bankName);
 						ps.setString(3, swiftBic);
-						ps.setString(4, currencyCode);
-						ps.setTimestamp(5, ts);
-						ps.setString(6, id.toString());
+						ps.setTimestamp(4, ts);
+						ps.setString(5, id.toString());
 						ps.executeUpdate();
 					}
 					return;
@@ -93,17 +92,16 @@ public class DataM11PlatformBankTemplatesMigration1 implements CustomTaskChange 
 		}
 		try (PreparedStatement ps = c.prepareStatement("""
 				INSERT INTO platform_bank_template (
-				  id, country_code, name, bank_name, swift_bic, bank_code, account_number_format, currency_code, active, created_at, updated_at
-				) VALUES (?,?,?,?,?,NULL,NULL,?,true,?,?)
+				  id, country_code, name, bank_name, swift_bic, bank_code, account_number_format, active, created_at, updated_at
+				) VALUES (?,?,?,?,?,NULL,NULL,true,?,?)
 				""")) {
 			ps.setString(1, id.toString());
 			ps.setString(2, countryCode);
 			ps.setString(3, name);
 			ps.setString(4, bankName);
 			ps.setString(5, swiftBic);
-			ps.setString(6, currencyCode);
+			ps.setTimestamp(6, ts);
 			ps.setTimestamp(7, ts);
-			ps.setTimestamp(8, ts);
 			ps.executeUpdate();
 		}
 	}

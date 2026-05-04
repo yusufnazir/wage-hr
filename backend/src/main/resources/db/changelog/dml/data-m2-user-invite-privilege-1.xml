@@ -5,7 +5,18 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-m2-user-invite-privilege-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataM2UserInvitePrivilege1"/>
+    <changeSet id="data-m2-priv-user-invite-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000004"/>
+            <param name="code" value="USER_INVITE"/>
+            <param name="description" value="Create and manage tenant invitations"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m2-grant-rp-demo-admin-user-invite-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000004"/>
+        </customChange>
     </changeSet>
 </databaseChangeLog>

@@ -5,7 +5,150 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-scaffold-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataScaffoldSeed1"/>
+    <!-- privileges -->
+    <changeSet id="data-scaffold-priv-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000001"/>
+            <param name="code" value="USER_VIEW"/>
+            <param name="description" value="View users"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-priv-user-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000002"/>
+            <param name="code" value="USER_EDIT"/>
+            <param name="description" value="Edit users"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-priv-tenant-settings-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000003"/>
+            <param name="code" value="TENANT_SETTINGS_EDIT"/>
+            <param name="description" value="Edit tenant settings"/>
+        </customChange>
+    </changeSet>
+
+    <!-- demo tenant -->
+    <changeSet id="data-scaffold-tenant-demo-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenant">
+            <param name="id" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="handle" value="demo"/>
+            <param name="name" value="Demo tenant"/>
+        </customChange>
+    </changeSet>
+
+    <!-- users -->
+    <changeSet id="data-scaffold-user-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertUser">
+            <param name="id" value="30000000-0000-0000-0000-000000000001"/>
+            <param name="email" value="admin@demo.lvh.me"/>
+            <param name="passwordHash" value="$2a$10$4hOHwpYmI.4XLQ8Ap3DQauSY0ZINLqZhithhvpjb15DfSzRKDxkt6"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-user-viewer-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertUser">
+            <param name="id" value="30000000-0000-0000-0000-000000000002"/>
+            <param name="email" value="viewer@demo.lvh.me"/>
+            <param name="passwordHash" value="$2a$10$4hOHwpYmI.4XLQ8Ap3DQauSY0ZINLqZhithhvpjb15DfSzRKDxkt6"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-user-nocode-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertUser">
+            <param name="id" value="30000000-0000-0000-0000-000000000003"/>
+            <param name="email" value="nocode@demo.lvh.me"/>
+            <param name="passwordHash" value="$2a$10$4hOHwpYmI.4XLQ8Ap3DQauSY0ZINLqZhithhvpjb15DfSzRKDxkt6"/>
+        </customChange>
+    </changeSet>
+
+    <!-- roles -->
+    <changeSet id="data-scaffold-role-demo-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertRole">
+            <param name="id" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="name" value="Admin"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-role-demo-viewer-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertRole">
+            <param name="id" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="name" value="Viewer"/>
+        </customChange>
+    </changeSet>
+
+    <!-- role privileges — demo Admin -->
+    <changeSet id="data-scaffold-grant-rp-demo-admin-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-grant-rp-demo-admin-user-edit-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000002"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-grant-rp-demo-admin-tenant-settings-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000003"/>
+        </customChange>
+    </changeSet>
+
+    <!-- role privileges — demo Viewer -->
+    <changeSet id="data-scaffold-grant-rp-demo-viewer-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+
+    <!-- memberships -->
+    <changeSet id="data-scaffold-membership-demo-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantMembership">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-membership-demo-viewer-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantMembership">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000002"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-membership-demo-nocode-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantMembership">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000003"/>
+        </customChange>
+    </changeSet>
+
+    <!-- user roles -->
+    <changeSet id="data-scaffold-user-role-demo-admin-admin-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantUserRole">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-scaffold-user-role-demo-viewer-viewer-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantUserRole">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="userId" value="30000000-0000-0000-0000-000000000002"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+        </customChange>
+    </changeSet>
+
+    <!-- backfill: ensure email_verified_at is set on any legacy rows (no-op on fresh installs) -->
+    <changeSet id="data-scaffold-email-verified-1" author="wagepayroll">
+        <update tableName="user_account">
+            <column name="email_verified_at" valueComputed="created_at"/>
+            <where>email_verified_at IS NULL</where>
+        </update>
     </changeSet>
 </databaseChangeLog>
