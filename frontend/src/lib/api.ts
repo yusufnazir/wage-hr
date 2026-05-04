@@ -799,15 +799,23 @@ export type TenantBankTemplateRow = {
   companyId: string;
   platformBankTemplateId: string | null;
   countryCode: string;
-  name: string;
+  platformTemplateName: string;
   bankName: string | null;
   swiftBic: string | null;
-  bankCode: string | null;
-  accountNumberFormat: string | null;
+  accountNumber: string | null;
   currencyCode: string | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type TenantBankTemplateCatalogRow = {
+  id: string;
+  countryCode: string;
+  name: string;
+  bankName: string | null;
+  swiftBic: string | null;
+  currencyCode: string | null;
 };
 
 export type TenantBankTemplatesResult =
@@ -854,6 +862,16 @@ export async function fetchTenantBankTemplates(args: {
   };
 }
 
+export async function fetchTenantBankTemplateCatalog(
+  companyId: string,
+): Promise<{ ok: true; items: TenantBankTemplateCatalogRow[] } | { ok: false; status: number }> {
+  const q = new URLSearchParams({ companyId });
+  const r = await fetch(bffUrl(`/api/v1/tenant/bank-templates/catalog?${q}`), { credentials: "same-origin" });
+  if (!r.ok) return { ok: false, status: r.status };
+  const body = (await r.json()) as ApiEnvelope<{ items: TenantBankTemplateCatalogRow[] }>;
+  return { ok: true, items: body.data.items };
+}
+
 export async function fetchTenantBankTemplate(id: string): Promise<
   { ok: true; template: TenantBankTemplateRow } | { ok: false; status: number }
 > {
@@ -867,11 +885,8 @@ export async function fetchTenantBankTemplate(id: string): Promise<
 
 export async function postTenantBankTemplate(payload: {
   companyId: string;
-  name: string;
-  bankName?: string | null;
-  swiftBic?: string | null;
-  bankCode?: string | null;
-  accountNumberFormat?: string | null;
+  platformBankTemplateId: string;
+  accountNumber?: string | null;
   currencyCode?: string | null;
   active?: boolean;
 }): Promise<TenantBankTemplateRow> {
@@ -889,11 +904,8 @@ export async function postTenantBankTemplate(payload: {
 export async function putTenantBankTemplate(
   id: string,
   payload: {
-    name: string;
-    bankName?: string | null;
-    swiftBic?: string | null;
-    bankCode?: string | null;
-    accountNumberFormat?: string | null;
+    platformBankTemplateId: string;
+    accountNumber?: string | null;
     currencyCode?: string | null;
     active: boolean;
   },

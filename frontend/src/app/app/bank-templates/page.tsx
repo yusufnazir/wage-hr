@@ -157,10 +157,10 @@ export default function TenantBankTemplatesPage() {
           <div className="max-w-md rounded-lg border border-border bg-surface p-5 shadow-lg">
             <p className="text-sm text-foreground">
               {confirm.kind === "deactivate"
-                ? t("bankTemplates.confirm.deactivate").replace("{name}", confirm.row.name)
+                ? t("bankTemplates.confirm.deactivate").replace("{name}", confirm.row.platformTemplateName)
                 : confirm.kind === "activate"
-                  ? t("bankTemplates.confirm.activate").replace("{name}", confirm.row.name)
-                  : t("bankTemplates.confirm.delete").replace("{name}", confirm.row.name)}
+                  ? t("bankTemplates.confirm.activate").replace("{name}", confirm.row.platformTemplateName)
+                  : t("bankTemplates.confirm.delete").replace("{name}", confirm.row.platformTemplateName)}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" className="rounded border border-border px-3 py-1.5 text-sm" onClick={() => setConfirm(null)}>
@@ -291,6 +291,7 @@ export default function TenantBankTemplatesPage() {
                 <th className="px-3 py-2">{t("bankTemplates.col.name")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.bankName")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.swift")}</th>
+                <th className="px-3 py-2">{t("bankTemplates.col.accountNumber")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.currency")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.status")}</th>
                 <th className="px-3 py-2" />
@@ -299,9 +300,10 @@ export default function TenantBankTemplatesPage() {
             <tbody>
               {items.map((row) => (
                 <tr key={row.id} className="border-t border-border">
-                  <td className="px-3 py-2">{row.name}</td>
+                  <td className="px-3 py-2">{row.platformTemplateName}</td>
                   <td className="px-3 py-2">{row.bankName ?? "—"}</td>
                   <td className="px-3 py-2 font-mono">{row.swiftBic ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono">{row.accountNumber ?? "—"}</td>
                   <td className="px-3 py-2 font-mono">{row.currencyCode ?? "—"}</td>
                   <td className="px-3 py-2">{row.active ? t("bankTemplates.status.active") : t("bankTemplates.status.inactive")}</td>
                   <td className="px-3 py-2 text-right">

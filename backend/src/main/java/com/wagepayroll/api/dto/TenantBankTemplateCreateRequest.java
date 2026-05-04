@@ -7,11 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public record TenantBankTemplateCreateRequest(
 		UUID companyId,
-		String name,
-		String bankName,
-		String swiftBic,
-		String bankCode,
-		String accountNumberFormat,
+		UUID platformBankTemplateId,
+		String accountNumber,
 		String currencyCode,
 		Boolean active) {
 }

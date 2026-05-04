@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
 import {
   deleteTenantBankTemplate,
   fetchTenantBankTemplate,
+  fetchTenantBankTemplateCatalog,
   patchActivateTenantBankTemplate,
   patchDeactivateTenantBankTemplate,
   putTenantBankTemplate,
+  type TenantBankTemplateCatalogRow,
 } from "@/lib/api";
 import { navLabel } from "@/messages/nav";
 
@@ -21,7 +23,7 @@ export default function TenantBankTemplateEditPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
-  const companyId = searchParams.get("companyId") ?? "";
+  const queryCompanyId = searchParams.get("companyId") ?? "";
   const id = params.id;
   const t = useCallback((key: string) => navLabel(me.locale, key), [me.locale]);
 
@@ -29,20 +31,26 @@ export default function TenantBankTemplateEditPage() {
   const canManage = me.privileges.includes("BANK_TEMPLATE_MANAGE");
 
   const [load, setLoad] = useState<LoadState>("loading");
+  const [companyId, setCompanyId] = useState(queryCompanyId);
   const [countryCode, setCountryCode] = useState("");
-  const [platformSourceId, setPlatformSourceId] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [swiftBic, setSwiftBic] = useState("");
-  const [bankCode, setBankCode] = useState("");
-  const [accountNumberFormat, setAccountNumberFormat] = useState("");
+  const [catalog, setCatalog] = useState<TenantBankTemplateCatalogRow[]>([]);
+  const [platformTemplateId, setPlatformTemplateId] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [currencyCode, setCurrencyCode] = useState("");
   const [active, setActive] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<"activate" | "deactivate" | "delete" | null>(null);
 
-  const listHref = companyId ? `/app/bank-templates?companyId=${encodeURIComponent(companyId)}` : "/app/bank-templates";
+  const selectedTemplate = useMemo(
+    () => catalog.find((x) => x.id === platformTemplateId) ?? null,
+    [catalog, platformTemplateId],
+  );
+
+  const effectiveCompanyId = companyId || queryCompanyId;
+  const listHref = effectiveCompanyId
+    ? `/app/bank-templates?companyId=${encodeURIComponent(effectiveCompanyId)}`
+    : "/app/bank-templates";
 
   useEffect(() => {
     if (!canView) {
@@ -55,31 +63,41 @@ export default function TenantBankTemplateEditPage() {
         setLoad(r.status === 403 ? "forbidden" : r.status === 404 ? "notFound" : "error");
         return;
       }
+      setCompanyId(r.template.companyId);
       setCountryCode(r.template.countryCode);
-      setPlatformSourceId(r.template.platformBankTemplateId);
-      setName(r.template.name);
-      setBankName(r.template.bankName ?? "");
-      setSwiftBic(r.template.swiftBic ?? "");
-      setBankCode(r.template.bankCode ?? "");
-      setAccountNumberFormat(r.template.accountNumberFormat ?? "");
+      setPlatformTemplateId(r.template.platformBankTemplateId ?? "");
+      setAccountNumber(r.template.accountNumber ?? "");
       setCurrencyCode(r.template.currencyCode ?? "");
       setActive(r.template.active);
       setLoad("ready");
     })();
   }, [canView, id]);
 
+  useEffect(() => {
+    if (!canView || !companyId) return;
+    void (async () => {
+      const r = await fetchTenantBankTemplateCatalog(companyId);
+      if (!r.ok) {
+        setCatalog([]);
+        return;
+      }
+      setCatalog(r.items);
+      setPlatformTemplateId((prev) => {
+        if (prev && r.items.some((x) => x.id === prev)) return prev;
+        return r.items[0]?.id ?? "";
+      });
+    })();
+  }, [canView, companyId]);
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!canManage) return;
+    if (!canManage || !platformTemplateId) return;
     setBusy(true);
     setError(null);
     try {
       await putTenantBankTemplate(id, {
-        name: name.trim(),
-        bankName: bankName.trim() || null,
-        swiftBic: swiftBic.trim() || null,
-        bankCode: bankCode.trim() || null,
-        accountNumberFormat: accountNumberFormat.trim() || null,
+        platformBankTemplateId: platformTemplateId,
+        accountNumber: accountNumber.trim() || null,
         currencyCode: currencyCode.trim() ? currencyCode.trim().toUpperCase() : null,
         active,
       });
@@ -160,10 +178,10 @@ export default function TenantBankTemplateEditPage() {
           <div className="max-w-md rounded-lg border border-border bg-surface p-5 shadow-lg">
             <p className="text-sm text-foreground">
               {confirm === "deactivate"
-                ? t("bankTemplates.confirm.deactivate").replace("{name}", name)
+                ? t("bankTemplates.confirm.deactivate").replace("{name}", selectedTemplate?.name ?? "")
                 : confirm === "activate"
-                  ? t("bankTemplates.confirm.activate").replace("{name}", name)
-                  : t("bankTemplates.confirm.delete").replace("{name}", name)}
+                  ? t("bankTemplates.confirm.activate").replace("{name}", selectedTemplate?.name ?? "")
+                  : t("bankTemplates.confirm.delete").replace("{name}", selectedTemplate?.name ?? "")}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" className="rounded border border-border px-3 py-1.5 text-sm" onClick={() => setConfirm(null)}>
@@ -198,98 +216,57 @@ export default function TenantBankTemplateEditPage() {
       {canManage ? (
         <div className="flex flex-wrap gap-2">
           {active ? (
-            <button
-              type="button"
-              className="rounded border border-border px-3 py-1.5 text-sm"
-              disabled={busy}
-              onClick={() => setConfirm("deactivate")}
-            >
+            <button type="button" className="rounded border border-border px-3 py-1.5 text-sm" disabled={busy} onClick={() => setConfirm("deactivate")}>
               {t("bankTemplates.action.deactivate")}
             </button>
           ) : (
-            <button
-              type="button"
-              className="rounded border border-border px-3 py-1.5 text-sm"
-              disabled={busy}
-              onClick={() => setConfirm("activate")}
-            >
+            <button type="button" className="rounded border border-border px-3 py-1.5 text-sm" disabled={busy} onClick={() => setConfirm("activate")}>
               {t("bankTemplates.action.activate")}
             </button>
           )}
-          <button
-            type="button"
-            className="rounded border border-destructive px-3 py-1.5 text-sm text-destructive"
-            disabled={busy}
-            onClick={() => setConfirm("delete")}
-          >
+          <button type="button" className="rounded border border-destructive px-3 py-1.5 text-sm text-destructive" disabled={busy} onClick={() => setConfirm("delete")}>
             {t("bankTemplates.action.delete")}
           </button>
         </div>
       ) : null}
 
-      <form
-        onSubmit={(e) => void onSubmit(e)}
-        className="space-y-4 rounded-md border border-border bg-surface p-5 shadow-sm"
-      >
+      <form onSubmit={(e) => void onSubmit(e)} className="space-y-4 rounded-md border border-border bg-surface p-5 shadow-sm">
         <div className="space-y-1">
           <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.country")}</label>
           <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm font-mono" value={countryCode} readOnly />
         </div>
-        {platformSourceId ? (
-          <div className="space-y-1">
-            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.platformTemplateId")}</label>
-            <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm font-mono" value={platformSourceId} readOnly />
-          </div>
-        ) : null}
         <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.name")}</label>
-          <input
+          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.platformTemplateId")}</label>
+          <select
             className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={150}
+            value={platformTemplateId}
+            onChange={(e) => setPlatformTemplateId(e.target.value)}
             required
-            readOnly={!canManage}
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankName")}</label>
-          <input
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            maxLength={150}
-            readOnly={!canManage}
-          />
+            disabled={!canManage || busy || catalog.length === 0}
+          >
+            {catalog.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.swiftBic")}</label>
-            <input
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
-              value={swiftBic}
-              onChange={(e) => setSwiftBic(e.target.value.toUpperCase())}
-              maxLength={11}
-              readOnly={!canManage}
-            />
+            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankName")}</label>
+            <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm" value={selectedTemplate?.bankName ?? ""} readOnly />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankCode")}</label>
-            <input
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              value={bankCode}
-              onChange={(e) => setBankCode(e.target.value)}
-              maxLength={30}
-              readOnly={!canManage}
-            />
+            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.swiftBic")}</label>
+            <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm font-mono uppercase" value={selectedTemplate?.swiftBic ?? ""} readOnly />
           </div>
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.accountNumberFormat")}</label>
+          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.accountNumber")}</label>
           <input
             className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono"
-            value={accountNumberFormat}
-            onChange={(e) => setAccountNumberFormat(e.target.value)}
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
             maxLength={100}
             readOnly={!canManage}
           />
@@ -313,11 +290,7 @@ export default function TenantBankTemplateEditPage() {
           </div>
         </div>
         {canManage ? (
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-          >
+          <button type="submit" disabled={busy || !platformTemplateId} className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
             {t("bankTemplates.action.save")}
           </button>
         ) : null}

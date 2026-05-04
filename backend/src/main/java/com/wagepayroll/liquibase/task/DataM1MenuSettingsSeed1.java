@@ -2,6 +2,7 @@ package com.wagepayroll.liquibase.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -49,35 +50,17 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 				}
 
 				// Column `key` must be quoted for MariaDB/MySQL (reserved word) in raw JDBC.
-				try (PreparedStatement ps = c.prepareStatement(
-						"INSERT INTO platform_setting (id, `key`, value_text, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-					ps.setString(1, PLATFORM_SETTING_ID.toString());
-					ps.setString(2, "platform.product_name");
-					ps.setString(3, "Wage Payroll");
-					ps.setTimestamp(4, ts);
-					ps.setTimestamp(5, ts);
-					ps.executeUpdate();
-				}
+				upsertPlatformSetting(c, PLATFORM_SETTING_ID, "platform.product_name", "Wage Payroll", ts);
+				upsertTenantSetting(c, TENANT_SETTING_ID, TENANT_ID, "tenant.demo_flag", "1", ts);
 
-				try (PreparedStatement ps = c.prepareStatement(
-						"INSERT INTO tenant_setting (id, tenant_id, `key`, value_text, created_at, updated_at) VALUES (?,?,?,?,?,?)")) {
-					ps.setString(1, TENANT_SETTING_ID.toString());
-					ps.setString(2, TENANT_ID.toString());
-					ps.setString(3, "tenant.demo_flag");
-					ps.setString(4, "1");
-					ps.setTimestamp(5, ts);
-					ps.setTimestamp(6, ts);
-					ps.executeUpdate();
-				}
-
-				insertNav(c, NAV_DASH, "/app", "nav.dashboard", 0, null, null, ts);
-				insertNav(c, NAV_USERS, "/app/users", "nav.users", 10, "USER_VIEW", null, ts);
-				insertNav(c, NAV_TENANT_CURRENCIES, "/app/tenant-currencies", "nav.tenant_currencies", 16,
+				upsertNav(c, NAV_DASH, "/app", "nav.dashboard", 0, null, null, ts);
+				upsertNav(c, NAV_USERS, "/app/users", "nav.users", 10, "USER_VIEW", null, ts);
+				upsertNav(c, NAV_TENANT_CURRENCIES, "/app/tenant-currencies", "nav.tenant_currencies", 16,
 						"TENANT_CURRENCY_VIEW", null, ts);
-				insertNav(c, NAV_SETTINGS, "/app/settings", "nav.tenant_settings", 20, "TENANT_SETTINGS_EDIT", null,
+				upsertNav(c, NAV_SETTINGS, "/app/settings", "nav.tenant_settings", 20, "TENANT_SETTINGS_EDIT", null,
 						ts);
-				insertNav(c, NAV_DOCUMENTS, "/app/documents", "nav.documents", 30, "DOCUMENT_VIEW", null, ts);
-				insertNav(c, NAV_ROLE_ADMIN, "/app/roles", "nav.role_admin", 35, "ROLE_VIEW", null, ts);
+				upsertNav(c, NAV_DOCUMENTS, "/app/documents", "nav.documents", 30, "DOCUMENT_VIEW", null, ts);
+				upsertNav(c, NAV_ROLE_ADMIN, "/app/roles", "nav.role_admin", 35, "ROLE_VIEW", null, ts);
 
 				c.commit();
 			}
@@ -91,8 +74,89 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertNav(Connection c, UUID id, String path, String labelKey, int sortOrder,
+	private static void upsertPlatformSetting(Connection c, UUID id, String key, String value, Timestamp ts)
+			throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM platform_setting WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE platform_setting SET `key` = ?, value_text = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, key);
+						ps.setString(2, value);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
+		try (PreparedStatement ps = c.prepareStatement(
+				"INSERT INTO platform_setting (id, `key`, value_text, created_at, updated_at) VALUES (?,?,?,?,?)")) {
+			ps.setString(1, id.toString());
+			ps.setString(2, key);
+			ps.setString(3, value);
+			ps.setTimestamp(4, ts);
+			ps.setTimestamp(5, ts);
+			ps.executeUpdate();
+		}
+	}
+
+	private static void upsertTenantSetting(Connection c, UUID id, UUID tenantId, String key, String value,
+			Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM tenant_setting WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE tenant_setting SET `key` = ?, value_text = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, key);
+						ps.setString(2, value);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
+		try (PreparedStatement ps = c.prepareStatement(
+				"INSERT INTO tenant_setting (id, tenant_id, `key`, value_text, created_at, updated_at) VALUES (?,?,?,?,?,?)")) {
+			ps.setString(1, id.toString());
+			ps.setString(2, tenantId.toString());
+			ps.setString(3, key);
+			ps.setString(4, value);
+			ps.setTimestamp(5, ts);
+			ps.setTimestamp(6, ts);
+			ps.executeUpdate();
+		}
+	}
+
+	private static void upsertNav(Connection c, UUID id, String path, String labelKey, int sortOrder,
 			String requiredPriv, String requiredPlanFeature, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM nav_menu_item WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE nav_menu_item SET path = ?, label_key = ?, sort_order = ?, required_privilege_code = ?, required_plan_feature_code = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, path);
+						ps.setString(2, labelKey);
+						ps.setInt(3, sortOrder);
+						ps.setObject(4, requiredPriv);
+						ps.setObject(5, requiredPlanFeature);
+						ps.setTimestamp(6, ts);
+						ps.setString(7, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO nav_menu_item (id, parent_id, path, label_key, sort_order, required_privilege_code, required_plan_feature_code, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -100,18 +164,8 @@ public class DataM1MenuSettingsSeed1 implements CustomTaskChange {
 			ps.setString(3, path);
 			ps.setString(4, labelKey);
 			ps.setInt(5, sortOrder);
-			if (requiredPriv == null) {
-				ps.setObject(6, null);
-			}
-			else {
-				ps.setString(6, requiredPriv);
-			}
-			if (requiredPlanFeature == null) {
-				ps.setObject(7, null);
-			}
-			else {
-				ps.setString(7, requiredPlanFeature);
-			}
+			ps.setObject(6, requiredPriv);
+			ps.setObject(7, requiredPlanFeature);
 			ps.setTimestamp(8, ts);
 			ps.setTimestamp(9, ts);
 			ps.executeUpdate();

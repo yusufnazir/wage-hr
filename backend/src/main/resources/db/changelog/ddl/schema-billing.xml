@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- ===== plan_feature ===== -->
+    <changeSet id="schema-m3-plan-feature-1" author="wagepayroll">
+        <createTable tableName="plan_feature">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="sort_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_plan_feature_sort" tableName="plan_feature">
+            <column name="sort_order"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ===== commercial_plan (stripe + paypal columns included from the start) ===== -->
+    <changeSet id="schema-m3-commercial-plan-1" author="wagepayroll">
+        <createTable tableName="commercial_plan">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="sort_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stripe_subscription_price_id" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="paypal_billing_plan_id" type="VARCHAR(128)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_commercial_plan_sort" tableName="commercial_plan">
+            <column name="sort_order"/>
+            <column name="code"/>
+        </createIndex>
+        <addUniqueConstraint tableName="commercial_plan" columnNames="stripe_subscription_price_id"
+                             constraintName="ux_commercial_plan_stripe_subscription_price_id"/>
+        <addUniqueConstraint tableName="commercial_plan" columnNames="paypal_billing_plan_id"
+                             constraintName="ux_commercial_plan_paypal_billing_plan_id"/>
+    </changeSet>
+
+    <!-- ===== commercial_plan_feature ===== -->
+    <changeSet id="schema-m3-commercial-plan-feature-1" author="wagepayroll">
+        <createTable tableName="commercial_plan_feature">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="commercial_plan_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plan_feature_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="commercial_plan_feature" columnNames="commercial_plan_id,plan_feature_id"
+                             constraintName="ux_commercial_plan_feature_plan_feature"/>
+        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="commercial_plan_id"
+                                 constraintName="fk_cpf_commercial_plan" referencedTableName="commercial_plan"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="plan_feature_id"
+                                 constraintName="fk_cpf_plan_feature" referencedTableName="plan_feature"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <createIndex indexName="idx_commercial_plan_feature_plan" tableName="commercial_plan_feature">
+            <column name="commercial_plan_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ===== tenant_subscription ===== -->
+    <changeSet id="schema-m3-tenant-subscription-1" author="wagepayroll">
+        <createTable tableName="tenant_subscription">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="commercial_plan_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_subscription" baseColumnNames="commercial_plan_id"
+                                 constraintName="fk_tenant_subscription_commercial_plan" referencedTableName="commercial_plan"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+        <addForeignKeyConstraint baseTableName="tenant_subscription" baseColumnNames="tenant_id"
+                                 constraintName="fk_tenant_subscription_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+    </changeSet>
+
+    <!-- ===== billing_webhook_receipt (all resolution columns included from the start) ===== -->
+    <changeSet id="schema-m3-billing-webhook-receipt-1" author="wagepayroll">
+        <createTable tableName="billing_webhook_receipt">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="provider" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider_event_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="received_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="processing_error" type="VARCHAR(512)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="raw_payload" type="CLOB">
+                <constraints nullable="true"/>
+            </column>
+            <column name="event_type" type="VARCHAR(128)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tenant_resolution_state" type="VARCHAR(40)" defaultValue="UNRESOLVED_INSUFFICIENT_DATA">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_resolution_reason_code" type="VARCHAR(64)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tenant_resolution_missing_field_path" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tenant_resolution_resolver_version" type="VARCHAR(64)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_webhook_receipt" columnNames="provider,provider_event_id"
+                             constraintName="ux_billing_webhook_receipt_provider_event"/>
+        <addForeignKeyConstraint baseTableName="billing_webhook_receipt" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_webhook_receipt_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="SET NULL"/>
+    </changeSet>
+
+    <!-- ===== billing_provider_link (both unique constraints included from the start) ===== -->
+    <changeSet id="schema-m3-billing-provider-link-1" author="wagepayroll">
+        <createTable tableName="billing_provider_link">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_customer_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_provider_link" columnNames="tenant_id,provider"
+                             constraintName="ux_billing_provider_link_tenant_provider"/>
+        <addUniqueConstraint tableName="billing_provider_link" columnNames="provider,external_customer_id"
+                             constraintName="ux_billing_provider_link_provider_customer"/>
+        <addForeignKeyConstraint baseTableName="billing_provider_link" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_provider_link_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="RESTRICT"/>
+    </changeSet>
+
+    <!-- ===== billing_usage_event ===== -->
+    <changeSet id="schema-m3-billing-usage-event-1" author="wagepayroll">
+        <createTable tableName="billing_usage_event">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metric_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="DECIMAL(19,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="idempotency_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recorded_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_usage_event" columnNames="tenant_id,idempotency_key"
+                             constraintName="ux_billing_usage_event_tenant_idempotency"/>
+        <createIndex tableName="billing_usage_event" indexName="idx_billing_usage_event_tenant_recorded">
+            <column name="tenant_id"/>
+            <column name="recorded_at"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="billing_usage_event" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_usage_event_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- ===== billing_usage_aggregate ===== -->
+    <changeSet id="schema-m3-billing-usage-aggregate-1" author="wagepayroll">
+        <createTable tableName="billing_usage_aggregate">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metric_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="period_start" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="period_end" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_quantity" type="DECIMAL(19,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_aggregated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_synced" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_synced_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="billing_usage_aggregate" columnNames="tenant_id,metric_key,period_start"
+                             constraintName="ux_billing_usage_aggregate_tenant_metric_period"/>
+        <createIndex tableName="billing_usage_aggregate" indexName="idx_billing_usage_aggregate_tenant_period">
+            <column name="tenant_id"/>
+            <column name="period_start"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="billing_usage_aggregate" baseColumnNames="tenant_id"
+                                 constraintName="fk_billing_usage_aggregate_tenant" referencedTableName="tenant"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

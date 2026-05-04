@@ -5,7 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
-import { fetchTenantCompanies, postTenantBankTemplate, type TenantCompanyItem } from "@/lib/api";
+import {
+  fetchTenantBankTemplateCatalog,
+  fetchTenantCompanies,
+  postTenantBankTemplate,
+  type TenantBankTemplateCatalogRow,
+  type TenantCompanyItem,
+} from "@/lib/api";
 import { navLabel } from "@/messages/nav";
 
 type ValidationIssue = {
@@ -23,20 +29,20 @@ export default function TenantBankTemplateNewPage() {
   const canManage = me.privileges.includes("BANK_TEMPLATE_MANAGE");
 
   const [companies, setCompanies] = useState<TenantCompanyItem[]>([]);
+  const [catalog, setCatalog] = useState<TenantBankTemplateCatalogRow[]>([]);
   const [companyId, setCompanyId] = useState(paramCompanyId);
-  const [name, setName] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [swiftBic, setSwiftBic] = useState("");
-  const [bankCode, setBankCode] = useState("");
-  const [accountNumberFormat, setAccountNumberFormat] = useState("");
+  const [platformTemplateId, setPlatformTemplateId] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [currencyCode, setCurrencyCode] = useState("");
   const [active, setActive] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
 
-  const selectedCompany = useMemo(() => companies.find((c) => c.id === companyId) ?? null, [companies, companyId]);
-  const countryCode = selectedCompany?.payrollCountry ?? "";
+  const selectedTemplate = useMemo(
+    () => catalog.find((x) => x.id === platformTemplateId) ?? null,
+    [catalog, platformTemplateId],
+  );
 
   const listHref = companyId ? `/app/bank-templates?companyId=${encodeURIComponent(companyId)}` : "/app/bank-templates";
 
@@ -53,21 +59,49 @@ export default function TenantBankTemplateNewPage() {
     })();
   }, [canManage, t]);
 
+  useEffect(() => {
+    if (!canManage || !companyId) {
+      setCatalog([]);
+      setPlatformTemplateId("");
+      return;
+    }
+    void (async () => {
+      const r = await fetchTenantBankTemplateCatalog(companyId);
+      if (!r.ok) {
+        setCatalog([]);
+        setPlatformTemplateId("");
+        return;
+      }
+      setCatalog(r.items);
+      setPlatformTemplateId((prev) => {
+        if (prev && r.items.some((x) => x.id === prev)) return prev;
+        return r.items[0]?.id ?? "";
+      });
+      if (!currencyCode && r.items[0]?.currencyCode) setCurrencyCode(r.items[0].currencyCode);
+    })();
+  }, [canManage, companyId]);
+
+  useEffect(() => {
+    if (selectedTemplate?.currencyCode && !currencyCode) {
+      setCurrencyCode(selectedTemplate.currencyCode);
+    }
+  }, [selectedTemplate, currencyCode]);
+
   function focusField(fieldId: string) {
     const el = document.getElementById(fieldId) as HTMLElement | null;
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    if ("focus" in el) {
-      (el as HTMLInputElement | HTMLSelectElement).focus();
-    }
+    if ("focus" in el) (el as HTMLInputElement | HTMLSelectElement).focus();
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!canManage) return;
+
     const issues: ValidationIssue[] = [];
     if (!companyId) issues.push({ fieldId: "bank-template-company", message: "Company is required." });
-    if (!name.trim()) issues.push({ fieldId: "bank-template-name", message: "Name is required." });
+    if (!platformTemplateId) issues.push({ fieldId: "bank-template-platform", message: "Platform template is required." });
+    if (!accountNumber.trim()) issues.push({ fieldId: "bank-template-account-number", message: "Account number is required." });
     if (issues.length > 0) {
       setValidationIssues(issues);
       setError(null);
@@ -80,12 +114,9 @@ export default function TenantBankTemplateNewPage() {
     setValidationIssues([]);
     try {
       await postTenantBankTemplate({
-        companyId: companyId.trim(),
-        name: name.trim(),
-        bankName: bankName.trim() || null,
-        swiftBic: swiftBic.trim() || null,
-        bankCode: bankCode.trim() || null,
-        accountNumberFormat: accountNumberFormat.trim() || null,
+        companyId,
+        platformBankTemplateId: platformTemplateId,
+        accountNumber: accountNumber.trim(),
         currencyCode: currencyCode.trim() ? currencyCode.trim().toUpperCase() : null,
         active,
       });
@@ -123,11 +154,7 @@ export default function TenantBankTemplateNewPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-destructive">
             {validationIssues.map((issue) => (
               <li key={issue.fieldId}>
-                <button
-                  type="button"
-                  onClick={() => focusField(issue.fieldId)}
-                  className="underline underline-offset-2 hover:no-underline"
-                >
+                <button type="button" onClick={() => focusField(issue.fieldId)} className="underline underline-offset-2 hover:no-underline">
                   {issue.message}
                 </button>
               </li>
@@ -158,80 +185,52 @@ export default function TenantBankTemplateNewPage() {
               </option>
             ))}
           </select>
-          {validationIssues.some((x) => x.fieldId === "bank-template-company") ? (
-            <p className="text-xs font-medium text-destructive">Company is required.</p>
-          ) : null}
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.country")}</label>
-          <input
-            className="w-full rounded border border-border bg-muted px-3 py-2 text-sm font-mono"
-            value={countryCode}
-            readOnly
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.name")}</label>
-          <input
-            id="bank-template-name"
+          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.platformTemplateId")}</label>
+          <select
+            id="bank-template-platform"
             className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-            value={name}
+            value={platformTemplateId}
             onChange={(e) => {
-              setName(e.target.value);
-              setValidationIssues((prev) => prev.filter((x) => x.fieldId !== "bank-template-name"));
+              setPlatformTemplateId(e.target.value);
+              setValidationIssues((prev) => prev.filter((x) => x.fieldId !== "bank-template-platform"));
             }}
-            maxLength={150}
             required
-            disabled={busy}
-          />
-          {validationIssues.some((x) => x.fieldId === "bank-template-name") ? (
-            <p className="text-xs font-medium text-destructive">Name is required.</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankName")}</label>
-          <input
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            maxLength={150}
-            disabled={busy}
-          />
+            disabled={busy || catalog.length === 0}
+          >
+            {catalog.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.swiftBic")}</label>
-            <input
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
-              value={swiftBic}
-              onChange={(e) => setSwiftBic(e.target.value.toUpperCase())}
-              maxLength={11}
-              disabled={busy}
-            />
+            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankName")}</label>
+            <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm" value={selectedTemplate?.bankName ?? ""} readOnly />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.bankCode")}</label>
-            <input
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              value={bankCode}
-              onChange={(e) => setBankCode(e.target.value)}
-              maxLength={30}
-              disabled={busy}
-            />
+            <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.swiftBic")}</label>
+            <input className="w-full rounded border border-border bg-muted px-3 py-2 text-sm font-mono uppercase" value={selectedTemplate?.swiftBic ?? ""} readOnly />
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.accountNumberFormat")}</label>
+          <label className="text-xs font-medium uppercase text-muted">{t("bankTemplates.label.accountNumber")}</label>
           <input
+            id="bank-template-account-number"
             className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono"
-            value={accountNumberFormat}
-            onChange={(e) => setAccountNumberFormat(e.target.value)}
+            value={accountNumber}
+            onChange={(e) => {
+              setAccountNumber(e.target.value);
+              setValidationIssues((prev) => prev.filter((x) => x.fieldId !== "bank-template-account-number"));
+            }}
             maxLength={100}
+            required
             disabled={busy}
           />
         </div>
@@ -255,11 +254,7 @@ export default function TenantBankTemplateNewPage() {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={busy || !companyId}
-          className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-        >
+        <button type="submit" disabled={busy || !companyId} className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
           {t("bankTemplates.action.create")}
         </button>
       </form>

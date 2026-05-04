@@ -33,8 +33,8 @@ public class DataM6RoleTemplates1 implements CustomTaskChange {
 			Connection c = ((JdbcConnection) database.getConnection()).getUnderlyingConnection();
 			c.setAutoCommit(false);
 			try {
-				insertTemplate(c, TEMPLATE_ADMIN, "ADMIN", "Admin", ts);
-				insertTemplate(c, TEMPLATE_EMPLOYEE, "EMPLOYEE", "Employee", ts);
+				upsertTemplate(c, TEMPLATE_ADMIN, "ADMIN", "Admin", ts);
+				upsertTemplate(c, TEMPLATE_EMPLOYEE, "EMPLOYEE", "Employee", ts);
 
 				// v1: keep sets small and aligned to shipped privilege catalog.
 				seedTemplatePrivilegesByCode(c, TEMPLATE_ADMIN, List.of("USER_VIEW", "USER_EDIT", "USER_INVITE",
@@ -53,8 +53,25 @@ public class DataM6RoleTemplates1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertTemplate(Connection c, UUID id, String code, String displayName, Timestamp ts)
+	private static void upsertTemplate(Connection c, UUID id, String code, String displayName, Timestamp ts)
 			throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM role_template WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE role_template SET code = ?, display_name = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, code);
+						ps.setString(2, displayName);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO role_template (id, code, display_name, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -70,6 +87,15 @@ public class DataM6RoleTemplates1 implements CustomTaskChange {
 			throws Exception {
 		for (String code : privilegeCodes) {
 			UUID privilegeId = resolvePrivilegeId(c, code);
+			try (PreparedStatement check = c.prepareStatement(
+					"SELECT COUNT(*) FROM role_template_privilege WHERE role_template_id = ? AND privilege_id = ?")) {
+				check.setString(1, templateId.toString());
+				check.setString(2, privilegeId.toString());
+				try (ResultSet rs = check.executeQuery()) {
+					rs.next();
+					if (rs.getInt(1) > 0) continue;
+				}
+			}
 			try (PreparedStatement ps = c.prepareStatement(
 					"INSERT INTO role_template_privilege (id, role_template_id, privilege_id) VALUES (?,?,?)")) {
 				ps.setString(1, UUID.randomUUID().toString());

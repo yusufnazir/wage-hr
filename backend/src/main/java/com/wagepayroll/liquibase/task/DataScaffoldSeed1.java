@@ -2,6 +2,7 @@ package com.wagepayroll.liquibase.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -45,30 +46,30 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 			Connection c = ((JdbcConnection) database.getConnection()).getUnderlyingConnection();
 			c.setAutoCommit(false);
 			try {
-				insertPrivilege(c, PRIV_USER_VIEW, "USER_VIEW", "View users", ts);
-				insertPrivilege(c, PRIV_USER_EDIT, "USER_EDIT", "Edit users", ts);
-				insertPrivilege(c, PRIV_TENANT_SETTINGS, "TENANT_SETTINGS_EDIT", "Edit tenant settings", ts);
+				upsertPrivilege(c, PRIV_USER_VIEW, "USER_VIEW", "View users", ts);
+				upsertPrivilege(c, PRIV_USER_EDIT, "USER_EDIT", "Edit users", ts);
+				upsertPrivilege(c, PRIV_TENANT_SETTINGS, "TENANT_SETTINGS_EDIT", "Edit tenant settings", ts);
 
-				insertTenant(c, TENANT_ID, "demo", "Demo tenant", ts);
+				upsertTenant(c, TENANT_ID, "demo", "Demo tenant", ts);
 
-				insertUser(c, USER_ADMIN, "admin@demo.lvh.me", passwordHash, ts);
-				insertUser(c, USER_VIEWER, "viewer@demo.lvh.me", passwordHash, ts);
-				insertUser(c, USER_NOCODE, "nocode@demo.lvh.me", passwordHash, ts);
+				upsertUser(c, USER_ADMIN, "admin@demo.lvh.me", passwordHash, ts);
+				upsertUser(c, USER_VIEWER, "viewer@demo.lvh.me", passwordHash, ts);
+				upsertUser(c, USER_NOCODE, "nocode@demo.lvh.me", passwordHash, ts);
 
-				insertRole(c, ROLE_ADMIN, TENANT_ID, "Admin", ts);
-				insertRole(c, ROLE_VIEWER, TENANT_ID, "Viewer", ts);
+				upsertRole(c, ROLE_ADMIN, TENANT_ID, "Admin", ts);
+				upsertRole(c, ROLE_VIEWER, TENANT_ID, "Viewer", ts);
 
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_ID, ROLE_ADMIN, PRIV_USER_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_ID, ROLE_ADMIN, PRIV_USER_EDIT);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_ID, ROLE_ADMIN, PRIV_TENANT_SETTINGS);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_ID, ROLE_VIEWER, PRIV_USER_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_ID, ROLE_ADMIN, PRIV_USER_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_ID, ROLE_ADMIN, PRIV_USER_EDIT);
+				insertRolePrivilegeIfMissing(c, TENANT_ID, ROLE_ADMIN, PRIV_TENANT_SETTINGS);
+				insertRolePrivilegeIfMissing(c, TENANT_ID, ROLE_VIEWER, PRIV_USER_VIEW);
 
-				insertMembership(c, UUID.randomUUID(), TENANT_ID, USER_ADMIN, ts);
-				insertMembership(c, UUID.randomUUID(), TENANT_ID, USER_VIEWER, ts);
-				insertMembership(c, UUID.randomUUID(), TENANT_ID, USER_NOCODE, ts);
+				insertMembershipIfMissing(c, TENANT_ID, USER_ADMIN, ts);
+				insertMembershipIfMissing(c, TENANT_ID, USER_VIEWER, ts);
+				insertMembershipIfMissing(c, TENANT_ID, USER_NOCODE, ts);
 
-				insertUserRole(c, UUID.randomUUID(), TENANT_ID, USER_ADMIN, ROLE_ADMIN, ts);
-				insertUserRole(c, UUID.randomUUID(), TENANT_ID, USER_VIEWER, ROLE_VIEWER, ts);
+				insertUserRoleIfMissing(c, TENANT_ID, USER_ADMIN, ROLE_ADMIN, ts);
+				insertUserRoleIfMissing(c, TENANT_ID, USER_VIEWER, ROLE_VIEWER, ts);
 
 				c.commit();
 			}
@@ -82,7 +83,24 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+	private static void upsertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM privilege WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE privilege SET code = ?, description = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, code);
+						ps.setString(2, desc);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO privilege (id, code, description, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -94,7 +112,24 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertTenant(Connection c, UUID id, String handle, String name, Timestamp ts) throws Exception {
+	private static void upsertTenant(Connection c, UUID id, String handle, String name, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM tenant WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE tenant SET handle = ?, name = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, handle);
+						ps.setString(2, name);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO tenant (id, handle, name, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -106,7 +141,24 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertUser(Connection c, UUID id, String email, String hash, Timestamp ts) throws Exception {
+	private static void upsertUser(Connection c, UUID id, String email, String hash, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM user_account WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE user_account SET email = ?, password_hash = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, email);
+						ps.setString(2, hash);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO user_account (id, email, password_hash, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -118,7 +170,23 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertRole(Connection c, UUID id, UUID tenantId, String name, Timestamp ts) throws Exception {
+	private static void upsertRole(Connection c, UUID id, UUID tenantId, String name, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM role WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE role SET name = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, name);
+						ps.setTimestamp(2, ts);
+						ps.setString(3, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO role (id, tenant_id, name, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -130,11 +198,21 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertRolePrivilege(Connection c, UUID id, UUID tenantId, UUID roleId, UUID privId)
+	private static void insertRolePrivilegeIfMissing(Connection c, UUID tenantId, UUID roleId, UUID privId)
 			throws Exception {
+		try (PreparedStatement check = c.prepareStatement(
+				"SELECT COUNT(*) FROM role_privilege WHERE tenant_id = ? AND role_id = ? AND privilege_id = ?")) {
+			check.setString(1, tenantId.toString());
+			check.setString(2, roleId.toString());
+			check.setString(3, privId.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) return;
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO role_privilege (id, tenant_id, role_id, privilege_id) VALUES (?,?,?,?)")) {
-			ps.setString(1, id.toString());
+			ps.setString(1, UUID.randomUUID().toString());
 			ps.setString(2, tenantId.toString());
 			ps.setString(3, roleId.toString());
 			ps.setString(4, privId.toString());
@@ -142,10 +220,20 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertMembership(Connection c, UUID id, UUID tenantId, UUID userId, Timestamp ts) throws Exception {
+	private static void insertMembershipIfMissing(Connection c, UUID tenantId, UUID userId, Timestamp ts)
+			throws Exception {
+		try (PreparedStatement check = c.prepareStatement(
+				"SELECT COUNT(*) FROM membership WHERE tenant_id = ? AND user_id = ?")) {
+			check.setString(1, tenantId.toString());
+			check.setString(2, userId.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) return;
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO membership (id, tenant_id, user_id, created_at, updated_at) VALUES (?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
+			ps.setString(1, UUID.randomUUID().toString());
 			ps.setString(2, tenantId.toString());
 			ps.setString(3, userId.toString());
 			ps.setTimestamp(4, ts);
@@ -154,11 +242,21 @@ public class DataScaffoldSeed1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertUserRole(Connection c, UUID id, UUID tenantId, UUID userId, UUID roleId, Timestamp ts)
+	private static void insertUserRoleIfMissing(Connection c, UUID tenantId, UUID userId, UUID roleId, Timestamp ts)
 			throws Exception {
+		try (PreparedStatement check = c.prepareStatement(
+				"SELECT COUNT(*) FROM user_role WHERE tenant_id = ? AND user_id = ? AND role_id = ?")) {
+			check.setString(1, tenantId.toString());
+			check.setString(2, userId.toString());
+			check.setString(3, roleId.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) return;
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO user_role (id, tenant_id, user_id, role_id, created_at, updated_at) VALUES (?,?,?,?,?,?)")) {
-			ps.setString(1, id.toString());
+			ps.setString(1, UUID.randomUUID().toString());
 			ps.setString(2, tenantId.toString());
 			ps.setString(3, userId.toString());
 			ps.setString(4, roleId.toString());

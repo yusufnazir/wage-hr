@@ -2,6 +2,7 @@ package com.wagepayroll.liquibase.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -35,17 +36,17 @@ public class DataM9PayPeriodPrivileges1 implements CustomTaskChange {
 			Connection c = ((JdbcConnection) database.getConnection()).getUnderlyingConnection();
 			c.setAutoCommit(false);
 			try {
-				insertPrivilege(c, PRIV_PAY_PERIOD_VIEW, "PAY_PERIOD_VIEW", "View pay periods", ts);
-				insertPrivilege(c, PRIV_PAY_PERIOD_MANAGE, "PAY_PERIOD_MANAGE", "Create and manage pay periods", ts);
-				insertPrivilege(c, PRIV_PAY_PERIOD_RUN_VIEW, "PAY_PERIOD_RUN_VIEW", "View pay period runs", ts);
-				insertPrivilege(c, PRIV_PAY_PERIOD_RUN_MANAGE, "PAY_PERIOD_RUN_MANAGE", "Create and manage pay period runs", ts);
+				upsertPrivilege(c, PRIV_PAY_PERIOD_VIEW, "PAY_PERIOD_VIEW", "View pay periods", ts);
+				upsertPrivilege(c, PRIV_PAY_PERIOD_MANAGE, "PAY_PERIOD_MANAGE", "Create and manage pay periods", ts);
+				upsertPrivilege(c, PRIV_PAY_PERIOD_RUN_VIEW, "PAY_PERIOD_RUN_VIEW", "View pay period runs", ts);
+				upsertPrivilege(c, PRIV_PAY_PERIOD_RUN_MANAGE, "PAY_PERIOD_RUN_MANAGE", "Create and manage pay period runs", ts);
 
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_MANAGE);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_RUN_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_RUN_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_RUN_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_PAY_PERIOD_RUN_MANAGE);
 
-				insertNavMenuItem(c, "50000000-0000-0000-0000-000000000016", "/app/pay-periods", "nav.pay_periods", 50,
+				upsertNavMenuItem(c, "50000000-0000-0000-0000-000000000016", "/app/pay-periods", "nav.pay_periods", 50,
 						"PAY_PERIOD_VIEW", ts);
 
 				c.commit();
@@ -60,7 +61,24 @@ public class DataM9PayPeriodPrivileges1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+	private static void upsertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM privilege WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE privilege SET code = ?, description = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, code);
+						ps.setString(2, desc);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO privilege (id, code, description, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -72,11 +90,21 @@ public class DataM9PayPeriodPrivileges1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertRolePrivilege(Connection c, UUID id, UUID tenantId, UUID roleId, UUID privId)
+	private static void insertRolePrivilegeIfMissing(Connection c, UUID tenantId, UUID roleId, UUID privId)
 			throws Exception {
+		try (PreparedStatement check = c.prepareStatement(
+				"SELECT COUNT(*) FROM role_privilege WHERE tenant_id = ? AND role_id = ? AND privilege_id = ?")) {
+			check.setString(1, tenantId.toString());
+			check.setString(2, roleId.toString());
+			check.setString(3, privId.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) return;
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO role_privilege (id, tenant_id, role_id, privilege_id) VALUES (?,?,?,?)")) {
-			ps.setString(1, id.toString());
+			ps.setString(1, UUID.randomUUID().toString());
 			ps.setString(2, tenantId.toString());
 			ps.setString(3, roleId.toString());
 			ps.setString(4, privId.toString());
@@ -84,8 +112,27 @@ public class DataM9PayPeriodPrivileges1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertNavMenuItem(Connection c, String id, String path, String labelKey, int sortOrder,
+	private static void upsertNavMenuItem(Connection c, String id, String path, String labelKey, int sortOrder,
 			String privilegeCode, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM nav_menu_item WHERE id = ?")) {
+			check.setString(1, id);
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE nav_menu_item SET path = ?, label_key = ?, sort_order = ?, required_privilege_code = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, path);
+						ps.setString(2, labelKey);
+						ps.setInt(3, sortOrder);
+						ps.setString(4, privilegeCode);
+						ps.setTimestamp(5, ts);
+						ps.setString(6, id);
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO nav_menu_item (id, parent_id, path, label_key, sort_order, required_privilege_code, required_plan_feature_code, created_at, updated_at) VALUES (?,NULL,?,?,?,?,NULL,?,?)")) {
 			ps.setString(1, id);

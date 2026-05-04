@@ -5,15 +5,15 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="schema-m3-commercial-plan-1" author="wagepayroll">
-        <createTable tableName="commercial_plan">
+    <changeSet id="schema-mail-templates-1" author="wagepayroll">
+        <createTable tableName="mail_template">
             <column name="id" type="VARCHAR(36)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="code" type="VARCHAR(64)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="sort_order" type="INT">
+            <column name="content_version" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>
             <column name="active" type="BOOLEAN">
@@ -26,21 +26,21 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <createIndex indexName="idx_commercial_plan_sort" tableName="commercial_plan">
-            <column name="sort_order"/>
-            <column name="code"/>
-        </createIndex>
-    </changeSet>
 
-    <changeSet id="schema-m3-commercial-plan-feature-1" author="wagepayroll">
-        <createTable tableName="commercial_plan_feature">
+        <createTable tableName="mail_template_locale">
             <column name="id" type="VARCHAR(36)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="commercial_plan_id" type="VARCHAR(36)">
+            <column name="mail_template_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
-            <column name="plan_feature_id" type="VARCHAR(36)">
+            <column name="locale" type="VARCHAR(8)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body_html" type="LONGTEXT">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP">
@@ -50,16 +50,13 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="commercial_plan_feature" columnNames="commercial_plan_id,plan_feature_id"
-                             constraintName="ux_commercial_plan_feature_plan_feature"/>
-        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="commercial_plan_id"
-                                 constraintName="fk_cpf_commercial_plan" referencedTableName="commercial_plan"
-                                 referencedColumnNames="id" onDelete="CASCADE"/>
-        <addForeignKeyConstraint baseTableName="commercial_plan_feature" baseColumnNames="plan_feature_id"
-                                 constraintName="fk_cpf_plan_feature" referencedTableName="plan_feature"
-                                 referencedColumnNames="id" onDelete="RESTRICT"/>
-        <createIndex indexName="idx_commercial_plan_feature_plan" tableName="commercial_plan_feature">
-            <column name="commercial_plan_id"/>
-        </createIndex>
+
+        <addForeignKeyConstraint baseTableName="mail_template_locale" baseColumnNames="mail_template_id"
+                                 referencedTableName="mail_template" referencedColumnNames="id"
+                                 constraintName="fk_mail_template_locale_template" onDelete="CASCADE"/>
+
+        <addUniqueConstraint tableName="mail_template_locale" columnNames="mail_template_id,locale"
+                             constraintName="uq_mail_template_locale_template_locale"/>
     </changeSet>
+
 </databaseChangeLog>

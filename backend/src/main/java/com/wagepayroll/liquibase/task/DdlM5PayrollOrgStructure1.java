@@ -44,6 +44,9 @@ public class DdlM5PayrollOrgStructure1 implements CustomTaskChange {
 						  postal_code VARCHAR(30) NULL,
 						  country CHAR(2) NULL,
 						  active BOOLEAN NOT NULL,
+						  logo_storage_key VARCHAR(512) NULL,
+						  pay_period_end_date DATE NULL,
+						  timesheet_end_date DATE NULL,
 						  created_at TIMESTAMP NOT NULL,
 						  updated_at TIMESTAMP NOT NULL,
 						  CONSTRAINT fk_tenant_company_tenant FOREIGN KEY (tenant_id) REFERENCES tenant(id)

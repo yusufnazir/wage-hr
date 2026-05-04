@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="data-account-registration-email-verified-backfill-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DataEmailVerifiedAtBackfill1"/>
+    <changeSet id="schema-m8-work-time-1" author="wagepayroll">
+        <customChange class="com.wagepayroll.liquibase.task.DdlM8WorkTime1"/>
     </changeSet>
+
 </databaseChangeLog>

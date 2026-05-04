@@ -52,6 +52,15 @@ public class TenantBankTemplatesController {
 		return ApiResponse.of(tenantBankTemplateService.list(tenantId, companyId, page, size, active), rid);
 	}
 
+	@GetMapping("/catalog")
+	@RequiresPrivilege("BANK_TEMPLATE_VIEW")
+	public ApiResponse<Map<String, Object>> catalog(@RequestParam(name = "companyId", required = false) UUID companyId,
+			HttpServletRequest request) {
+		UUID tenantId = TenantContext.requireTenantId();
+		return ApiResponse.of(Map.of("items", tenantBankTemplateService.catalog(tenantId, companyId)),
+				RequestIdFilter.currentRequestId(request));
+	}
+
 	@GetMapping("/{id}")
 	@RequiresPrivilege("BANK_TEMPLATE_VIEW")
 	public ApiResponse<Map<String, TenantBankTemplateRowDto>> get(@PathVariable("id") UUID id,

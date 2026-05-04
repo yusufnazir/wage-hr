@@ -16,21 +16,23 @@ import liquibase.exception.ValidationErrors;
 import liquibase.resource.ResourceAccessor;
 
 /**
- * Idempotent seed: Suriname (SR) platform bank templates per product module.
+ * Fixes the 4 existing SR bank templates with correct SWIFT BICs and adds the remaining 7 Suriname banks.
+ * Preserves original row IDs (001–004) so existing tenant_bank_template FK references are not broken.
  */
-public class DataM11PlatformBankTemplatesSeed1 implements CustomTaskChange {
+public class DataM11PlatformBankTemplatesMigration1 implements CustomTaskChange {
 
-	private static final UUID ID_HAKRIN              = UUID.fromString("2f110000-0000-4000-8000-000000000001");
-	private static final UUID ID_DSB                 = UUID.fromString("2f110000-0000-4000-8000-000000000002");
-	private static final UUID ID_FINABANK            = UUID.fromString("2f110000-0000-4000-8000-000000000003");
-	private static final UUID ID_REPUBLIC            = UUID.fromString("2f110000-0000-4000-8000-000000000004");
-	private static final UUID ID_CENTRALE_BANK       = UUID.fromString("2f110000-0000-4000-8000-000000000005");
-	private static final UUID ID_GODO                = UUID.fromString("2f110000-0000-4000-8000-000000000006");
-	private static final UUID ID_FINATRUST           = UUID.fromString("2f110000-0000-4000-8000-000000000007");
-	private static final UUID ID_SOUTHERN            = UUID.fromString("2f110000-0000-4000-8000-000000000008");
-	private static final UUID ID_SURICHANGE          = UUID.fromString("2f110000-0000-4000-8000-000000000009");
-	private static final UUID ID_POSTSPAARBANK       = UUID.fromString("2f110000-0000-4000-8000-000000000010");
-	private static final UUID ID_VOLKSCREDIETBANK    = UUID.fromString("2f110000-0000-4000-8000-000000000011");
+	// All 11 Suriname bank template IDs (001–011)
+	private static final UUID ID_HAKRIN           = UUID.fromString("2f110000-0000-4000-8000-000000000001");
+	private static final UUID ID_DSB              = UUID.fromString("2f110000-0000-4000-8000-000000000002");
+	private static final UUID ID_FINABANK         = UUID.fromString("2f110000-0000-4000-8000-000000000003");
+	private static final UUID ID_REPUBLIC         = UUID.fromString("2f110000-0000-4000-8000-000000000004");
+	private static final UUID ID_CENTRALE_BANK    = UUID.fromString("2f110000-0000-4000-8000-000000000005");
+	private static final UUID ID_GODO             = UUID.fromString("2f110000-0000-4000-8000-000000000006");
+	private static final UUID ID_FINATRUST        = UUID.fromString("2f110000-0000-4000-8000-000000000007");
+	private static final UUID ID_SOUTHERN         = UUID.fromString("2f110000-0000-4000-8000-000000000008");
+	private static final UUID ID_SURICHANGE       = UUID.fromString("2f110000-0000-4000-8000-000000000009");
+	private static final UUID ID_POSTSPAARBANK    = UUID.fromString("2f110000-0000-4000-8000-000000000010");
+	private static final UUID ID_VOLKSCREDIETBANK = UUID.fromString("2f110000-0000-4000-8000-000000000011");
 
 	@Override
 	public void execute(Database database) throws CustomChangeException {
@@ -108,7 +110,7 @@ public class DataM11PlatformBankTemplatesSeed1 implements CustomTaskChange {
 
 	@Override
 	public String getConfirmationMessage() {
-		return "M11 platform bank templates SR seed applied";
+		return "M11 platform bank templates SR migration applied (fixed SWIFT BICs + 7 new banks)";
 	}
 
 	@Override

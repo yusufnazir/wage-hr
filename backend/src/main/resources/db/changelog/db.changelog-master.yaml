@@ -1,34 +1,45 @@
 databaseChangeLog:
+  # ── DDL: schema ─────────────────────────────────────────────────────────────
   - include:
-      file: ddl/schema-bootstrap-1.xml
+      file: ddl/schema-core.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-password-reset-1.xml
+      file: ddl/schema-invitations-notifications.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-password-reset-token-sha256-varchar-1.xml
+      file: ddl/schema-billing.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-menu-settings-1.xml
+      file: ddl/schema-documents.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-user-preferred-locale-1.xml
+      file: ddl/schema-role-templates.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-audit-event-1.xml
+      file: ddl/schema-mail-templates.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m2-notification-1.xml
+      file: ddl/schema-currencies.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m2-tenant-invitation-1.xml
+      file: ddl/schema-exchange-rate.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m2-tenant-invitation-pending-dedup-1.xml
+      file: ddl/schema-countries.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m2-notification-correlation-not-null-1.xml
+      file: ddl/schema-payroll-org.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-work-time.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-pay-period.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-bank-templates.xml
+      relativeToChangelogFile: true
+  # ── DML: seed data ──────────────────────────────────────────────────────────
   - include:
       file: dml/data-scaffold-1.xml
       relativeToChangelogFile: true
@@ -42,40 +53,7 @@ databaseChangeLog:
       file: dml/data-m2-user-invite-privilege-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m3-plan-feature-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m3-plan-feature-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-commercial-plan-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-commercial-plan-stripe-price-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-commercial-plan-paypal-billing-plan-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-tenant-subscription-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-webhook-receipt-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-provider-link-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-hardening-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-webhook-receipt-resolution-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-usage-event-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m3-billing-usage-aggregate-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m3-billing-platform-settings-1.xml
@@ -84,25 +62,16 @@ databaseChangeLog:
       file: dml/data-m3-commercial-plan-seed-demo-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m4-documents-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m4-document-privileges-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m5-platform-integration-settings-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m5-payroll-org-structure-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m5-payroll-org-privileges-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m6-membership-status-last-active-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m6-role-templates-1.xml
+      file: dml/data-m5-payroll-org-nav-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m6-role-admin-privileges-1.xml
@@ -111,28 +80,10 @@ databaseChangeLog:
       file: dml/data-m6-role-templates-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-account-registration-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-account-registration-email-verified-backfill-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-email-verification-token-sha256-varchar-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-user-account-names-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-mail-templates-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-mail-templates-seed-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-mail-templates-seed-2.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m7-currencies-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m7-platform-currencies-seed-1.xml
@@ -147,64 +98,28 @@ databaseChangeLog:
       file: dml/data-m7-role-template-currency-privileges-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-exchange-rate-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m7-platform-countries-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m7-platform-countries-seed-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-exchange-rate-privileges-1.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-fix-nav-tenant-currencies-plan-feature-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m5-payroll-org-nav-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m8-work-time-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m8-work-time-work-days-int-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m8-work-time-privileges-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m9-pay-period-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m9-pay-period-year-int-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m9-pay-period-run-number-int-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m9-pay-period-privileges-1.xml
       relativeToChangelogFile: true
   - include:
-      file: ddl/schema-m10-platform-country-payroll-enabled-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m10-platform-country-payroll-enabled-sr-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m10-company-logo-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m10-company-pay-period-config-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: ddl/schema-m11-platform-bank-templates-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m11-platform-bank-template-privileges-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m11-platform-bank-templates-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m11-platform-bank-templates-seed-2.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m11-bank-templates-nav-1.xml

@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- ===== tenant ===== -->
+    <changeSet id="schema-tenant-1" author="wagepayroll">
+        <createTable tableName="tenant">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="handle" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ===== privilege ===== -->
+    <changeSet id="schema-privilege-1" author="wagepayroll">
+        <createTable tableName="privilege">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ===== user_account (all columns in final form) ===== -->
+    <changeSet id="schema-user-account-1" author="wagepayroll">
+        <createTable tableName="user_account">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(320)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_superadmin" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="preferred_locale" type="VARCHAR(35)" defaultValue="en">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_verified_at" type="TIMESTAMP"/>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ===== password_reset_token (token_sha256 as VARCHAR to match Hibernate validation) ===== -->
+    <changeSet id="schema-password-reset-token-1" author="wagepayroll">
+        <createTable tableName="password_reset_token">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_account_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_sha256" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="password_reset_token" baseColumnNames="user_account_id"
+                                 constraintName="fk_password_reset_token_user"
+                                 referencedTableName="user_account" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ===== email_verification_token (token_sha256 as VARCHAR to match Hibernate validation) ===== -->
+    <changeSet id="schema-email-verification-token-1" author="wagepayroll">
+        <createTable tableName="email_verification_token">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_account_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_sha256" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="email_verification_token" baseColumnNames="user_account_id"
+                                 constraintName="fk_email_verification_token_user"
+                                 referencedTableName="user_account" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ===== role ===== -->
+    <changeSet id="schema-role-1" author="wagepayroll">
+        <createTable tableName="role">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="role" baseColumnNames="tenant_id"
+                                 constraintName="fk_role_tenant"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="role" columnNames="tenant_id,name" constraintName="uk_role_tenant_name"/>
+    </changeSet>
+
+    <!-- ===== role_privilege ===== -->
+    <changeSet id="schema-role-privilege-1" author="wagepayroll">
+        <createTable tableName="role_privilege">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="privilege_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="role_privilege" baseColumnNames="tenant_id"
+                                 constraintName="fk_rp_tenant"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="role_privilege" baseColumnNames="role_id"
+                                 constraintName="fk_rp_role"
+                                 referencedTableName="role" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="role_privilege" baseColumnNames="privilege_id"
+                                 constraintName="fk_rp_privilege"
+                                 referencedTableName="privilege" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="role_privilege" columnNames="tenant_id,role_id,privilege_id"
+                             constraintName="uk_rp"/>
+    </changeSet>
+
+    <!-- ===== membership (status + last_active_at included from the start) ===== -->
+    <changeSet id="schema-membership-1" author="wagepayroll">
+        <createTable tableName="membership">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_active_at" type="TIMESTAMP(6)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="membership" baseColumnNames="tenant_id"
+                                 constraintName="fk_mem_tenant"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="membership" baseColumnNames="user_id"
+                                 constraintName="fk_mem_user"
+                                 referencedTableName="user_account" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="membership" columnNames="tenant_id,user_id" constraintName="uk_mem"/>
+    </changeSet>
+
+    <!-- ===== user_role ===== -->
+    <changeSet id="schema-user-role-1" author="wagepayroll">
+        <createTable tableName="user_role">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="tenant_id"
+                                 constraintName="fk_ur_tenant"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="user_id"
+                                 constraintName="fk_ur_user"
+                                 referencedTableName="user_account" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="role_id"
+                                 constraintName="fk_ur_role"
+                                 referencedTableName="role" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="user_role" columnNames="tenant_id,user_id,role_id"
+                             constraintName="uk_user_role"/>
+    </changeSet>
+
+    <!-- ===== platform_setting ===== -->
+    <changeSet id="schema-platform-setting-1" author="wagepayroll">
+        <createTable tableName="platform_setting">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="key" type="VARCHAR(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="value_text" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ===== tenant_setting ===== -->
+    <changeSet id="schema-tenant-setting-1" author="wagepayroll">
+        <createTable tableName="tenant_setting">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_text" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_setting" baseColumnNames="tenant_id"
+                                 constraintName="fk_tenant_setting_tenant"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="tenant_setting" columnNames="tenant_id,key"
+                             constraintName="uk_tenant_setting_tenant_key"/>
+    </changeSet>
+
+    <!-- ===== nav_menu_item ===== -->
+    <changeSet id="schema-nav-menu-item-1" author="wagepayroll">
+        <createTable tableName="nav_menu_item">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="path" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label_key" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="required_privilege_code" type="VARCHAR(128)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="required_plan_feature_code" type="VARCHAR(64)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="nav_menu_item" baseColumnNames="parent_id"
+                                 constraintName="fk_nav_menu_item_parent"
+                                 referencedTableName="nav_menu_item" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="nav_menu_item" columnNames="path"
+                             constraintName="uk_nav_menu_item_path"/>
+    </changeSet>
+
+    <!-- ===== audit_event ===== -->
+    <changeSet id="schema-audit-event-1" author="wagepayroll">
+        <createTable tableName="audit_event">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="occurred_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="actor_user_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="action_code" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_type" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_id" type="VARCHAR(64)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="correlation_id" type="VARCHAR(128)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="metadata_json" type="VARCHAR(2000)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_audit_event_occurred_at" tableName="audit_event">
+            <column name="occurred_at"/>
+        </createIndex>
+        <createIndex indexName="idx_audit_event_tenant_occurred" tableName="audit_event">
+            <column name="tenant_id"/>
+            <column name="occurred_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

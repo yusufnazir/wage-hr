@@ -148,4 +148,5 @@
                                  constraintName="fk_document_attachment_created_by" referencedTableName="user_account"
                                  referencedColumnNames="id" onDelete="RESTRICT"/>
     </changeSet>
+
 </databaseChangeLog>

@@ -299,6 +299,77 @@ Before applying any migration:
 
 ---
 
+## 11. DML Upsert Convention (Seed & Reference Data)
+
+### 11.1 Rule
+
+All DML custom task classes that insert seed or reference data **MUST** use upsert logic:
+
+* If a row with the given `id` already exists → **UPDATE** it
+* If no row with that `id` exists → **INSERT** it
+
+This ensures migrations are safe to run against both fresh and existing databases without duplicates or skipped updates.
+
+### 11.2 Version Increment = New Changeset
+
+The changeset ID always ends with `-<versionnumber>` (e.g. `data-m11-platform-bank-templates-seed-1`).
+
+* Liquibase tracks executed changesets by ID — once run, a changeset is **never re-executed**
+* To change data that was already seeded, **increment the version** to create a new changeset ID
+* The new changeset runs against all environments (including those that already have the old data)
+* The new changeset's Java class must still apply upsert logic so it is safe on fresh databases too
+
+Example:
+
+```
+data-m11-platform-bank-templates-seed-1   ← original seed (ran, immutable)
+data-m11-platform-bank-templates-seed-2   ← correction/addition (new, will run)
+```
+
+### 11.3 Upsert Pattern
+
+```java
+private static void upsert(Connection c, String id, ..., Timestamp ts) throws Exception {
+    try (PreparedStatement check = c.prepareStatement(
+            "SELECT COUNT(*) FROM my_table WHERE id = ?")) {
+        check.setString(1, id);
+        try (ResultSet rs = check.executeQuery()) {
+            rs.next();
+            if (rs.getInt(1) > 0) {
+                // UPDATE — row already exists
+                try (PreparedStatement ps = c.prepareStatement(
+                        "UPDATE my_table SET col1 = ?, col2 = ?, updated_at = ? WHERE id = ?")) {
+                    ps.setString(1, val1);
+                    ps.setString(2, val2);
+                    ps.setTimestamp(3, ts);
+                    ps.setString(4, id);
+                    ps.executeUpdate();
+                }
+                return;
+            }
+        }
+    }
+    // INSERT — row does not exist
+    try (PreparedStatement ps = c.prepareStatement(
+            "INSERT INTO my_table (id, col1, col2, created_at, updated_at) VALUES (?,?,?,?,?)")) {
+        ps.setString(1, id);
+        ps.setString(2, val1);
+        ps.setString(3, val2);
+        ps.setTimestamp(4, ts);
+        ps.setTimestamp(5, ts);
+        ps.executeUpdate();
+    }
+}
+```
+
+### 11.4 What NOT to do
+
+* Do **not** use `if (COUNT(*) >= N) return` guards that skip the entire changeset — this causes missed updates when a newer version of the data is needed
+* Do **not** modify an already-executed changeset to fix data — always create a new versioned changeset
+* Do **not** use `onFail="MARK_RAN"` preConditions on seed data — the upsert pattern makes them unnecessary
+
+---
+
 ## 11. Environment Rules
 
 * No secrets in changeSets

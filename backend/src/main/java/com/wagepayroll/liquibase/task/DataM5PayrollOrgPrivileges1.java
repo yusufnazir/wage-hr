@@ -2,6 +2,7 @@ package com.wagepayroll.liquibase.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -41,27 +42,27 @@ public class DataM5PayrollOrgPrivileges1 implements CustomTaskChange {
 			Connection c = ((JdbcConnection) database.getConnection()).getUnderlyingConnection();
 			c.setAutoCommit(false);
 			try {
-				insertPrivilege(c, PRIV_COMPANY_VIEW, "COMPANY_VIEW", "View payroll companies", ts);
-				insertPrivilege(c, PRIV_COMPANY_MANAGE, "COMPANY_MANAGE", "Create and manage payroll companies", ts);
-				insertPrivilege(c, PRIV_DEPARTMENT_VIEW, "DEPARTMENT_VIEW", "View company departments", ts);
-				insertPrivilege(c, PRIV_DEPARTMENT_MANAGE, "DEPARTMENT_MANAGE", "Create and manage company departments", ts);
-				insertPrivilege(c, PRIV_JOB_VIEW, "JOB_VIEW", "View company jobs", ts);
-				insertPrivilege(c, PRIV_JOB_MANAGE, "JOB_MANAGE", "Create and manage company jobs", ts);
-				insertPrivilege(c, PRIV_EMPLOYEE_GROUP_VIEW, "EMPLOYEE_GROUP_VIEW", "View employee groups", ts);
-				insertPrivilege(c, PRIV_EMPLOYEE_GROUP_MANAGE, "EMPLOYEE_GROUP_MANAGE", "Create and manage employee groups", ts);
-				insertPrivilege(c, PRIV_EMPLOYEE_VIEW, "EMPLOYEE_VIEW", "View employees", ts);
-				insertPrivilege(c, PRIV_EMPLOYEE_MANAGE, "EMPLOYEE_MANAGE", "Create and manage employees", ts);
+				upsertPrivilege(c, PRIV_COMPANY_VIEW, "COMPANY_VIEW", "View payroll companies", ts);
+				upsertPrivilege(c, PRIV_COMPANY_MANAGE, "COMPANY_MANAGE", "Create and manage payroll companies", ts);
+				upsertPrivilege(c, PRIV_DEPARTMENT_VIEW, "DEPARTMENT_VIEW", "View company departments", ts);
+				upsertPrivilege(c, PRIV_DEPARTMENT_MANAGE, "DEPARTMENT_MANAGE", "Create and manage company departments", ts);
+				upsertPrivilege(c, PRIV_JOB_VIEW, "JOB_VIEW", "View company jobs", ts);
+				upsertPrivilege(c, PRIV_JOB_MANAGE, "JOB_MANAGE", "Create and manage company jobs", ts);
+				upsertPrivilege(c, PRIV_EMPLOYEE_GROUP_VIEW, "EMPLOYEE_GROUP_VIEW", "View employee groups", ts);
+				upsertPrivilege(c, PRIV_EMPLOYEE_GROUP_MANAGE, "EMPLOYEE_GROUP_MANAGE", "Create and manage employee groups", ts);
+				upsertPrivilege(c, PRIV_EMPLOYEE_VIEW, "EMPLOYEE_VIEW", "View employees", ts);
+				upsertPrivilege(c, PRIV_EMPLOYEE_MANAGE, "EMPLOYEE_MANAGE", "Create and manage employees", ts);
 
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_COMPANY_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_COMPANY_MANAGE);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_DEPARTMENT_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_DEPARTMENT_MANAGE);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_JOB_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_JOB_MANAGE);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_GROUP_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_GROUP_MANAGE);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_VIEW);
-				insertRolePrivilege(c, UUID.randomUUID(), TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_COMPANY_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_COMPANY_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_DEPARTMENT_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_DEPARTMENT_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_JOB_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_JOB_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_GROUP_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_GROUP_MANAGE);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_VIEW);
+				insertRolePrivilegeIfMissing(c, TENANT_DEMO, ROLE_ADMIN, PRIV_EMPLOYEE_MANAGE);
 
 				c.commit();
 			}
@@ -75,7 +76,24 @@ public class DataM5PayrollOrgPrivileges1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+	private static void upsertPrivilege(Connection c, UUID id, String code, String desc, Timestamp ts) throws Exception {
+		try (PreparedStatement check = c.prepareStatement("SELECT COUNT(*) FROM privilege WHERE id = ?")) {
+			check.setString(1, id.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) {
+					try (PreparedStatement ps = c.prepareStatement(
+							"UPDATE privilege SET code = ?, description = ?, updated_at = ? WHERE id = ?")) {
+						ps.setString(1, code);
+						ps.setString(2, desc);
+						ps.setTimestamp(3, ts);
+						ps.setString(4, id.toString());
+						ps.executeUpdate();
+					}
+					return;
+				}
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO privilege (id, code, description, created_at, updated_at) VALUES (?,?,?,?,?)")) {
 			ps.setString(1, id.toString());
@@ -87,11 +105,21 @@ public class DataM5PayrollOrgPrivileges1 implements CustomTaskChange {
 		}
 	}
 
-	private static void insertRolePrivilege(Connection c, UUID id, UUID tenantId, UUID roleId, UUID privId)
+	private static void insertRolePrivilegeIfMissing(Connection c, UUID tenantId, UUID roleId, UUID privId)
 			throws Exception {
+		try (PreparedStatement check = c.prepareStatement(
+				"SELECT COUNT(*) FROM role_privilege WHERE tenant_id = ? AND role_id = ? AND privilege_id = ?")) {
+			check.setString(1, tenantId.toString());
+			check.setString(2, roleId.toString());
+			check.setString(3, privId.toString());
+			try (ResultSet rs = check.executeQuery()) {
+				rs.next();
+				if (rs.getInt(1) > 0) return;
+			}
+		}
 		try (PreparedStatement ps = c.prepareStatement(
 				"INSERT INTO role_privilege (id, tenant_id, role_id, privilege_id) VALUES (?,?,?,?)")) {
-			ps.setString(1, id.toString());
+			ps.setString(1, UUID.randomUUID().toString());
 			ps.setString(2, tenantId.toString());
 			ps.setString(3, roleId.toString());
 			ps.setString(4, privId.toString());
