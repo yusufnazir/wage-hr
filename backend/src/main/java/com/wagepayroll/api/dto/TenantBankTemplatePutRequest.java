@@ -8,6 +8,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public record TenantBankTemplatePutRequest(
 		UUID platformBankTemplateId,
 		String accountNumber,
-		String currencyCode,
 		Boolean active) {
 }

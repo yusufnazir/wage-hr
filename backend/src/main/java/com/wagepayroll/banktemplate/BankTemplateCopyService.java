@@ -38,6 +38,10 @@ public class BankTemplateCopyService {
 		}
 		Instant now = Instant.now();
 		for (PlatformBankTemplateEntity p : sources) {
+			if (tenantBankTemplateRepository.existsByTenantIdAndCompanyIdAndPlatformBankTemplateId(tenantId, companyId,
+					p.getId())) {
+				continue;
+			}
 			TenantBankTemplateEntity t = new TenantBankTemplateEntity();
 			t.setId(UUID.randomUUID());
 			t.setTenantId(tenantId);
@@ -49,7 +53,6 @@ public class BankTemplateCopyService {
 			t.setSwiftBic(p.getSwiftBic());
 			t.setBankCode(p.getBankCode());
 			t.setAccountNumberFormat(p.getAccountNumberFormat());
-			t.setCurrencyCode(p.getCurrencyCode());
 			t.setActive(p.isActive());
 			t.setCreatedAt(now);
 			t.setUpdatedAt(now);

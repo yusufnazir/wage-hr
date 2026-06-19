@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m13-nav-wage-components-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <comment>Tenant navigation: wage components (company-scoped catalog).</comment>
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000019"/>
+            <param name="path" value="/app/wage-components"/>
+            <param name="labelKey" value="nav.wage_components"/>
+            <param name="sortOrder" value="47"/>
+            <param name="requiredPrivilegeCode" value="WAGE_COMPONENT_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Rename M26 platform component grouping tables to *template* naming (idempotent). -->
+    <changeSet id="schema-m27-drop-fks-platform-component-grouping" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP'
+                </sqlCheck>
+                <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE'
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="platform_component_item_locale" constraintName="fk_platform_component_item_locale_item"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_item" constraintName="fk_platform_component_item_header"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_item" constraintName="fk_platform_component_item_wage_component"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_header_locale" constraintName="fk_platform_component_header_locale_header"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_header" constraintName="fk_platform_component_header_group"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_group_locale" constraintName="fk_platform_component_group_locale_group"/>
+        <dropForeignKeyConstraint baseTableName="platform_component_group" constraintName="fk_platform_component_group_country"/>
+    </changeSet>
+
+    <changeSet id="schema-m27-drop-uks-platform-component-grouping" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP'
+                </sqlCheck>
+                <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE'
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <dropUniqueConstraint tableName="platform_component_group_locale" constraintName="uk_platform_component_group_locale"/>
+        <dropUniqueConstraint tableName="platform_component_header_locale" constraintName="uk_platform_component_header_locale"/>
+        <dropUniqueConstraint tableName="platform_component_item" constraintName="uk_platform_component_item_header_wage"/>
+        <dropUniqueConstraint tableName="platform_component_item_locale" constraintName="uk_platform_component_item_locale"/>
+    </changeSet>
+
+    <changeSet id="schema-m27-rename-tables-platform-component-grouping" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP'
+                </sqlCheck>
+                <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE'
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <renameTable oldTableName="platform_component_group" newTableName="platform_component_group_template"/>
+        <renameTable oldTableName="platform_component_group_locale" newTableName="platform_component_group_template_locale"/>
+        <renameTable oldTableName="platform_component_header" newTableName="platform_component_header_template"/>
+        <renameTable oldTableName="platform_component_header_locale" newTableName="platform_component_header_template_locale"/>
+        <renameTable oldTableName="platform_component_item" newTableName="platform_component_item_template"/>
+        <renameTable oldTableName="platform_component_item_locale" newTableName="platform_component_item_template_locale"/>
+    </changeSet>
+
+    <changeSet id="schema-m27-rename-columns-platform-component-grouping" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE_LOCALE'
+                </sqlCheck>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE_LOCALE'
+                    AND UPPER(COLUMN_NAME) = 'PLATFORM_COMPONENT_GROUP_ID'
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <renameColumn tableName="platform_component_group_template_locale"
+                      oldColumnName="platform_component_group_id"
+                      newColumnName="platform_component_group_template_id"
+                      columnDataType="VARCHAR(36)"/>
+        <renameColumn tableName="platform_component_header_template"
+                      oldColumnName="platform_component_group_id"
+                      newColumnName="platform_component_group_template_id"
+                      columnDataType="VARCHAR(36)"/>
+        <renameColumn tableName="platform_component_header_template_locale"
+                      oldColumnName="platform_component_header_id"
+                      newColumnName="platform_component_header_template_id"
+                      columnDataType="VARCHAR(36)"/>
+        <renameColumn tableName="platform_component_item_template"
+                      oldColumnName="platform_component_header_id"
+                      newColumnName="platform_component_header_template_id"
+                      columnDataType="VARCHAR(36)"/>
+        <renameColumn tableName="platform_component_item_template_locale"
+                      oldColumnName="platform_component_item_id"
+                      newColumnName="platform_component_item_template_id"
+                      columnDataType="VARCHAR(36)"/>
+    </changeSet>
+
+    <changeSet id="schema-m27-recreate-fks-uks-platform-component-grouping" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">
+                    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                    WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_GROUP_TEMPLATE'
+                </sqlCheck>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_platform_component_group_template_country"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="platform_component_group_template"
+                                 baseColumnNames="platform_country_id"
+                                 constraintName="fk_platform_component_group_template_country"
+                                 referencedTableName="platform_country"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="platform_component_group_template_locale"
+                                 baseColumnNames="platform_component_group_template_id"
+                                 constraintName="fk_platform_component_group_template_locale_group"
+                                 referencedTableName="platform_component_group_template"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="platform_component_group_template_locale"
+                             columnNames="platform_component_group_template_id,locale"
+                             constraintName="uk_platform_component_group_template_locale"/>
+
+        <addForeignKeyConstraint baseTableName="platform_component_header_template"
+                                 baseColumnNames="platform_component_group_template_id"
+                                 constraintName="fk_platform_component_header_template_group"
+                                 referencedTableName="platform_component_group_template"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="platform_component_header_template_locale"
+                                 baseColumnNames="platform_component_header_template_id"
+                                 constraintName="fk_platform_component_header_template_locale_header"
+                                 referencedTableName="platform_component_header_template"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="platform_component_header_template_locale"
+                             columnNames="platform_component_header_template_id,locale"
+                             constraintName="uk_platform_component_header_template_locale"/>
+
+        <addForeignKeyConstraint baseTableName="platform_component_item_template"
+                                 baseColumnNames="platform_component_header_template_id"
+                                 constraintName="fk_platform_component_item_template_header"
+                                 referencedTableName="platform_component_header_template"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="platform_component_item_template"
+                                 baseColumnNames="platform_wage_component_id"
+                                 constraintName="fk_platform_component_item_template_wage_component"
+                                 referencedTableName="platform_wage_component"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="platform_component_item_template"
+                             columnNames="platform_component_header_template_id,platform_wage_component_id"
+                             constraintName="uk_platform_component_item_template_header_wage"/>
+
+        <addForeignKeyConstraint baseTableName="platform_component_item_template_locale"
+                                 baseColumnNames="platform_component_item_template_id"
+                                 constraintName="fk_platform_component_item_template_locale_item"
+                                 referencedTableName="platform_component_item_template"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="platform_component_item_template_locale"
+                             columnNames="platform_component_item_template_id,locale"
+                             constraintName="uk_platform_component_item_template_locale"/>
+    </changeSet>
+
+    <!-- Tenant runtime copies (company-scoped), optional link to platform group template. -->
+    <changeSet id="schema-m27-tenant-component-group-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_group"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_group">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_component_group_template_id" type="VARCHAR(36)"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_group"
+                                 baseColumnNames="platform_component_group_template_id"
+                                 constraintName="fk_tenant_component_group_platform_template"
+                                 referencedTableName="platform_component_group_template"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+        <createIndex indexName="idx_tenant_component_group_tenant_company" tableName="tenant_component_group">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+            <column name="active"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m27-tenant-component-group-locale-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_group_locale"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_group_locale">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_component_group_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(35)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_group_locale"
+                                 baseColumnNames="tenant_component_group_id"
+                                 constraintName="fk_tenant_component_group_locale_group"
+                                 referencedTableName="tenant_component_group"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="tenant_component_group_locale"
+                             columnNames="tenant_component_group_id,locale"
+                             constraintName="uk_tenant_component_group_locale"/>
+        <createIndex indexName="idx_tenant_component_group_locale_group" tableName="tenant_component_group_locale">
+            <column name="tenant_component_group_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m27-tenant-component-header-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_header"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_header">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_component_group_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_header"
+                                 baseColumnNames="tenant_component_group_id"
+                                 constraintName="fk_tenant_component_header_group"
+                                 referencedTableName="tenant_component_group"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <createIndex indexName="idx_tenant_component_header_group" tableName="tenant_component_header">
+            <column name="tenant_component_group_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m27-tenant-component-header-locale-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_header_locale"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_header_locale">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_component_header_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(35)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_header_locale"
+                                 baseColumnNames="tenant_component_header_id"
+                                 constraintName="fk_tenant_component_header_locale_header"
+                                 referencedTableName="tenant_component_header"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="tenant_component_header_locale"
+                             columnNames="tenant_component_header_id,locale"
+                             constraintName="uk_tenant_component_header_locale"/>
+        <createIndex indexName="idx_tenant_component_header_locale_header" tableName="tenant_component_header_locale">
+            <column name="tenant_component_header_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m27-tenant-component-item-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_item"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_item">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_component_header_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_item"
+                                 baseColumnNames="tenant_component_header_id"
+                                 constraintName="fk_tenant_component_item_header"
+                                 referencedTableName="tenant_component_header"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="tenant_component_item"
+                                 baseColumnNames="tenant_wage_component_id"
+                                 constraintName="fk_tenant_component_item_wage_component"
+                                 referencedTableName="tenant_wage_component"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="tenant_component_item"
+                             columnNames="tenant_component_header_id,tenant_wage_component_id"
+                             constraintName="uk_tenant_component_item_header_wage"/>
+        <createIndex indexName="idx_tenant_component_item_header" tableName="tenant_component_item">
+            <column name="tenant_component_header_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m27-tenant-component-item-locale-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_component_item_locale"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tenant_component_item_locale">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_component_item_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(35)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_component_item_locale"
+                                 baseColumnNames="tenant_component_item_id"
+                                 constraintName="fk_tenant_component_item_locale_item"
+                                 referencedTableName="tenant_component_item"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="tenant_component_item_locale"
+                             columnNames="tenant_component_item_id,locale"
+                             constraintName="uk_tenant_component_item_locale"/>
+        <createIndex indexName="idx_tenant_component_item_locale_item" tableName="tenant_component_item_locale">
+            <column name="tenant_component_item_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

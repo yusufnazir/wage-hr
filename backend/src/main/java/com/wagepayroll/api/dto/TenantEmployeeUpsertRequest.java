@@ -15,5 +15,17 @@ public record TenantEmployeeUpsertRequest(
 		String email,
 		String phone,
 		String status,
-		Boolean active) {
+		Boolean active,
+		String badgeNumber,
+		String idNumber,
+		String gender,
+		String nationality,
+		String placeOfBirth,
+		String civilState,
+		LocalDate resignationDate,
+		String addressStreet,
+		String addressNumber,
+		String addressCity,
+		String addressCountry,
+		String addressPostalCode) {
 }

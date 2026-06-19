@@ -21,6 +21,10 @@ export default {
         accent: "var(--color-accent)",
         "accent-foreground": "var(--color-accent-foreground)",
         "accent-soft": "var(--color-accent-soft)",
+        destructive: "var(--color-destructive)",
+        "destructive-foreground": "var(--color-destructive-foreground)",
+        "destructive-soft": "var(--color-destructive-soft)",
+        "destructive-border": "var(--color-destructive-border)",
       },
       ringOffsetColor: {
         background: "var(--color-bg)",
@@ -33,6 +37,15 @@ export default {
         sm: "var(--shadow-sm)",
         md: "var(--shadow-md)",
         glass: "var(--shadow-glass)",
+      },
+      keyframes: {
+        "progress-indeterminate": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(400%)" },
+        },
+      },
+      animation: {
+        "progress-indeterminate": "progress-indeterminate 1.4s ease-in-out infinite",
       },
     },
   },

@@ -1,0 +1,17 @@
+---
+description: Doc-first workflow — specs are authority; no freelancing
+alwaysApply: true
+---
+
+# Doc-first workflow (wage-payroll)
+
+Before implementing or changing behavior in this repo:
+
+1. **Spec authority** — One `docs/modules/{feature-slug}.md` is the sole behavioral + schema contract per change. If the user did not @-attach a module doc, **STOP** and ask which slug applies.
+2. **Read first** — Read `@docs/prompts/PROJECT-CONTEXT.md` and relevant `docs/guides/*` before proposing code. Precedence: `PROJECT-CONTEXT.md` + module doc over stale `docs/output/ARCHITECTURE-DEFINITION.md`.
+3. **No silent invention** — Do not invent schema columns, API shapes, privileges, or payroll rules. Use module docs, ADRs (`docs/decisions/`), and golden scenarios (`docs/product/PAYROLL-GOLDEN-SCENARIO-SR.md`) only.
+4. **Schema work** — Any Liquibase/entity change requires `@docs/guides/SCHEMA-PERSISTENCE-PREFLIGHT.md` and `@docs/guides/DATA-MODEL-STANDARDS.md`. **No module spec = no implementation.**
+5. **Incomplete spec** — Expand the module doc with acceptance criteria first; do not shrink scope silently.
+6. **Confirm** — After reading attached context, summarize goal, scope, and out-of-scope in 3 bullets before writing code (unless the user explicitly asked for a quick one-liner answer).
+
+Slash commands in `.cursor/commands/` bake in the right attachments — prefer `/feature`, `/plan`, or domain commands over starting cold.

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Version 2: demo André/Babel — enable belastingvrij (1001 v1 seeded applyTaxExempt=false). -->
+    <changeSet id="data-m22-demo-employee-compensation-1001-2" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000201"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000006"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="6000.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+            <param name="applyTaxes" value="true"/>
+            <param name="applyTaxExempt" value="true"/>
+            <param name="applyAov" value="true"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

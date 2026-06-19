@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Employee payment (destinations + period disbursement records) -->
+    <changeSet id="data-m38-priv-employee-payment-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000039"/>
+            <param name="code" value="EMPLOYEE_PAYMENT_VIEW"/>
+            <param name="description" value="View employee payment destinations and pay period disbursement records"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-priv-employee-payment-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000040"/>
+            <param name="code" value="EMPLOYEE_PAYMENT_MANAGE"/>
+            <param name="description" value="Manage employee payment destinations (bank/cash splits)"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-grant-rp-demo-admin-employee-payment-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000039"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-grant-rp-demo-admin-employee-payment-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000040"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-grant-rp-demo-viewer-employee-payment-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000039"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-rtp-admin-employee-payment-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="EMPLOYEE_PAYMENT_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m38-rtp-admin-employee-payment-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="EMPLOYEE_PAYMENT_MANAGE"/>
+        </customChange>
+    </changeSet>
+
+    <!-- Run payroll navigation -->
+    <changeSet id="data-m38-nav-run-payroll-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <comment>Tenant navigation: guided run payroll workflow for the company active period.</comment>
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000038"/>
+            <param name="path" value="/app/run-payroll"/>
+            <param name="labelKey" value="nav.run_payroll"/>
+            <param name="sortOrder" value="44"/>
+            <param name="requiredPrivilegeCode" value="PAY_PERIOD_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

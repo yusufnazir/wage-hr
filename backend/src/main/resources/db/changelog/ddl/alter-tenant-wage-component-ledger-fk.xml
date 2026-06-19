@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m14-tenant-wage-component-ledger-fk-1" author="wagepayroll">
+        <dropColumn tableName="tenant_wage_component" columnName="debit_ledger_account_code"/>
+        <dropColumn tableName="tenant_wage_component" columnName="credit_ledger_account_code"/>
+        <addColumn tableName="tenant_wage_component">
+            <column name="debit_tenant_ledger_id" type="VARCHAR(36)"/>
+            <column name="credit_tenant_ledger_id" type="VARCHAR(36)"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_tenant_wage_component_debit_ledger"
+                                 baseTableName="tenant_wage_component" baseColumnNames="debit_tenant_ledger_id"
+                                 referencedTableName="tenant_ledger" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_wage_component_credit_ledger"
+                                 baseTableName="tenant_wage_component" baseColumnNames="credit_tenant_ledger_id"
+                                 referencedTableName="tenant_ledger" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

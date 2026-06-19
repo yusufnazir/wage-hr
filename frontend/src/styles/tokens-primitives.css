@@ -39,6 +39,13 @@
   --p-sky-500: #0ea5e9;
   --p-sky-950: #082f49;
 
+  /* Destructive / error red */
+  --p-red-50: #fef2f2;
+  --p-red-100: #fee2e2;
+  --p-red-600: #dc2626;
+  --p-red-700: #b91c1c;
+  --p-red-900: #7f1d1d;
+
   /* Legacy greens (unused by current semantic layer) */
   --p-green-50: #f0fdf4;
   --p-green-700: #15803d;

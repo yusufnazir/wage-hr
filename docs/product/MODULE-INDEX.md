@@ -29,12 +29,20 @@ Convention: one file per vertical slice — [`../guides/MODULE-DOC-CONVENTION.md
 | `commercial-billing.md` | M3 | Complete (M3 v1) | Webhooks; tenant **`GET .../billing/summary`** (**`USER_VIEW`**) + **`GET .../billing/commercial-plans`** (**`TENANT_SETTINGS_EDIT`**); Stripe/PayPal sessions; Next.js **`/app`** billing card; **`billing_usage_event`** POST + **`billing_usage_aggregate`** + **`GET .../usage-aggregates`**; `billing_provider_link`; minimal **`tenant_subscription`** webhook reconcile; dev redirect rules + **`DEMO_STARTER`** seed; **post-M3:** meter push, full B3 reconcile — [`../modules/commercial-billing.md`](../modules/commercial-billing.md) |
 | `platform-countries.md` | M5 | Exists | Platform-managed ISO 3166-1 country catalog; superadmin CRUD + tenant read-only; en/nl translations; ISO seed — [`../modules/platform-countries.md`](../modules/platform-countries.md) |
 | `platform-bank-templates.md` | M5 | Exists | Platform-managed bank template catalog per country; superadmin CRUD; tenant copy seeded on company create (based on `payroll_country`); tenant admins customise their copies — [`../modules/platform-bank-templates.md`](../modules/platform-bank-templates.md) |
+| `work-times.md` | M5 | Exists | Company-scoped work time schedules; list/create/edit/activate; privileges `WORK_TIME_VIEW`/`WORK_TIME_MANAGE` — [`../modules/work-times.md`](../modules/work-times.md) |
+| `pay-periods.md` | M5 | Exists | Company-scoped pay periods + runs; status lifecycle; generate endpoint; privileges `PAY_PERIOD_*` and `PAY_PERIOD_RUN_*` — [`../modules/pay-periods.md`](../modules/pay-periods.md) |
 | `payroll-reference-data.md` | M5 | Exists | Exchange rates (full spec — see [`../modules/payroll-reference-data.md`](../modules/payroll-reference-data.md)); countries stub **superseded by `platform-countries.md`**; BUs, BU-scoped roles still stubs |
 | `organization-employment.md` | M5 | Planned | Org structure, employment + compensation history |
 | `employee-master-dependents.md` | M5 | Planned | Employee, partners, children; country-specific legal enums |
 | `leave-management.md` | M5 | Planned | Leave policies, requests, approvals |
 | `time-and-attendance.md` | M5 | Planned | Time entries, devices/imports TBD |
-| `payroll-engine-country.md` | M5 | Planned | Per-country adapters; **first full: Suriname (SR)**; sandbox; gross/net/tax |
+| `payroll-calculation-bases.md` | M5 | Exists | Calculation-base catalog + component base effects; replaces legacy taxability flags — [`../modules/payroll-calculation-bases.md`](../modules/payroll-calculation-bases.md) |
+| `payroll-engine-country.md` | M5 | Exists (draft) | Per-country adapters; SR first — [`../modules/payroll-engine-country.md`](../modules/payroll-engine-country.md); ADRs in [`../decisions/`](../decisions/) |
+| `suriname-wage-tax-rules.md` | M5 | Exists | Suriname seven wage-tax regimes, belastingvrij, Art. 10 exclusions, engine audit — [`../modules/suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) |
+| `suriname-loonbelasting-art17-bonus-vakantie.md` | M5 | Exists | Art. 10/17 vacation and bonus detail — [`../modules/suriname-loonbelasting-art17-bonus-vakantie.md`](../modules/suriname-loonbelasting-art17-bonus-vakantie.md) |
+| `payroll-component-dependencies.md` | M5 | Exists (draft) | Template/tenant wage component DAG — [`../modules/payroll-component-dependencies.md`](../modules/payroll-component-dependencies.md) |
+| `payroll-ledger-posting.md` | M5 | Exists (draft) | Ledger postings + balance tracking — [`../modules/payroll-ledger-posting.md`](../modules/payroll-ledger-posting.md) |
+| — | M5 | Planning | **Payroll engine docs index:** [`PAYROLL-ENGINE-DOCS-INDEX.md`](./PAYROLL-ENGINE-DOCS-INDEX.md) |
 | `employee-self-service.md` | M5 | Planned | ESS portal capabilities and privileges |
 | `sso-oidc.md` | Later | Planned | Future iteration; session + tenancy must be stable first |
 

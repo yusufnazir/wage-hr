@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
@@ -14,12 +15,15 @@ import {
   type TenantCurrencyItem,
   type TenantExchangeRateItem,
 } from "@/lib/api";
+import { PlatformDateInput } from "@/components/ui/PlatformDateInput";
+import { formatUserFacingDate } from "@/lib/user-date-format";
 import { navLabel } from "@/messages/nav";
 
 type LoadState = "loading" | "ready" | "forbidden" | "error";
 type CurrencyTab = "organization" | "rates" | "available";
 type ExchangeLoadState = "idle" | "loading" | "ready" | "forbidden" | "error";
 type NoticeTone = "success" | "error";
+type RatesMode = { kind: "list" } | { kind: "create" } | { kind: "edit"; item: TenantExchangeRateItem };
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -29,8 +33,13 @@ export default function TenantCurrenciesPage() {
   const { me } = useTenantAppSession();
   const t = useCallback((key: string) => navLabel(me.locale, key), [me.locale]);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const rawTab = searchParams.get("tab") as CurrencyTab | null;
+  const tab: CurrencyTab = rawTab === "rates" || rawTab === "available" ? rawTab : "organization";
+  const setTab = (t: CurrencyTab) => router.push(`/app/tenant-currencies?tab=${t}`);
+
   const [load, setLoad] = useState<LoadState>("loading");
-  const [tab, setTab] = useState<CurrencyTab>("organization");
   const [catalog, setCatalog] = useState<TenantCurrencyItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [initialSelected, setInitialSelected] = useState<Set<string>>(new Set());
@@ -45,17 +54,21 @@ export default function TenantCurrenciesPage() {
   const [ratesBusy, setRatesBusy] = useState(false);
   const [ratesNotice, setRatesNotice] = useState<{ tone: NoticeTone; text: string } | null>(null);
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createFromId, setCreateFromId] = useState("");
-  const [createToId, setCreateToId] = useState("");
-  const [createRate, setCreateRate] = useState("");
-  const [createDate, setCreateDate] = useState(todayIsoDate());
+  const rawMode = searchParams.get("mode");
+  const rawRateId = searchParams.get("rateId");
+  const ratesMode: RatesMode = useMemo(() => {
+    if (tab !== "rates") return { kind: "list" };
+    if (rawMode === "create") return { kind: "create" };
+    if (rawMode === "edit" && rawRateId) {
+      const item = ratesItems.find((i) => i.id === rawRateId);
+      if (item) return { kind: "edit", item };
+    }
+    return { kind: "list" };
+  }, [tab, rawMode, rawRateId, ratesItems]);
 
-  const [editing, setEditing] = useState<TenantExchangeRateItem | null>(null);
-  const [editRate, setEditRate] = useState("");
-  const [editDate, setEditDate] = useState(todayIsoDate());
-
-  const [deleting, setDeleting] = useState<TenantExchangeRateItem | null>(null);
+  const [rateForm, setRateForm] = useState({ fromId: "", toId: "", rate: "", date: todayIsoDate() });
+  const [ratesFormMsg, setRatesFormMsg] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const canEdit = me.privileges.includes("TENANT_CURRENCY_EDIT");
   const canViewRates = me.privileges.includes("EXCHANGE_RATE_VIEW") || me.privileges.includes("EXCHANGE_RATE_MANAGE");
@@ -174,78 +187,79 @@ export default function TenantCurrenciesPage() {
     return t("tenantCurrencies.exchangeRates.error.deleteFailed");
   }
 
-  function openCreateModal() {
-    const currencyOptions = catalog.filter((row) => selected.has(row.code));
-    const first = currencyOptions[0]?.id ?? "";
-    const second = currencyOptions.find((c) => c.id !== first)?.id ?? "";
-    setCreateFromId(first);
-    setCreateToId(second);
-    setCreateRate("");
-    setCreateDate(todayIsoDate());
-    setCreateOpen(true);
+  function openCreate() {
+    const options = catalog.filter((row) => selected.has(row.code)).sort((a, b) => a.code.localeCompare(b.code));
+    const first = options[0]?.id ?? "";
+    const second = options.find((c) => c.id !== first)?.id ?? "";
+    setRateForm({ fromId: first, toId: second, rate: "", date: todayIsoDate() });
+    setRatesFormMsg(null);
     setRatesNotice(null);
+    router.push("/app/tenant-currencies?tab=rates&mode=create");
   }
 
-  function openEditModal(item: TenantExchangeRateItem) {
-    setEditing(item);
-    setEditRate(String(item.rate));
-    setEditDate(item.effectiveDate);
+  function openEdit(item: TenantExchangeRateItem) {
+    setRateForm({ fromId: "", toId: "", rate: String(item.rate), date: item.effectiveDate });
+    setRatesFormMsg(null);
     setRatesNotice(null);
+    router.push(`/app/tenant-currencies?tab=rates&mode=edit&rateId=${item.id}`);
   }
 
-  async function submitCreate(e: React.FormEvent) {
+  function cancelRateForm() {
+    setRatesFormMsg(null);
+    router.push("/app/tenant-currencies?tab=rates");
+  }
+
+  async function submitRateForm(e: React.FormEvent) {
     e.preventDefault();
-    if (!createFromId || !createToId) {
-      setRatesNotice({ tone: "error", text: t("tenantCurrencies.exchangeRates.error.invalid") });
-      return;
-    }
     setRatesBusy(true);
-    const r = await createTenantExchangeRate({
-      fromCurrencyId: createFromId,
-      toCurrencyId: createToId,
-      rate: createRate,
-      effectiveDate: createDate,
-    });
-    if (!r.ok) {
-      setRatesNotice({ tone: "error", text: mapCreateError(r.status) });
-      setRatesBusy(false);
-      return;
+    setRatesFormMsg(null);
+    if (ratesMode.kind === "create") {
+      if (!rateForm.fromId || !rateForm.toId) {
+        setRatesFormMsg(t("tenantCurrencies.exchangeRates.error.invalid"));
+        setRatesBusy(false);
+        return;
+      }
+      const r = await createTenantExchangeRate({
+        fromCurrencyId: rateForm.fromId,
+        toCurrencyId: rateForm.toId,
+        rate: rateForm.rate,
+        effectiveDate: rateForm.date,
+      });
+      if (!r.ok) {
+        setRatesFormMsg(mapCreateError(r.status));
+        setRatesBusy(false);
+        return;
+      }
+      setRatesNotice({ tone: "success", text: t("tenantCurrencies.exchangeRates.msg.created") });
+      router.push("/app/tenant-currencies?tab=rates");
+      await reloadRates(0);
+    } else if (ratesMode.kind === "edit") {
+      const r = await patchTenantExchangeRate(ratesMode.item.id, {
+        rate: rateForm.rate,
+        effectiveDate: rateForm.date,
+      });
+      if (!r.ok) {
+        setRatesFormMsg(mapUpdateError(r.status));
+        setRatesBusy(false);
+        return;
+      }
+      setRatesNotice({ tone: "success", text: t("tenantCurrencies.exchangeRates.msg.updated") });
+      router.push("/app/tenant-currencies?tab=rates");
+      await reloadRates(ratesPage);
     }
-    setCreateOpen(false);
-    setRatesNotice({ tone: "success", text: t("tenantCurrencies.exchangeRates.msg.created") });
-    await reloadRates(0);
     setRatesBusy(false);
   }
 
-  async function submitEdit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editing) return;
+  async function deleteRate(id: string) {
     setRatesBusy(true);
-    const r = await patchTenantExchangeRate(editing.id, {
-      rate: editRate,
-      effectiveDate: editDate,
-    });
-    if (!r.ok) {
-      setRatesNotice({ tone: "error", text: mapUpdateError(r.status) });
-      setRatesBusy(false);
-      return;
-    }
-    setEditing(null);
-    setRatesNotice({ tone: "success", text: t("tenantCurrencies.exchangeRates.msg.updated") });
-    await reloadRates(ratesPage);
-    setRatesBusy(false);
-  }
-
-  async function confirmDelete() {
-    if (!deleting) return;
-    setRatesBusy(true);
-    const r = await deleteTenantExchangeRate(deleting.id);
+    const r = await deleteTenantExchangeRate(id);
     if (!r.ok) {
       setRatesNotice({ tone: "error", text: mapDeleteError(r.status) });
       setRatesBusy(false);
+      setConfirmDeleteId(null);
       return;
     }
-    setDeleting(null);
+    setConfirmDeleteId(null);
     setRatesNotice({ tone: "success", text: t("tenantCurrencies.exchangeRates.msg.deleted") });
     const targetPage = ratesItems.length === 1 && ratesPage > 0 ? ratesPage - 1 : ratesPage;
     await reloadRates(targetPage);
@@ -273,7 +287,7 @@ export default function TenantCurrenciesPage() {
     [catalog, selected],
   );
 
-  const createToOptions = exchangeCurrencyOptions.filter((row) => row.id !== createFromId);
+  const rateFormToOptions = exchangeCurrencyOptions.filter((row) => row.id !== rateForm.fromId);
 
   if (load === "forbidden") {
     return (
@@ -320,33 +334,30 @@ export default function TenantCurrenciesPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-border pb-2">
-        <button
-          type="button"
-          onClick={() => setTab("organization")}
+        <Link
+          href="/app/tenant-currencies?tab=organization"
           className={`rounded-md px-3 py-1.5 text-sm font-medium ${
             tab === "organization" ? "bg-surface text-foreground" : "text-muted hover:bg-surface"
           }`}
         >
           {t("tenantCurrencies.tab.organization")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("rates")}
+        </Link>
+        <Link
+          href="/app/tenant-currencies?tab=rates"
           className={`rounded-md px-3 py-1.5 text-sm font-medium ${
             tab === "rates" ? "bg-surface text-foreground" : "text-muted hover:bg-surface"
           }`}
         >
           {t("tenantCurrencies.tab.exchangeRates")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("available")}
+        </Link>
+        <Link
+          href="/app/tenant-currencies?tab=available"
           className={`rounded-md px-3 py-1.5 text-sm font-medium ${
             tab === "available" ? "bg-surface text-foreground" : "text-muted hover:bg-surface"
           }`}
         >
           {t("tenantCurrencies.tab.available")}
-        </button>
+        </Link>
       </div>
 
       {msg ? <p className="text-sm font-medium text-primary">{msg}</p> : null}
@@ -423,115 +434,253 @@ export default function TenantCurrenciesPage() {
 
       {tab === "rates" ? (
         <div className="space-y-4 rounded-md border border-border bg-surface p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">{t("tenantCurrencies.section.exchangeRates")}</h2>
-              <p className="mt-1 text-sm text-muted">{t("tenantCurrencies.exchangeRates.helper")}</p>
-            </div>
-            {canManageRates ? (
-              <button
-                type="button"
-                onClick={openCreateModal}
-                disabled={exchangeCurrencyOptions.length < 2 || ratesBusy}
-                className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              >
-                {t("tenantCurrencies.exchangeRates.action.new")}
-              </button>
-            ) : null}
-          </div>
-
-          {ratesNotice ? (
-            <p className={`text-sm font-medium ${ratesNotice.tone === "error" ? "text-red-600" : "text-primary"}`}>
-              {ratesNotice.text}
-            </p>
-          ) : null}
-
-          {ratesLoad === "forbidden" ? (
-            <p className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.error.forbidden")}</p>
-          ) : null}
-          {ratesLoad === "loading" ? <p className="text-sm text-muted">{t("tenantCurrencies.state.loading")}</p> : null}
-          {ratesLoad === "error" ? (
-            <p className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.error.load")}</p>
-          ) : null}
-
-          {ratesLoad === "ready" ? (
+          {ratesMode.kind !== "list" ? (
             <>
-              <div className="overflow-x-auto rounded-md border border-border bg-background">
-                <table className="w-full text-sm">
-                  <thead className="bg-surface text-left text-xs font-medium uppercase text-muted">
-                    <tr>
-                      <th className="px-3 py-2">{t("tenantCurrencies.exchangeRates.col.from")}</th>
-                      <th className="px-3 py-2">{t("tenantCurrencies.exchangeRates.col.to")}</th>
-                      <th className="px-3 py-2">{t("tenantCurrencies.exchangeRates.col.rate")}</th>
-                      <th className="px-3 py-2">{t("tenantCurrencies.exchangeRates.col.effectiveDate")}</th>
-                      <th className="px-3 py-2 text-right">{t("tenantCurrencies.col.actions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ratesItems.map((row) => (
-                      <tr key={row.id} className="border-t border-border">
-                        <td className="px-3 py-2 text-foreground">{`${row.fromCurrencyCode} - ${row.fromCurrencyDisplayName}`}</td>
-                        <td className="px-3 py-2 text-foreground">{`${row.toCurrencyCode} - ${row.toCurrencyDisplayName}`}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{Number(row.rate).toFixed(8)}</td>
-                        <td className="px-3 py-2 text-foreground">{row.effectiveDate}</td>
-                        <td className="px-3 py-2 text-right">
-                          {canManageRates ? (
-                            <div className="inline-flex gap-3">
-                              <button
-                                type="button"
-                                onClick={() => openEditModal(row)}
-                                className="text-sm font-medium text-primary hover:underline"
-                              >
-                                {t("tenantCurrencies.exchangeRates.action.edit")}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeleting(row)}
-                                className="text-sm font-medium text-red-600 hover:underline"
-                              >
-                                {t("tenantCurrencies.exchangeRates.action.delete")}
-                              </button>
-                            </div>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                    {ratesItems.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-3 py-6 text-center text-sm text-muted">
-                          {t("tenantCurrencies.exchangeRates.state.none")}
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-foreground">
+                  {ratesMode.kind === "create"
+                    ? t("tenantCurrencies.exchangeRates.modal.createTitle")
+                    : t("tenantCurrencies.exchangeRates.modal.editTitle")}
+                </h2>
+                <button
+                  type="button"
+                  onClick={cancelRateForm}
+                  disabled={ratesBusy}
+                  className="text-sm text-primary underline-offset-4 hover:underline disabled:opacity-40"
+                >
+                  ← {t("tenantCurrencies.exchangeRates.action.cancel")}
+                </button>
               </div>
 
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  disabled={ratesBusy || ratesPage <= 0}
-                  onClick={() => void reloadRates(ratesPage - 1)}
-                  className="rounded border border-border px-3 py-1.5 text-sm text-foreground disabled:opacity-50"
-                >
-                  {t("tenantCurrencies.exchangeRates.action.prev")}
-                </button>
+              {ratesMode.kind === "edit" ? (
                 <p className="text-sm text-muted">
-                  {t("tenantCurrencies.exchangeRates.page")
-                    .replace("{n}", String(ratesPage + 1))
-                    .replace("{t}", String(Math.max(1, ratesTotalPages)))}
+                  {`${ratesMode.item.fromCurrencyCode} → ${ratesMode.item.toCurrencyCode}`}
                 </p>
-                <button
-                  type="button"
-                  disabled={ratesBusy || ratesPage + 1 >= ratesTotalPages}
-                  onClick={() => void reloadRates(ratesPage + 1)}
-                  className="rounded border border-border px-3 py-1.5 text-sm text-foreground disabled:opacity-50"
-                >
-                  {t("tenantCurrencies.exchangeRates.action.next")}
-                </button>
-              </div>
+              ) : null}
+
+              <form onSubmit={submitRateForm} className="max-w-md space-y-4">
+                {ratesMode.kind === "create" ? (
+                  <>
+                    <label className="block">
+                      <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.from")}</span>
+                      <select
+                        value={rateForm.fromId}
+                        onChange={(e) => {
+                          const nextFrom = e.target.value;
+                          setRateForm((f) => ({
+                            ...f,
+                            fromId: nextFrom,
+                            toId: f.toId === nextFrom
+                              ? (exchangeCurrencyOptions.find((r) => r.id !== nextFrom)?.id ?? "")
+                              : f.toId,
+                          }));
+                        }}
+                        className="mt-1 w-full rounded border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+                      >
+                        {exchangeCurrencyOptions.map((row) => (
+                          <option key={row.id} value={row.id}>{`${row.code} - ${row.displayName}`}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.to")}</span>
+                      <select
+                        value={rateForm.toId}
+                        onChange={(e) => setRateForm((f) => ({ ...f, toId: e.target.value }))}
+                        className="mt-1 w-full rounded border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+                      >
+                        {rateFormToOptions.map((row) => (
+                          <option key={row.id} value={row.id}>{`${row.code} - ${row.displayName}`}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </>
+                ) : null}
+
+                <label className="block">
+                  <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.rate")}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.00000001"
+                    value={rateForm.rate}
+                    onChange={(e) => setRateForm((f) => ({ ...f, rate: e.target.value }))}
+                    placeholder={t("tenantCurrencies.exchangeRates.field.ratePlaceholder")}
+                    className="mt-1 w-full rounded border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+                    required
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.effectiveDate")}</span>
+                  <PlatformDateInput
+                    value={rateForm.date}
+                    dateFormat={me.dateFormat}
+                    onChange={(v) => setRateForm((f) => ({ ...f, date: v }))}
+                    className="mt-1"
+                  />
+                </label>
+
+                {ratesFormMsg ? <p className="text-sm text-destructive">{ratesFormMsg}</p> : null}
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelRateForm}
+                    disabled={ratesBusy}
+                    className="rounded border border-border px-3 py-1.5 text-sm hover:bg-surface-alt disabled:opacity-40"
+                  >
+                    {t("tenantCurrencies.exchangeRates.action.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={ratesBusy}
+                    className="rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                  >
+                    {ratesBusy
+                      ? t("tenantCurrencies.state.saving")
+                      : ratesMode.kind === "create"
+                        ? t("tenantCurrencies.exchangeRates.action.create")
+                        : t("tenantCurrencies.exchangeRates.action.save")}
+                  </button>
+                </div>
+              </form>
             </>
-          ) : null}
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">{t("tenantCurrencies.section.exchangeRates")}</h2>
+                  <p className="mt-1 text-sm text-muted">{t("tenantCurrencies.exchangeRates.helper")}</p>
+                </div>
+                {canManageRates ? (
+                  <button
+                    type="button"
+                    onClick={openCreate}
+                    disabled={exchangeCurrencyOptions.length < 2 || ratesBusy}
+                    className="rounded bg-primary px-3 py-1 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                  >
+                    {t("tenantCurrencies.exchangeRates.action.new")}
+                  </button>
+                ) : null}
+              </div>
+
+              {ratesNotice ? (
+                <p className={`text-sm font-medium ${ratesNotice.tone === "error" ? "text-destructive" : "text-foreground"}`}>
+                  {ratesNotice.text}
+                </p>
+              ) : null}
+
+              {ratesLoad === "forbidden" ? (
+                <p className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.error.forbidden")}</p>
+              ) : null}
+              {ratesLoad === "loading" ? <p className="text-sm text-muted">{t("tenantCurrencies.state.loading")}</p> : null}
+              {ratesLoad === "error" ? (
+                <p className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.error.load")}</p>
+              ) : null}
+
+              {ratesLoad === "ready" ? (
+                <>
+                  <div className="overflow-x-auto rounded-md border border-border">
+                    <table className="min-w-full divide-y divide-border text-sm">
+                      <thead className="bg-surface-alt">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-medium text-muted">{t("tenantCurrencies.exchangeRates.col.from")}</th>
+                          <th className="px-4 py-2 text-left font-medium text-muted">{t("tenantCurrencies.exchangeRates.col.to")}</th>
+                          <th className="px-4 py-2 text-left font-medium text-muted">{t("tenantCurrencies.exchangeRates.col.rate")}</th>
+                          <th className="px-4 py-2 text-left font-medium text-muted">{t("tenantCurrencies.exchangeRates.col.effectiveDate")}</th>
+                          {canManageRates ? <th className="px-4 py-2" /> : null}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border bg-surface">
+                        {ratesItems.map((row) => (
+                          <tr key={row.id}>
+                            <td className="px-4 py-2 text-foreground">{`${row.fromCurrencyCode} - ${row.fromCurrencyDisplayName}`}</td>
+                            <td className="px-4 py-2 text-foreground">{`${row.toCurrencyCode} - ${row.toCurrencyDisplayName}`}</td>
+                            <td className="px-4 py-2 font-mono text-foreground">{Number(row.rate).toFixed(8)}</td>
+                            <td className="px-4 py-2 text-muted">{formatUserFacingDate(row.effectiveDate, me.dateFormat)}</td>
+                            {canManageRates ? (
+                              <td className="px-4 py-2 text-right">
+                                {confirmDeleteId === row.id ? (
+                                  <div className="inline-flex items-center gap-3">
+                                    <span className="text-sm text-muted">Delete this rate?</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => void deleteRate(row.id)}
+                                      disabled={ratesBusy}
+                                      className="text-sm text-red-600 underline-offset-4 hover:underline disabled:opacity-40"
+                                    >
+                                      {t("tenantCurrencies.exchangeRates.action.delete")}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmDeleteId(null)}
+                                      disabled={ratesBusy}
+                                      className="text-sm text-muted underline-offset-4 hover:underline disabled:opacity-40"
+                                    >
+                                      {t("tenantCurrencies.exchangeRates.action.cancel")}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="inline-flex gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => openEdit(row)}
+                                      className="text-sm text-primary underline-offset-4 hover:underline"
+                                    >
+                                      {t("tenantCurrencies.exchangeRates.action.edit")}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmDeleteId(row.id)}
+                                      className="text-sm text-red-600 underline-offset-4 hover:underline"
+                                    >
+                                      {t("tenantCurrencies.exchangeRates.action.delete")}
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            ) : null}
+                          </tr>
+                        ))}
+                        {ratesItems.length === 0 ? (
+                          <tr>
+                            <td colSpan={canManageRates ? 5 : 4} className="px-4 py-6 text-center text-sm text-muted">
+                              {t("tenantCurrencies.exchangeRates.state.none")}
+                            </td>
+                          </tr>
+                        ) : null}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm">
+                    <button
+                      type="button"
+                      disabled={ratesBusy || ratesPage <= 0}
+                      onClick={() => void reloadRates(ratesPage - 1)}
+                      className="rounded border border-border px-3 py-1 disabled:opacity-40"
+                    >
+                      {t("tenantCurrencies.exchangeRates.action.prev")}
+                    </button>
+                    <span className="py-1 text-muted">
+                      {t("tenantCurrencies.exchangeRates.page")
+                        .replace("{n}", String(ratesPage + 1))
+                        .replace("{t}", String(Math.max(1, ratesTotalPages)))}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={ratesBusy || ratesPage + 1 >= ratesTotalPages}
+                      onClick={() => void reloadRates(ratesPage + 1)}
+                      className="rounded border border-border px-3 py-1 disabled:opacity-40"
+                    >
+                      {t("tenantCurrencies.exchangeRates.action.next")}
+                    </button>
+                  </div>
+                </>
+              ) : null}
+            </>
+          )}
         </div>
       ) : null}
 
@@ -602,176 +751,6 @@ export default function TenantCurrenciesPage() {
         </div>
       ) : null}
 
-      {createOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <form onSubmit={submitCreate} className="w-full max-w-lg space-y-4 rounded-md bg-background p-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground">{t("tenantCurrencies.exchangeRates.modal.createTitle")}</h3>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.from")}</span>
-              <select
-                value={createFromId}
-                onChange={(e) => {
-                  const nextFrom = e.target.value;
-                  setCreateFromId(nextFrom);
-                  if (nextFrom === createToId) {
-                    const nextTo = exchangeCurrencyOptions.find((row) => row.id !== nextFrom)?.id ?? "";
-                    setCreateToId(nextTo);
-                  }
-                }}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-              >
-                {exchangeCurrencyOptions.map((row) => (
-                  <option key={row.id} value={row.id}>
-                    {`${row.code} - ${row.displayName}`}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.to")}</span>
-              <select
-                value={createToId}
-                onChange={(e) => setCreateToId(e.target.value)}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-              >
-                {createToOptions.map((row) => (
-                  <option key={row.id} value={row.id}>
-                    {`${row.code} - ${row.displayName}`}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.rate")}</span>
-              <input
-                type="number"
-                min="0"
-                step="0.00000001"
-                value={createRate}
-                onChange={(e) => setCreateRate(e.target.value)}
-                placeholder={t("tenantCurrencies.exchangeRates.field.ratePlaceholder")}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-                required
-              />
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.effectiveDate")}</span>
-              <input
-                type="date"
-                value={createDate}
-                onChange={(e) => setCreateDate(e.target.value)}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-                required
-              />
-            </label>
-
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="rounded border border-border px-3 py-2 text-sm font-medium text-foreground"
-              >
-                {t("tenantCurrencies.exchangeRates.action.cancel")}
-              </button>
-              <button
-                type="submit"
-                disabled={ratesBusy}
-                className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              >
-                {ratesBusy ? t("tenantCurrencies.state.saving") : t("tenantCurrencies.exchangeRates.action.create")}
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : null}
-
-      {editing ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <form onSubmit={submitEdit} className="w-full max-w-lg space-y-4 rounded-md bg-background p-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground">{t("tenantCurrencies.exchangeRates.modal.editTitle")}</h3>
-
-            <p className="text-sm text-muted">
-              {`${editing.fromCurrencyCode} -> ${editing.toCurrencyCode}`}
-            </p>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.rate")}</span>
-              <input
-                type="number"
-                min="0"
-                step="0.00000001"
-                value={editRate}
-                onChange={(e) => setEditRate(e.target.value)}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-                required
-              />
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("tenantCurrencies.exchangeRates.field.effectiveDate")}</span>
-              <input
-                type="date"
-                value={editDate}
-                onChange={(e) => setEditDate(e.target.value)}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm text-foreground"
-                required
-              />
-            </label>
-
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEditing(null)}
-                className="rounded border border-border px-3 py-2 text-sm font-medium text-foreground"
-              >
-                {t("tenantCurrencies.exchangeRates.action.cancel")}
-              </button>
-              <button
-                type="submit"
-                disabled={ratesBusy}
-                className="rounded bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              >
-                {ratesBusy ? t("tenantCurrencies.state.saving") : t("tenantCurrencies.exchangeRates.action.save")}
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : null}
-
-      {deleting ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg space-y-4 rounded-md bg-background p-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground">{t("tenantCurrencies.exchangeRates.modal.deleteTitle")}</h3>
-            <p className="text-sm text-muted">
-              {t("tenantCurrencies.exchangeRates.modal.deleteBody")
-                .replace("{from}", deleting.fromCurrencyCode)
-                .replace("{to}", deleting.toCurrencyCode)
-                .replace("{date}", deleting.effectiveDate)}
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setDeleting(null)}
-                className="rounded border border-border px-3 py-2 text-sm font-medium text-foreground"
-              >
-                {t("tenantCurrencies.exchangeRates.action.cancel")}
-              </button>
-              <button
-                type="button"
-                onClick={() => void confirmDelete()}
-                disabled={ratesBusy}
-                className="rounded bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                {t("tenantCurrencies.exchangeRates.action.delete")}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -5,8 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="schema-m5-payroll-org-structure-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DdlM5PayrollOrgStructure1"/>
-    </changeSet>
+    <include file="create-table-payroll-org-structure.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

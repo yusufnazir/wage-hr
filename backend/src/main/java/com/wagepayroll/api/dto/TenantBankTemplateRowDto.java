@@ -12,7 +12,6 @@ public record TenantBankTemplateRowDto(
 		String bankName,
 		String swiftBic,
 		String accountNumber,
-		String currencyCode,
 		boolean active,
 		Instant createdAt,
 		Instant updatedAt) {

@@ -39,6 +39,21 @@ databaseChangeLog:
   - include:
       file: ddl/schema-bank-templates.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-payment-locations.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-wage-components.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-component-grouping.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/alter-table-tenant-employee-personal-details.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/create-table-tenant-employee-compensation.xml
+      relativeToChangelogFile: true
   # ── DML: seed data ──────────────────────────────────────────────────────────
   - include:
       file: dml/data-scaffold-1.xml
@@ -80,16 +95,10 @@ databaseChangeLog:
       file: dml/data-m6-role-templates-1.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-mail-templates-seed-1.xml
+      file: dml/data-mail-templates-seed.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-mail-templates-seed-2.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m7-platform-currencies-seed-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m7-platform-currencies-full-1.xml
+      file: dml/data-m7-platform-currencies.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m7-currency-privileges-1.xml
@@ -104,10 +113,19 @@ databaseChangeLog:
       file: dml/data-exchange-rate-privileges-1.xml
       relativeToChangelogFile: true
   - include:
+      file: dml/data-exchange-rate-role-template-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-m8-work-time-privileges-1.xml
       relativeToChangelogFile: true
   - include:
+      file: dml/data-m8-role-template-work-time-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
       file: dml/data-m9-pay-period-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m9-role-template-pay-period-privileges-1.xml
       relativeToChangelogFile: true
   - include:
       file: dml/data-m10-platform-country-payroll-enabled-sr-1.xml
@@ -119,8 +137,125 @@ databaseChangeLog:
       file: dml/data-m11-platform-bank-templates-seed-1.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-m11-platform-bank-templates-seed-2.xml
+      file: dml/data-m11-bank-templates-nav-1.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-m11-bank-templates-nav-1.xml
+      file: dml/data-m12-payment-location-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m12-payment-location-nav-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m13-wage-component-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m13-platform-wage-components-seed-sr-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m13-wage-components-nav-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m15-platform-ledger-legacy-suriname.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m16-platform-ledger-template-locale-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m18-wage-component-template-legacy-values-sr-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m19-employee-payroll-standing-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m19-role-template-employee-payroll-standing-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m19-employee-payroll-standing-nav-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m20-demo-tenant-payroll-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m20-demo-tenant-employees-bulk-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m21-demo-tenant-employee-badges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m22-demo-tenant-employee-compensation-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m22-demo-tenant-employee-compensation-2.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m23-platform-wage-component-templates-sr-law-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m24-platform-wage-component-templates-sr-catalog-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m25-platform-country-tax-rules-sr-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m26-remove-nl-sr-locale.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m27-component-grouping-templates-tenant.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m27-tenant-component-groups-nav-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m28-component-item-wage-template-fk.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m29-platform-default-component-group-sr-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m40-sr-variable-earnings-templates-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m41-sr-supplemental-earnings-default-catalog-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m42-sr-child-allowance-tax-rules-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m43-sr-lump-sum-tax-template-fk-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m44-sr-jubilee-wage-tax-template-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m30-demo-default-catalog-provision-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m31-payroll-calculation-bases.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m33-platform-payroll-bases-seed-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m34-migrate-wage-component-base-effects-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m35-component-dependencies.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m36-tenant-payroll-ytd-accumulator.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m37-payroll-ledger-posting.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m37-demo-ledger-balance-phase8-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m38-payroll-run-employee-payment.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m38-payroll-run-employee-payment-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m39-suriname-template-country-algorithms-1.xml
       relativeToChangelogFile: true

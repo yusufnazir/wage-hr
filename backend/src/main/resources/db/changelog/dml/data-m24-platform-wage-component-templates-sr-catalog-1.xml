@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m24-sr-loan-template-legacy-label-1" author="wagepayroll">
+        <comment>Align loan repayment template (id 51000000-0000-0000-0000-000000000003) with legacy 740-310 naming for catalog users.</comment>
+        <update tableName="platform_wage_component_template">
+            <column name="name" value="Loan repayment (template)"/>
+            <column name="description"
+                    value="Post-tax loan or advance repayment (legacy 740-310); balance-tracked."/>
+            <column name="country_rule_key" value="SUR_LOAN_REPAYMENT"/>
+            <where>id = '51000000-0000-0000-0000-000000000003'</where>
+        </update>
+    </changeSet>
+
+    <!-- Optional SR catalog templates (legacy 740-3xx / retirement / FVO / APF); ledger UUIDs from data-m15 -->
+    <changeSet id="data-m24-platform-wage-component-templates-sr-catalog-1" author="wagepayroll">
+        <comment>Additional Suriname wage component templates tenants can instantiate; template_code 1028–1044 (numeric).</comment>
+
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000001c"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1028"/>
+            <column name="name" value="Taxable allowance"/>
+            <column name="description" value="Cash allowance taxed at normal wage tariffs (legacy 740-300)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"ALLOWANCE","netEffect":"ADD_TO_NET","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":1090,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1090"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000001d"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1029"/>
+            <column name="name" value="Savings contribution"/>
+            <column name="description" value="Post-tax savings deduction with balance tracking (legacy 740-320)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"SAVINGS","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"POST_TAX","processingOrder":6030,"maintainsBalance":true,"balanceType":"SAVINGS","balanceDirection":"DEBIT","taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="6030"/>
+            <column name="phase_hint" value="POST_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000027"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000001e"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1030"/>
+            <column name="name" value="Benefits in kind / taxed fringe benefit"/>
+            <column name="description" value="Non-cash benefit increasing taxable wages; normal tariffs (legacy 740-330)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"INFORMATIONAL","category":"FRINGE_BENEFIT","netEffect":"NO_EFFECT","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":1100,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1100"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000028"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000001f"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1031"/>
+            <column name="name" value="Non taxable allowance"/>
+            <column name="description" value="Cash allowance not subject to wage tax (legacy 740-340)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"ALLOWANCE","netEffect":"ADD_TO_NET","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":3010,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3010"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000029"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000020"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1032"/>
+            <column name="name" value="Tax deductible"/>
+            <column name="description" value="Taxable adjustment that reduces gross/taxable base (e.g. unpaid leave; legacy 740-350)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"ADJUSTMENT","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":2010,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="2010"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000030"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000021"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1033"/>
+            <column name="name" value="Non taxable deduction"/>
+            <column name="description" value="Post-tax withholding not subject to wage tax (legacy 740-360)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"OTHER","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"POST_TAX","processingOrder":6040,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="6040"/>
+            <column name="phase_hint" value="POST_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000031"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000022"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1034"/>
+            <column name="name" value="Tax deductions"/>
+            <column name="description" value="Amounts that lower taxable income without changing net pay (legacy 740-331)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"INFORMATIONAL","category":"TAX","netEffect":"NO_EFFECT","calculationMethod":"FIXED_AMOUNT","phase":"PRE_TAX","processingOrder":4030,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="4030"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000033"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000023"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1035"/>
+            <column name="name" value="Tax credit"/>
+            <column name="description" value="Reduces wage tax; increases net pay (legacy 740-370)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"INFORMATIONAL","category":"TAX","netEffect":"ADD_TO_NET","calculationMethod":"FIXED_AMOUNT","phase":"TAX","processingOrder":4050,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="4050"/>
+            <column name="phase_hint" value="TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000032"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_TAX_CREDIT"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000024"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1036"/>
+            <column name="name" value="Deductible costs"/>
+            <column name="description" value="Legal acquisition/deductible costs (4% cap; legacy 740-371); engine-driven."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"INFORMATIONAL","category":"TAX","netEffect":"NO_EFFECT","calculationMethod":"FIXED_AMOUNT","phase":"PRE_TAX","processingOrder":4040,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="4040"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_AQUISITION_COSTS"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000025"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1037"/>
+            <column name="name" value="FVO employers premium"/>
+            <column name="description" value="Employer share of FVO (legacy 740-030); no employee net effect."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EMPLOYER_CONTRIBUTION","category":"FVO","netEffect":"NO_EFFECT","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"PRE_TAX","processingOrder":3980,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3980"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000034"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_FVO_EMPLOYER"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000026"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1038"/>
+            <column name="name" value="FVO employees premium"/>
+            <column name="description" value="Employee share of FVO withheld from net (legacy 740-031)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"FVO","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"PRE_TAX","processingOrder":3985,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3985"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000035"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_FVO_EMPLOYEE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000027"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1039"/>
+            <column name="name" value="Employer retirement contribution"/>
+            <column name="description" value="Employer pension/retirement cost (legacy 740-032)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EMPLOYER_CONTRIBUTION","category":"PENSION","netEffect":"NO_EFFECT","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"TAX","processingOrder":7020,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="7020"/>
+            <column name="phase_hint" value="TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000036"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000028"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1040"/>
+            <column name="name" value="Employee retirement contribution (taxable)"/>
+            <column name="description" value="Employee pension withheld; included in taxable income (legacy 740-033)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"PENSION","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"PRE_TAX","processingOrder":2110,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="2110"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000037"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000029"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1041"/>
+            <column name="name" value="Employee retirement contribution (non-taxable)"/>
+            <column name="description" value="Employee pension withheld; excluded from taxable income (legacy 740-034)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"PENSION","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"POST_TAX","processingOrder":6120,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="6120"/>
+            <column name="phase_hint" value="POST_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000038"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_NORMAL_WAGE"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002a"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1042"/>
+            <column name="name" value="Free medical care"/>
+            <column name="description" value="Employer-paid medical benefit; typically non-cash (legacy 740-332)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"BENEFIT","netEffect":"ADD_TO_NET","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":3020,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3020"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000029"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_FREE_MEDICAL_BENEFIT"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000001"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002b"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1043"/>
+            <column name="name" value="APF employer contribution"/>
+            <column name="description" value="Employer APF pension (legacy 740-035); no employee net effect."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EMPLOYER_CONTRIBUTION","category":"PENSION","netEffect":"NO_EFFECT","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"PRE_TAX","processingOrder":3990,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3990"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000040"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_APF_EMPLOYER"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002c"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1044"/>
+            <column name="name" value="APF employee contribution"/>
+            <column name="description" value="Employee APF pension withheld (legacy 740-036)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"PENSION","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"PRE_TAX","processingOrder":3995,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3995"/>
+            <column name="phase_hint" value="PRE_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000041"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_APF"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

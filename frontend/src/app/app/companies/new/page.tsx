@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import {
   CompanyFormSections,
+  UnsavedChangesDialog,
   ValidationSummary,
   focusField,
   useUnsavedChangesGuard,
@@ -13,6 +14,7 @@ import {
   type ValidationIssue,
 } from "@/components/company/CompanyFormSections";
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
+import { showToast } from "@/components/ui/Toast";
 import {
   createTenantCompany,
   fetchCountries,
@@ -51,9 +53,25 @@ function getUtcOffsetLabel(timeZone: string): string {
   return tryWith("longOffset") ?? tryWith("shortOffset") ?? "UTC";
 }
 
-function initialForm(dateFormat: string): CompanyFormState {
+function dayOfYear(date: Date): number {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diffMs = date.getTime() - start.getTime();
+  return Math.floor(diffMs / 86400000);
+}
+
+function deriveCurrentPeriod(dateIso: string, frequency: string): string {
+  const d = new Date(`${dateIso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return "";
+  if (frequency === "WEEKLY") return String(Math.ceil(dayOfYear(d) / 7));
+  if (frequency === "BIWEEKLY") return String(Math.ceil(dayOfYear(d) / 14));
+  if (frequency === "SEMIMONTHLY") return String((d.getMonth() * 2) + (d.getDate() <= 15 ? 1 : 2) + 1);
+  return String(d.getMonth() + 1);
+}
+
+function initialForm(): CompanyFormState {
   const todayIso = new Date().toISOString().slice(0, 10);
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const payrollFrequency = "MONTHLY";
   return {
     name: "",
     legalName: "",
@@ -61,9 +79,8 @@ function initialForm(dateFormat: string): CompanyFormState {
     taxId: "",
     payrollCountry: "",
     currency: "",
-    payrollFrequency: "MONTHLY",
+    payrollFrequency,
     timezone: browserTz,
-    dateFormat,
     contactEmail: "",
     contactPhone: "",
     addressLine1: "",
@@ -74,13 +91,16 @@ function initialForm(dateFormat: string): CompanyFormState {
     country: "",
     payPeriodEndDate: todayIso,
     timesheetEndDate: todayIso,
+    currentYear: String(new Date(`${todayIso}T00:00:00`).getFullYear()),
+    currentPeriod: deriveCurrentPeriod(todayIso, payrollFrequency),
     active: true,
   };
 }
 
 export default function CompanyNewPage() {
   const router = useRouter();
-  const { me } = useTenantAppSession();
+  const searchParams = useSearchParams();
+  const { me, markCompanyCreated } = useTenantAppSession();
   const t = useCallback((key: string) => navLabel(me.locale, key), [me.locale]);
 
   const [load, setLoad] = useState<LoadState>("loading");
@@ -89,8 +109,7 @@ export default function CompanyNewPage() {
   const [countryInput, setCountryInput] = useState("");
   const [tenantCurrencies, setTenantCurrencies] = useState<TenantCurrencyItem[]>([]);
   const [initialSnapshot, setInitialSnapshot] = useState<string | null>(null);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [form, setForm] = useState<CompanyFormState>(initialForm(me.dateFormat));
+  const [form, setForm] = useState<CompanyFormState>(initialForm());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
@@ -125,7 +144,7 @@ export default function CompanyNewPage() {
   }, [form, initialSnapshot]);
 
   useEffect(() => {
-    setForm(initialForm(me.dateFormat));
+    setForm(initialForm());
     void (async () => {
       setLoad("loading");
       const fetchAllCountries = async (): Promise<
@@ -154,30 +173,39 @@ export default function CompanyNewPage() {
       }
       setPayrollCountries(payrollCountriesResult.items);
       setAllCountries(allCountriesResult.items);
-      const assignedCurrencies = currenciesResult.items.filter((x) => x.assigned);
-      setTenantCurrencies(assignedCurrencies);
+      // Show the full platform currency catalog so the picker is never empty.
+      // Backend auto-links tenant_currency for the chosen code on save.
+      setTenantCurrencies(currenciesResult.items);
+      const defaultCurrency =
+        currenciesResult.items.find((x) => x.assigned)?.code ?? currenciesResult.items[0]?.code ?? "";
       const loadedForm: CompanyFormState = {
-        ...initialForm(me.dateFormat),
+        ...initialForm(),
         payrollCountry: payrollCountriesResult.items[0]?.isoAlpha2 ?? "",
-        currency: assignedCurrencies[0]?.code ?? "",
+        currency: defaultCurrency,
       };
       setForm(loadedForm);
       setInitialSnapshot(JSON.stringify(loadedForm));
       setCountryInput("");
       setLoad("ready");
     })();
-  }, [me.dateFormat, me.locale]);
+  }, [me.locale]);
 
-  useUnsavedChangesGuard(isDirty, busy);
+  const unsavedGuard = useUnsavedChangesGuard(isDirty, busy);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const issues: ValidationIssue[] = [];
     if (!form.name.trim()) issues.push({ fieldId: "company-name", message: t("companies.validation.nameRequired") });
+    if (!form.taxId.trim()) issues.push({ fieldId: "company-tax-id", message: t("companies.validation.taxIdRequired") });
+    if (!form.legalName.trim()) {
+      issues.push({ fieldId: "company-legal-name", message: t("companies.validation.legalNameRequired") });
+    }
     if (!form.payrollCountry) issues.push({ fieldId: "company-payroll-country", message: t("companies.validation.payrollCountryRequired") });
     if (!form.currency) issues.push({ fieldId: "company-currency", message: t("companies.validation.currencyRequired") });
     if (!form.payPeriodEndDate) issues.push({ fieldId: "company-pay-period-end", message: "Pay period end date is required." });
     if (!form.timesheetEndDate) issues.push({ fieldId: "company-timesheet-end", message: "Timesheet period end date is required." });
+    if (!form.currentYear.trim()) issues.push({ fieldId: "company-current-year", message: "Current year is required." });
+    if (!form.currentPeriod.trim()) issues.push({ fieldId: "company-current-period", message: "Current period is required." });
     if (issues.length > 0) {
       setValidationIssues(issues);
       setError(null);
@@ -194,7 +222,7 @@ export default function CompanyNewPage() {
       currency: form.currency,
       payrollFrequency: form.payrollFrequency,
       timezone: form.timezone,
-      dateFormat: form.dateFormat.trim() || me.dateFormat,
+      dateFormat: me.dateFormat,
       contactEmail: form.contactEmail.trim() || null,
       contactPhone: form.contactPhone.trim() || null,
       addressLine1: form.addressLine1.trim() || null,
@@ -205,6 +233,8 @@ export default function CompanyNewPage() {
       country: form.country || null,
       payPeriodEndDate: form.payPeriodEndDate,
       timesheetEndDate: form.timesheetEndDate,
+      currentYear: parseInt(form.currentYear, 10),
+      currentPeriod: parseInt(form.currentPeriod, 10),
       active: form.active,
     };
 
@@ -213,9 +243,16 @@ export default function CompanyNewPage() {
     setValidationIssues([]);
     try {
       const created = await createTenantCompany(payload);
-      router.push(`/app/companies/${created.id}/edit`);
-    } catch {
-      setError(t("companies.msg.createFailed"));
+      markCompanyCreated(created.id);
+      showToast(`"${form.name.trim()}" created successfully.`);
+      const returnTo = searchParams.get("returnTo")?.trim();
+      if (returnTo && returnTo.startsWith("/app")) {
+        router.push(returnTo);
+      } else {
+        router.push(`/app/companies/${created.id}/edit`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("companies.msg.createFailed"));
       setBusy(false);
     }
   }
@@ -246,7 +283,7 @@ export default function CompanyNewPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6" data-testid="company-form-new">
+    <div className="mx-auto max-w-5xl space-y-6" data-testid="company-form-new">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">{t("companies.title.new")}</h1>
         <Link href="/app/companies" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
@@ -264,8 +301,6 @@ export default function CompanyNewPage() {
           frequencies={FREQUENCIES}
           form={form}
           onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-          showAdvanced={showAdvanced}
-          onToggleAdvanced={() => setShowAdvanced((prev) => !prev)}
           payrollCountries={payrollCountries}
           tenantCurrencies={tenantCurrencies}
           timezoneOptionLabels={timezoneOptionLabels}
@@ -273,7 +308,7 @@ export default function CompanyNewPage() {
           countryInput={countryInput}
           setCountryInput={setCountryInput}
           selectedCountryLabel={selectedCountryLabel}
-          countryListId="company-country-options"
+          platformDateFormat={me.dateFormat}
           footer={
             <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-surface/95 p-4 backdrop-blur">
               <p className="text-sm text-muted">{isDirty ? "You have unsaved changes." : "Complete required fields to create this company."}</p>
@@ -289,6 +324,7 @@ export default function CompanyNewPage() {
           }
         />
       </form>
+      <UnsavedChangesDialog guard={unsavedGuard} onConfirm={(href) => router.push(href)} />
     </div>
   );
 }

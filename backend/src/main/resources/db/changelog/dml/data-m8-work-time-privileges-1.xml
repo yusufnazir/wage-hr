@@ -33,6 +33,14 @@
             <param name="privilegeId" value="20000000-0000-0000-0000-000000000026"/>
         </customChange>
     </changeSet>
+    <!-- Grant view-only WORK_TIME_VIEW to the demo Viewer role to match other modules' read-only role pattern. -->
+    <changeSet id="data-m8-grant-rp-demo-viewer-work-time-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000025"/>
+        </customChange>
+    </changeSet>
     <changeSet id="data-m8-nav-work-times-1" author="wagepayroll" onValidationFail="MARK_RAN">
         <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
             <param name="id" value="50000000-0000-0000-0000-000000000015"/>

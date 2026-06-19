@@ -141,8 +141,7 @@ class PlatformCountriesIT {
 		mockMvc.perform(get("/api/v1/countries").header("Host", "demo.lvh.me").param("locale", "nl-sr")
 				.param("search", "ZY")
 				.with(user(VIEWER_USER_ID)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.items[?(@.isoAlpha2=='ZY')].name").value(org.hamcrest.Matchers.hasItem("Zeta Erf")));
+				.andExpect(status().isBadRequest());
 
 		mockMvc.perform(patch("/api/v1/platform/countries/" + id + "/deactivate")
 				.with(user(ADMIN_USER_ID))

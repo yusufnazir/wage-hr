@@ -79,7 +79,6 @@ class PlatformBankTemplatesIT {
 				  "name": "IT Test Template",
 				  "bankName": "Test Bank NV",
 				  "swiftBic": "TESTSR22",
-				  "currencyCode": "SRD",
 				  "active": true
 				}
 				""";
@@ -100,7 +99,6 @@ class PlatformBankTemplatesIT {
 				  "swiftBic": "TESTSR22",
 				  "bankCode": "001",
 				  "accountNumberFormat": null,
-				  "currencyCode": "SRD",
 				  "active": true
 				}
 				""";

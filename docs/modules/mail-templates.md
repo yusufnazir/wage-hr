@@ -9,7 +9,7 @@
 ## Design intent
 
 - **Catalog** of reusable outbound email layouts: **subject + HTML body** per **locale**, edited by **platform superadmin** (same gate as `GET/PATCH /api/v1/platform/settings`).
-- **v1 locales:** `en`, `nl` only. **`nl-sr`** (user preference) resolves to **`nl`** row for email content; if `nl` missing, fall back **`en`**; if `en` missing, use last-resort built-in copy in code (operational safety).
+- **v1 locales:** `en`, `nl` only. Tags that start with `nl` (e.g. `nl-be`) resolve to the **`nl`** row for email content; if `nl` missing, fall back **`en`**; if `en` missing, use last-resort built-in copy in code (operational safety).
 - **Rendered email** remains **ephemeral** at send time; **no** full body on `notification` rows (unchanged allowed column list).
 - **`template_version` on `notification`:** unchanged in v1 emit paths; catalog carries its own **`content_version`** string bumped on each successful save for operator traceability (may be wired to notification rows in a later iteration).
 
@@ -84,7 +84,7 @@ Base: `/api/v1/platform/mail-templates`
 
 ## Send path integration
 
-- `MailTemplateCatalogService` loads **active** template by `code`, resolves locale (`nl-sr` → `nl` → `en`), applies simple `{{key}}` replacement from a **Map** supplied by the caller.
+- `MailTemplateCatalogService` loads **active** template by `code`, resolves locale (prefer `nl` when the tag starts with `nl`, else `en`), applies simple `{{key}}` replacement from a **Map** supplied by the caller.
 - Invitation flow uses `TENANT_INVITATION` with `{{tenantHandle}}` and `{{inviteLink}}`.
 - Email verification flow (registration + resend-verification) uses `EMAIL_VERIFICATION` with `{{firstName}}`, `{{verifyLink}}`, `{{tenantHandle}}`.
 - Forgot-password flow uses `PASSWORD_RESET_REQUEST` with `{{firstName}}`, `{{resetLink}}`, `{{expiryMinutes}}`; `expiryMinutes` is sourced from the same runtime config used to write `password_reset_token.expires_at`.
@@ -119,8 +119,7 @@ Base: `/api/v1/platform/mail-templates`
 ## Liquibase
 
 - DDL: `schema-mail-templates-1.xml`
-- Seed: `data-mail-templates-seed-1.xml` (one `TENANT_INVITATION` template + `en`/`nl` rows)
-- Seed: `data-mail-templates-seed-2.xml` (`EMAIL_VERIFICATION` + `PASSWORD_RESET_REQUEST`, each with `en` + `nl` rows)
+- Seed: `data-mail-templates-seed.xml` — changeset `data-mail-templates-seed-1` (`TENANT_INVITATION` + `en`/`nl`); changeset `data-mail-templates-seed-2` (`EMAIL_VERIFICATION` + `PASSWORD_RESET_REQUEST`, each with `en` + `nl`)
 
 ---
 
@@ -128,7 +127,7 @@ Base: `/api/v1/platform/mail-templates`
 
 | Area | Location |
 |------|-----------|
-| DDL / seed | `backend/src/main/resources/db/changelog/ddl/schema-mail-templates-1.xml`, `dml/data-mail-templates-seed-1.xml` |
+| DDL / seed | `backend/src/main/resources/db/changelog/ddl/schema-mail-templates-1.xml`, `dml/data-mail-templates-seed.xml` |
 | JPA entities | `backend/src/main/java/com/wagepayroll/domain/mailtemplate/` |
 | Platform API | `backend/src/main/java/com/wagepayroll/api/PlatformMailTemplateController.java` |
 | Catalog + admin service | `backend/src/main/java/com/wagepayroll/mail/MailTemplateCatalogService.java`, `PlatformMailTemplateService.java` |

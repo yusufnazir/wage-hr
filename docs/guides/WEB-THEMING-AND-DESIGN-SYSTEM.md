@@ -174,7 +174,112 @@ Any action that **permanently removes data** or **deactivates a record** (soft d
 
 ---
 
-## 10. Where this is decided in your methodology
+## 10. Date display: always use the platform date format
+
+All **user-facing date values** (date-only fields — no time component) **must** be rendered through the platform date format, not hardcoded or passed through raw.
+
+**Rule:** Never render an ISO string (`yyyy-MM-dd`) directly in JSX. Always call `formatUserFacingDate(iso, me.dateFormat)` (from `@/lib/user-date-format`) using the date format from the current session.
+
+```tsx
+// ✅ correct — honours the operator-configured date format
+import { formatUserFacingDate } from "@/lib/user-date-format";
+const { me } = useTenantAppSession();
+<td>{formatUserFacingDate(row.effectiveDate, me.dateFormat)}</td>
+
+// ❌ wrong — hardcodes ISO output regardless of platform setting
+<td>{row.effectiveDate}</td>
+```
+
+**Where the format comes from:**
+
+- Platform setting: `platform.date_format` (configurable by the platform admin in Platform Settings).
+- Exposed to the frontend via `MePayload.dateFormat` on the session context.
+- Supported tokens: `yyyy-MM-dd`, `dd/MM/yyyy`, `MM/dd/yyyy`, `ISO-8601`, or a custom pattern using `yyyy`, `MM`, `dd` separated by `-`, `/`, `.`, or space.
+
+**Scope:**
+
+| Context | Rule |
+|---------|------|
+| **Table cells, list views** | Always `formatUserFacingDate` |
+| **Detail/read-only field in a form** | Always `formatUserFacingDate` |
+| **`<input type="date">` value** | Always keep `yyyy-MM-dd` (required by the HTML spec); the display is handled by the browser/OS. The formatted date is for read-only display only. |
+| **API requests / responses** | Always ISO `yyyy-MM-dd`; do not send the formatted string to the backend. |
+
+**Why:**
+
+Operators configure their preferred date format (e.g. Dutch tenants prefer `dd/MM/yyyy`, US tenants `MM/dd/yyyy`). Bypassing `formatUserFacingDate` causes confusing locale mismatches in read-only cells and audit trails.
+
+---
+
+## 11. Form fields and detail-page edit layouts
+
+Create and edit pages use a **single card** of fields (not modals). The canonical reference in **wage-payroll** is the platform tenant editor:
+
+`frontend/src/app/app/platform-tenants/[tenantId]/page.tsx`
+
+Shared class constants live in `frontend/src/components/ui/formStyles.ts` — import these instead of inventing per-page label/input styles.
+
+### 11.1 Page shell
+
+| Element | Classes / pattern |
+|---------|-------------------|
+| Page container | `mx-auto max-w-2xl space-y-6` (`detailPageClass`) |
+| Title | `text-lg font-semibold text-foreground` |
+| Intro / helper under title | `text-sm text-muted` (`formHelperClass`) — one short sentence before the card |
+| Back link | `text-sm font-medium text-primary underline-offset-4 hover:underline` |
+
+Tabbed editors (e.g. component group templates) may use a wider page (`max-w-5xl`) for tables on other tabs; **each form tab** still uses the same **card + field** rules below.
+
+### 11.2 Form card
+
+| Element | Classes |
+|---------|---------|
+| Card | `flex max-w-lg flex-col gap-4 rounded-lg border border-border bg-surface p-6 shadow-sm` (`formCardClass`) |
+
+- **`gap-4`** between every block inside the card (fields, section title, submit).
+- Do **not** use `p-5`, `space-y-6`, or a separate footer row with `border-t` and right-aligned buttons unless a second neutral action (e.g. Cancel) requires it — primary **Save** is **full width** at the bottom of the card.
+
+### 11.3 Field row
+
+Each control is wrapped in a column with **`gap-1.5`** between label and input (`formFieldClass`):
+
+```tsx
+<div className={formFieldClass}>
+  <label htmlFor="…" className={formLabelClass}>Display name</label>
+  <input id="…" className={formInputClass} … />
+</div>
+```
+
+| Element | Rule |
+|---------|------|
+| **Label** | `text-xs font-medium text-muted` — **sentence case** (e.g. “Display name”, “Sort order”). **Do not** use `uppercase` on form labels. |
+| **Text input / select / textarea** | `w-full min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm` |
+| **Read-only value** | Same border/radius as inputs; `bg-muted/20`; use `font-mono` for codes/handles (`formInputReadOnlyClass`), or a read-only `<input>` — not bare text jammed against the next label. |
+| **Field helper** | Optional `text-xs text-muted` directly under the control (`formFieldHelperClass`) — keep one line; avoid stacking duplicate page-level copy. |
+| **Checkbox** | Own `formFieldClass` row; `flex items-center gap-2 text-sm` (`formCheckboxRowClass`). **Do not** align checkboxes with `mt-6` beside number inputs in a cramped row. |
+
+### 11.4 Primary action
+
+```tsx
+<button type="submit" className={formPrimaryButtonClass} disabled={busy}>
+  Save
+</button>
+```
+
+- Full width of the card (`w-full` on the button).
+- `rounded-md`, `font-medium` (not `font-semibold`), `shadow-sm`, `hover:opacity-90`.
+
+### 11.5 Anti-patterns (do not ship)
+
+- Uppercase grey labels on CRUD forms (`uppercase text-muted`).
+- `max-w-md` on inputs inside a `max-w-lg` card — inputs should be **`w-full`** within the card.
+- Sort order + Active on one row with the checkbox vertically offset (`mt-6`).
+- Right-aligned save-only footers separated by `border-t` when there is no secondary action in that row.
+- Long i18n policy copy under every field — put catalog/i18n rules once in the page intro or on the Translations tab.
+
+---
+
+## 12. Where this is decided in your methodology
 
 | Artifact | What to capture |
 |----------|-----------------|

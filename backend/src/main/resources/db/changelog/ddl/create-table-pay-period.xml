@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m9-tenant-pay-period-1" author="wagepayroll">
+        <createTable tableName="tenant_pay_period">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="year" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_pay_period_company"
+                                 baseTableName="tenant_pay_period" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-idx-id-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_pay_period_id_tenant" tableName="tenant_pay_period" unique="true">
+            <column name="id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_pay_period_id_company_tenant" tableName="tenant_pay_period" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-idx-tenant-company-year-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_pay_period_tenant_company_year" tableName="tenant_pay_period">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+            <column name="year"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-run-1" author="wagepayroll">
+        <createTable tableName="tenant_pay_period_run">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_period_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="run_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="run_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_pay_period_run_period"
+                                 baseTableName="tenant_pay_period_run" baseColumnNames="pay_period_id,tenant_id"
+                                 referencedTableName="tenant_pay_period" referencedColumnNames="id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-run-idx-id-period-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_pay_period_run_id_period_tenant" tableName="tenant_pay_period_run" unique="true">
+            <column name="id"/>
+            <column name="pay_period_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-run-idx-tenant-period-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_pay_period_run_tenant_period" tableName="tenant_pay_period_run">
+            <column name="tenant_id"/>
+            <column name="pay_period_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m9-tenant-pay-period-run-idx-period-number-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_pay_period_run_period_number" tableName="tenant_pay_period_run" unique="true">
+            <column name="pay_period_id"/>
+            <column name="run_number"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

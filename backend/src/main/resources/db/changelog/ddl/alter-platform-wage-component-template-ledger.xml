@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m14-platform-wage-component-template-ledger-fk-1" author="wagepayroll">
+        <addColumn tableName="platform_wage_component_template">
+            <column name="debit_platform_ledger_template_id" type="VARCHAR(36)"/>
+            <column name="credit_platform_ledger_template_id" type="VARCHAR(36)"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_pwct_debit_platform_ledger_template"
+                                 baseTableName="platform_wage_component_template"
+                                 baseColumnNames="debit_platform_ledger_template_id"
+                                 referencedTableName="platform_ledger_template" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_pwct_credit_platform_ledger_template"
+                                 baseTableName="platform_wage_component_template"
+                                 baseColumnNames="credit_platform_ledger_template_id"
+                                 referencedTableName="platform_ledger_template" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

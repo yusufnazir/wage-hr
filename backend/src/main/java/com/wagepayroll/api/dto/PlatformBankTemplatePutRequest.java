@@ -9,6 +9,5 @@ public record PlatformBankTemplatePutRequest(
 		String swiftBic,
 		String bankCode,
 		String accountNumberFormat,
-		String currencyCode,
 		Boolean active) {
 }

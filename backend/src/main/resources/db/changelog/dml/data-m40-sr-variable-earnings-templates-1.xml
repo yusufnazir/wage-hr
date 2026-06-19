@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+      Overtime rate lines (150% / 200% / 300%) plus default-catalog membership for vacation and bonus.
+      Intended for fresh installs (run before data-m34 base-effect migration).
+    -->
+    <changeSet id="data-m40-sr-overtime-rate-templates-1" author="wagepayroll">
+        <comment>SR overtime templates 1045–1047 (150%, 200%, 300% of derived hourly rate).</comment>
+
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002d"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1045"/>
+            <column name="name" value="Overtime 150%"/>
+            <column name="description" value="Overtime at 150% of monthly-derived hourly rate (hours × rate × 1.5)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"OVERTIME","netEffect":"ADD_TO_NET","calculationMethod":"FORMULA","defaultFormulaExpression":"transaction.quantity * compensation.hourly_rate * 1.5","phase":"GROSS","processingOrder":1025,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1025"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000001"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_OVERTIME"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000003"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002e"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1046"/>
+            <column name="name" value="Overtime 200%"/>
+            <column name="description" value="Overtime at 200% of monthly-derived hourly rate (hours × rate × 2.0)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"OVERTIME","netEffect":"ADD_TO_NET","calculationMethod":"FORMULA","defaultFormulaExpression":"transaction.quantity * compensation.hourly_rate * 2.0","phase":"GROSS","processingOrder":1026,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1026"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000001"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_OVERTIME"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000003"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000002f"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1047"/>
+            <column name="name" value="Overtime 300%"/>
+            <column name="description" value="Overtime at 300% of monthly-derived hourly rate (hours × rate × 3.0)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"OVERTIME","netEffect":"ADD_TO_NET","calculationMethod":"FORMULA","defaultFormulaExpression":"transaction.quantity * compensation.hourly_rate * 3.0","phase":"GROSS","processingOrder":1027,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1027"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000001"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_OVERTIME"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000003"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m40-sr-default-catalog-variable-earnings-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM platform_component_group_template
+                WHERE id = '54000000-0000-0000-0000-000000000001'
+            </sqlCheck>
+        </preConditions>
+        <comment>Add vacation, bonus, and overtime rate templates to SR default component group (UI order after base salary).</comment>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001b"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000006"/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000035"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001b"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Vacation allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000036"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001b"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Vacation allowance"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001c"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000007"/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000037"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001c"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Bonus"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000038"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001c"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Bonus"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001d"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002d"/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000039"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001d"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Overtime 150%"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000003a"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001d"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Overtime 150%"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001e"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002e"/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000003b"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001e"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Overtime 200%"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000003c"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001e"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Overtime 200%"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001f"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002f"/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000003d"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001f"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Overtime 300%"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000003e"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001f"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Overtime 300%"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -6,6 +6,8 @@ Use these when you want the AI to **drive from your `docs/` tree** instead of st
 
 **Progress and module planning (wage-payroll):** [`docs/product/BUILD-CHECKLIST.md`](../product/BUILD-CHECKLIST.md) and [`docs/product/MODULE-INDEX.md`](../product/MODULE-INDEX.md).
 
+**Easier (recommended):** slash commands in [`.cursor/commands/`](../../.cursor/README.md) bake in the attachments below — type `/feature`, `/plan`, `/payroll-retro`, or `/foundation` in Agent chat, then add `@docs/modules/{slug}.md` (for `/feature` or `/plan`) and your task. See [`.cursor/README.md`](../../.cursor/README.md).
+
 ---
 
 ## How to run this in Cursor (important)
@@ -18,7 +20,7 @@ Use these when you want the AI to **drive from your `docs/` tree** instead of st
 2. **`@docs/prompts/PROJECT-CONTEXT.md`** *(after you create it from the template — filled values + pasted contract)*
 3. **`@docs`** *(whole folder), or at minimum **`@docs/guides`** and **`@docs/templates`***
 
-**Schema / entity / Liquibase work:** also attach **`@docs/guides/SCHEMA-PERSISTENCE-PREFLIGHT.md`**, **`@docs/guides/DATA-MODEL-STANDARDS.md`**, and **exactly one** **`@docs/modules/{feature-slug}.md`** (sole schema authority — see preflight §0). Default: *if not explicitly allowed, do not implement.*
+**Schema / entity / Liquibase work:** also attach **`@docs/guides/SCHEMA-PERSISTENCE-PREFLIGHT.md`**, **`@docs/guides/DATA-MODEL-STANDARDS.md`**, and **exactly one** **`@docs/modules/{feature-slug}.md`** (sole schema authority — see preflight §0). Default: *if not explicitly allowed, do not implement.* Example: component grouping lives in **`docs/modules/platform-component-grouping.md`** (platform templates + tenant runtime tables).
 
 **Foundation only — fourth attachment (repo root):**  
 **`MASTER-FOUNDATION-TO-FEATURES` Phase 2 (scaffold) and Phase 3 (security)** require creating or editing **real code** under e.g. **`backend/`**, **`frontend/`**, **`pom.xml`**, etc. **`@docs` alone does not include those paths** in context. You must also attach the **product repository root** (the folder you opened in **File → Open Folder** — the one that **contains** `docs/`):
@@ -49,5 +51,6 @@ You can shorten the sentence; what matters is **master + PROJECT-CONTEXT + modul
 | [`PROJECT-CONTEXT.template.md`](./PROJECT-CONTEXT.template.md) | Copy to **`docs/prompts/PROJECT-CONTEXT.md`** in the product repo and fill — **replaces template placeholders** for `@docs` workflows. |
 | [`MASTER-FOUNDATION-TO-FEATURES.md`](./MASTER-FOUNDATION-TO-FEATURES.md) | Greenfield or major reset: architecture → scaffold → security, **before** recurring feature work. |
 | [`MASTER-FEATURE-END-TO-END.md`](./MASTER-FEATURE-END-TO-END.md) | A **single feature** is specified in `docs/modules/` — backend, web, mobile, and checks. |
+| [`SURINAME-WAGE-TAX-IMPLEMENTATION-PROMPTS.md`](./SURINAME-WAGE-TAX-IMPLEMENTATION-PROMPTS.md) | Copy-paste Agent prompts to implement SR wage-tax audit gaps (`suriname-wage-tax-rules.md` §8.6). |
 
 Numbered templates under `docs/templates/` remain the **detailed spec**; these masters tell the model to **read those files** and the guides, then **execute in order** and **write into the repo**.

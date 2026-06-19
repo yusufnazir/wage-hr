@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Per-employee compensation: stores the current pay setup used by the
+        payroll engine. One row per employee. Historical snapshots will live
+        in payroll result tables; this table holds the live configuration.
+
+        wage_type:
+          PER_HOUR   — wage_amount is the hourly rate; derived period/year
+                       wage uses tenant_work_time (hours/day, days/week) plus
+                       the company payroll frequency.
+          PER_PERIOD — wage_amount is the gross per pay period.
+
+        Suriname-specific toggles (kept generic so other jurisdictions can
+        reuse them by name):
+          apply_taxes       — engine applies wage-tax components.
+          apply_tax_exempt  — engine applies the local "belastingvrij" exempt.
+          apply_aov         — engine applies AOV (old-age provision) premium.
+    -->
+
+    <changeSet id="schema-m22-tenant-employee-compensation-1" author="wagepayroll">
+        <createTable tableName="tenant_employee_compensation">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="CHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wage_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wage_amount" type="DECIMAL(18,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="work_time_id" type="VARCHAR(36)"/>
+            <column name="apply_taxes" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="apply_tax_exempt" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="apply_aov" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_compensation_employee"
+                                 baseTableName="tenant_employee_compensation"
+                                 baseColumnNames="employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee"
+                                 referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_compensation_work_time"
+                                 baseTableName="tenant_employee_compensation"
+                                 baseColumnNames="work_time_id,company_id,tenant_id"
+                                 referencedTableName="tenant_work_time"
+                                 referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m22-tenant-employee-compensation-idx-employee-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_compensation_employee"
+                     tableName="tenant_employee_compensation" unique="true">
+            <column name="employee_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m22-tenant-employee-compensation-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_compensation_tenant_company"
+                     tableName="tenant_employee_compensation">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

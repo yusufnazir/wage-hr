@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m11-platform-bank-template-1" author="wagepayroll">
+        <createTable tableName="platform_bank_template">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="country_code" type="CHAR(2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bank_name" type="VARCHAR(150)"/>
+            <column name="swift_bic" type="VARCHAR(11)"/>
+            <column name="bank_code" type="VARCHAR(30)"/>
+            <column name="account_number_format" type="VARCHAR(100)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="schema-m11-platform-bank-template-idx-country-active-1" author="wagepayroll">
+        <createIndex indexName="idx_platform_bank_template_country_active" tableName="platform_bank_template">
+            <column name="country_code"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m11-platform-bank-template-idx-country-1" author="wagepayroll">
+        <createIndex indexName="idx_platform_bank_template_country" tableName="platform_bank_template">
+            <column name="country_code"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

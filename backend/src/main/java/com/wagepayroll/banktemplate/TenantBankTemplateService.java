@@ -87,7 +87,7 @@ public class TenantBankTemplateService {
 		String country = company.getPayrollCountry() == null ? "" : company.getPayrollCountry().trim().toUpperCase(Locale.ROOT);
 		return platformBankTemplateRepository.findByCountryCodeAndActiveIsTrueOrderByNameAsc(country).stream()
 				.map(p -> new TenantBankTemplateCatalogRowDto(p.getId(), p.getCountryCode(), p.getName(), p.getBankName(),
-						p.getSwiftBic(), p.getCurrencyCode()))
+						p.getSwiftBic()))
 				.toList();
 	}
 
@@ -117,7 +117,6 @@ public class TenantBankTemplateService {
 		e.setSwiftBic(platform.getSwiftBic());
 		e.setBankCode(platform.getBankCode());
 		e.setAccountNumberFormat(BankTemplateValidation.trimAccountFormat(body.accountNumber()));
-		e.setCurrencyCode(BankTemplateValidation.normalizeCurrencyOrNull(body.currencyCode()));
 		e.setActive(body.active() == null || body.active().booleanValue());
 		e.setCreatedAt(now);
 		e.setUpdatedAt(now);
@@ -153,7 +152,6 @@ public class TenantBankTemplateService {
 		e.setSwiftBic(platform.getSwiftBic());
 		e.setBankCode(platform.getBankCode());
 		e.setAccountNumberFormat(BankTemplateValidation.trimAccountFormat(body.accountNumber()));
-		e.setCurrencyCode(BankTemplateValidation.normalizeCurrencyOrNull(body.currencyCode()));
 		e.setActive(body.active().booleanValue());
 		e.setUpdatedAt(Instant.now());
 		repository.save(e);
@@ -248,7 +246,7 @@ public class TenantBankTemplateService {
 			}
 		}
 		return new TenantBankTemplateRowDto(e.getId(), e.getCompanyId(), e.getPlatformBankTemplateId(), e.getCountryCode(),
-				platformTemplateName, bankName, swiftBic, e.getAccountNumberFormat(), e.getCurrencyCode(), e.isActive(),
+				platformTemplateName, bankName, swiftBic, e.getAccountNumberFormat(), e.isActive(),
 				e.getCreatedAt(), e.getUpdatedAt());
 	}
 
@@ -256,7 +254,6 @@ public class TenantBankTemplateService {
 		Map<String, Object> m = new LinkedHashMap<>();
 		m.put("platformBankTemplateId", e.getPlatformBankTemplateId());
 		m.put("accountNumber", e.getAccountNumberFormat());
-		m.put("currencyCode", e.getCurrencyCode());
 		m.put("active", e.isActive());
 		return m;
 	}

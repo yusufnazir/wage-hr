@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m31-platform-payroll-base-1" author="wagepayroll">
+        <createTable tableName="platform_payroll_base">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(50)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="platform_payroll_base" columnNames="code"
+                             constraintName="uk_platform_payroll_base_code"/>
+    </changeSet>
+
+    <changeSet id="schema-m31-platform-wage-component-template-base-effect-1" author="wagepayroll">
+        <createTable tableName="platform_wage_component_template_base_effect">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="platform_wage_component_template_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_payroll_base_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_direction" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_calculation_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_value" type="DECIMAL(18,6)"/>
+            <column name="priority" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effective_from" type="DATE"/>
+            <column name="effective_until" type="DATE"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_template_base_effect"
+                                 baseColumnNames="platform_wage_component_template_id"
+                                 constraintName="fk_pwct_base_effect_template"
+                                 referencedTableName="platform_wage_component_template"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_template_base_effect"
+                                 baseColumnNames="platform_payroll_base_id"
+                                 constraintName="fk_pwct_base_effect_payroll_base"
+                                 referencedTableName="platform_payroll_base"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="platform_wage_component_template_base_effect"
+                             columnNames="platform_wage_component_template_id,platform_payroll_base_id"
+                             constraintName="uk_pwct_base_effect_template_base"/>
+    </changeSet>
+
+    <changeSet id="schema-m31-platform-wage-component-base-effect-1" author="wagepayroll">
+        <createTable tableName="platform_wage_component_base_effect">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="platform_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_payroll_base_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_direction" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_calculation_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_value" type="DECIMAL(18,6)"/>
+            <column name="priority" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effective_from" type="DATE"/>
+            <column name="effective_until" type="DATE"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_base_effect"
+                                 baseColumnNames="platform_wage_component_id"
+                                 constraintName="fk_pwc_base_effect_component"
+                                 referencedTableName="platform_wage_component"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_base_effect"
+                                 baseColumnNames="platform_payroll_base_id"
+                                 constraintName="fk_pwc_base_effect_payroll_base"
+                                 referencedTableName="platform_payroll_base"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="platform_wage_component_base_effect"
+                             columnNames="platform_wage_component_id,platform_payroll_base_id"
+                             constraintName="uk_pwc_base_effect_component_base"/>
+    </changeSet>
+
+    <changeSet id="schema-m31-tenant-wage-component-base-effect-1" author="wagepayroll">
+        <createTable tableName="tenant_wage_component_base_effect">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_payroll_base_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_direction" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_calculation_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effect_value" type="DECIMAL(18,6)"/>
+            <column name="priority" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effective_from" type="DATE"/>
+            <column name="effective_until" type="DATE"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_wage_component_base_effect"
+                                 baseColumnNames="tenant_wage_component_id"
+                                 constraintName="fk_twc_base_effect_component"
+                                 referencedTableName="tenant_wage_component"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="tenant_wage_component_base_effect"
+                                 baseColumnNames="platform_payroll_base_id"
+                                 constraintName="fk_twc_base_effect_payroll_base"
+                                 referencedTableName="platform_payroll_base"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="tenant_wage_component_base_effect"
+                             columnNames="tenant_id,tenant_wage_component_id,platform_payroll_base_id"
+                             constraintName="uk_twc_base_effect_tenant_component_base"/>
+    </changeSet>
+
+    <changeSet id="schema-m31-impact-side-columns-1" author="wagepayroll">
+        <addColumn tableName="platform_wage_component">
+            <column name="impact_side" type="VARCHAR(20)" defaultValue="EMPLOYEE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="tenant_wage_component">
+            <column name="impact_side" type="VARCHAR(20)" defaultValue="EMPLOYEE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

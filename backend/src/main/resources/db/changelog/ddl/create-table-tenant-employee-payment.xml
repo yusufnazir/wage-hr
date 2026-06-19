@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m38-tenant-employee-payment-destination-1" author="wagepayroll">
+        <createTable tableName="tenant_employee_payment_destination">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_location_id" type="VARCHAR(36)"/>
+            <column name="bank_template_id" type="VARCHAR(36)"/>
+            <column name="account_number" type="VARCHAR(60)"/>
+            <column name="currency" type="CHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_value" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tepd_tenant"
+                                 baseTableName="tenant_employee_payment_destination" baseColumnNames="tenant_id"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_tepd_employee"
+                                 baseTableName="tenant_employee_payment_destination" baseColumnNames="employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tepd_company"
+                                 baseTableName="tenant_employee_payment_destination" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tepd_payment_location"
+                                 baseTableName="tenant_employee_payment_destination" baseColumnNames="payment_location_id"
+                                 referencedTableName="tenant_payment_location" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_tepd_bank_template"
+                                 baseTableName="tenant_employee_payment_destination" baseColumnNames="bank_template_id"
+                                 referencedTableName="tenant_bank_template" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m38-tenant-employee-payment-destination-idx-1" author="wagepayroll">
+        <createIndex indexName="idx_tepd_tenant_employee" tableName="tenant_employee_payment_destination">
+            <column name="tenant_id"/>
+            <column name="employee_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m38-tenant-employee-pay-period-payment-1" author="wagepayroll">
+        <createTable tableName="tenant_employee_pay_period_payment">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_period_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_period_run_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination_id" type="VARCHAR(36)"/>
+            <column name="channel_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_location_id" type="VARCHAR(36)"/>
+            <column name="payment_location_name" type="VARCHAR(120)"/>
+            <column name="bank_template_id" type="VARCHAR(36)"/>
+            <column name="bank_name" type="VARCHAR(180)"/>
+            <column name="account_number" type="VARCHAR(60)"/>
+            <column name="currency" type="CHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_value" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allocated_amount" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_teppp_tenant"
+                                 baseTableName="tenant_employee_pay_period_payment" baseColumnNames="tenant_id"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_teppp_employee"
+                                 baseTableName="tenant_employee_pay_period_payment" baseColumnNames="employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_teppp_pay_period"
+                                 baseTableName="tenant_employee_pay_period_payment" baseColumnNames="pay_period_id,tenant_id"
+                                 referencedTableName="tenant_pay_period" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_teppp_pay_period_run"
+                                 baseTableName="tenant_employee_pay_period_payment" baseColumnNames="pay_period_run_id"
+                                 referencedTableName="tenant_pay_period_run" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m38-tenant-employee-pay-period-payment-idx-1" author="wagepayroll">
+        <createIndex indexName="idx_teppp_tenant_employee_period" tableName="tenant_employee_pay_period_payment">
+            <column name="tenant_id"/>
+            <column name="employee_id"/>
+            <column name="pay_period_id"/>
+        </createIndex>
+        <createIndex indexName="idx_teppp_tenant_run" tableName="tenant_employee_pay_period_payment">
+            <column name="tenant_id"/>
+            <column name="pay_period_run_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

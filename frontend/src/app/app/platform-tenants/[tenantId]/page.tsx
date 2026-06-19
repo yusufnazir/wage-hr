@@ -5,6 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
+import {
+  detailPageClass,
+  formCardClass,
+  formFieldClass,
+  formInputClass,
+  formInputReadOnlyClass,
+  formLabelClass,
+  formPrimaryButtonClass,
+} from "@/components/ui/formStyles";
 import { fetchPlatformTenant, patchPlatformTenantName, type PlatformTenantRow } from "@/lib/api";
 import { navLabel } from "@/messages/nav";
 
@@ -118,7 +127,7 @@ export default function PlatformTenantEditorPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className={detailPageClass}>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">{navLabel(me.locale, "platformTenants.title.edit")}</h1>
         <button
@@ -141,23 +150,18 @@ export default function PlatformTenantEditorPage() {
         </p>
       ) : null}
 
-      <section className="flex max-w-lg flex-col gap-4 rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <div className="flex w-full min-w-0 flex-col gap-1.5">
-          <span className="text-xs font-medium text-muted">{navLabel(me.locale, "platformTenants.label.handle")}</span>
-          <input
-            readOnly
-            aria-readonly="true"
-            className="w-full min-w-0 rounded-md border border-border bg-muted/20 px-3 py-2 font-mono text-sm text-foreground"
-            value={tenant.handle}
-          />
+      <section className={formCardClass}>
+        <div className={formFieldClass}>
+          <span className={formLabelClass}>{navLabel(me.locale, "platformTenants.label.handle")}</span>
+          <input readOnly aria-readonly="true" className={formInputReadOnlyClass} value={tenant.handle} />
         </div>
-        <div className="flex w-full min-w-0 flex-col gap-1.5">
-          <label htmlFor="platform-tenant-editor-name" className="text-xs font-medium text-muted">
+        <div className={formFieldClass}>
+          <label htmlFor="platform-tenant-editor-name" className={formLabelClass}>
             {navLabel(me.locale, "platformTenants.label.name")}
           </label>
           <input
             id="platform-tenant-editor-name"
-            className="w-full min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm"
+            className={formInputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
             data-testid="platform-tenant-editor-name"
@@ -166,7 +170,7 @@ export default function PlatformTenantEditorPage() {
         <button
           type="button"
           disabled={busy || !name.trim()}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-50"
+          className={formPrimaryButtonClass}
           data-testid="platform-tenant-editor-save"
           onClick={() => void onSave()}
         >

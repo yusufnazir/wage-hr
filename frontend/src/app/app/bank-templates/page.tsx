@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
+import { NoCompanyEmptyState } from "@/components/onboarding/NoCompanyEmptyState";
 import {
   deleteTenantBankTemplate,
   fetchTenantBankTemplates,
@@ -19,7 +20,7 @@ import { navLabel } from "@/messages/nav";
 type LoadState = "loading" | "ready" | "forbidden" | "error";
 
 export default function TenantBankTemplatesPage() {
-  const { me } = useTenantAppSession();
+  const { me, hasCompany } = useTenantAppSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const paramCompanyId = searchParams.get("companyId");
@@ -114,6 +115,23 @@ export default function TenantBankTemplatesPage() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  if (hasCompany === false) {
+    const returnTo =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        : "/app/bank-templates";
+    return (
+      <div className="mx-auto max-w-5xl">
+        <NoCompanyEmptyState
+          title="Bank templates need a company"
+          body="Create a company first. Bank templates are managed per company and copied from the platform catalog on company creation."
+          returnTo={returnTo}
+          showViewCompanies={me.privileges.includes("COMPANY_VIEW") || me.privileges.includes("COMPANY_MANAGE")}
+        />
+      </div>
+    );
   }
 
   if (!canView) {
@@ -291,8 +309,6 @@ export default function TenantBankTemplatesPage() {
                 <th className="px-3 py-2">{t("bankTemplates.col.name")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.bankName")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.swift")}</th>
-                <th className="px-3 py-2">{t("bankTemplates.col.accountNumber")}</th>
-                <th className="px-3 py-2">{t("bankTemplates.col.currency")}</th>
                 <th className="px-3 py-2">{t("bankTemplates.col.status")}</th>
                 <th className="px-3 py-2" />
               </tr>
@@ -303,8 +319,6 @@ export default function TenantBankTemplatesPage() {
                   <td className="px-3 py-2">{row.platformTemplateName}</td>
                   <td className="px-3 py-2">{row.bankName ?? "—"}</td>
                   <td className="px-3 py-2 font-mono">{row.swiftBic ?? "—"}</td>
-                  <td className="px-3 py-2 font-mono">{row.accountNumber ?? "—"}</td>
-                  <td className="px-3 py-2 font-mono">{row.currencyCode ?? "—"}</td>
                   <td className="px-3 py-2">{row.active ? t("bankTemplates.status.active") : t("bankTemplates.status.inactive")}</td>
                   <td className="px-3 py-2 text-right">
                     {canManage ? (

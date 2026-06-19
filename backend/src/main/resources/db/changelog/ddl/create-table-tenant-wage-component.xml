@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m13-tenant-wage-component-1" author="wagepayroll">
+        <createTable tableName="tenant_wage_component">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_template_id" type="VARCHAR(36)"/>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="component_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="net_effect" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="taxable_wage_tax" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="taxable_social_security" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="taxable_pension" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="taxable_vacation_reserve" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="calculation_method" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="percentage_base" type="VARCHAR(40)"/>
+            <column name="formula_expression" type="VARCHAR(500)"/>
+            <column name="default_amount" type="DECIMAL(19,4)"/>
+            <column name="rounding_strategy" type="VARCHAR(30)" defaultValue="HALF_UP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processing_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phase" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="maintains_balance" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_type" type="VARCHAR(20)"/>
+            <column name="balance_direction" type="VARCHAR(10)"/>
+            <column name="counter_component_id" type="VARCHAR(36)"/>
+            <column name="debit_ledger_account_code" type="VARCHAR(64)"/>
+            <column name="credit_ledger_account_code" type="VARCHAR(64)"/>
+            <column name="posting_strategy" type="VARCHAR(40)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_wage_component_company"
+                                 baseTableName="tenant_wage_component" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_wage_component_template"
+                                 baseTableName="tenant_wage_component" baseColumnNames="platform_template_id"
+                                 referencedTableName="platform_wage_component_template" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-wage-component-uidx-company-code-1" author="wagepayroll">
+        <addUniqueConstraint tableName="tenant_wage_component" columnNames="tenant_id, company_id, code"
+                             constraintName="uidx_tenant_wage_component_company_code"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-wage-component-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_wage_component_tenant_company" tableName="tenant_wage_component">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-wage-component-fk-counter-1" author="wagepayroll">
+        <addForeignKeyConstraint constraintName="fk_tenant_wage_component_counter"
+                                 baseTableName="tenant_wage_component" baseColumnNames="counter_component_id"
+                                 referencedTableName="tenant_wage_component" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

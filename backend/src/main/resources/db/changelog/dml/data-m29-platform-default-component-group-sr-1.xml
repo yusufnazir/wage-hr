@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m29-platform-default-component-group-sr-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM platform_component_group_template WHERE id = '54000000-0000-0000-0000-000000000001'</sqlCheck>
+        </preConditions>
+        <comment>SR default component group: tenant wage components and grouping on company create.</comment>
+
+        <insert tableName="platform_component_group_template">
+            <column name="id" value="54000000-0000-0000-0000-000000000001"/>
+            <column name="platform_country_id" valueComputed="(SELECT id FROM platform_country WHERE iso_alpha2 = 'SR')"/>
+            <column name="sort_order" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_group_template_locale">
+            <column name="id" value="53900000-0000-0000-0000-000000000001"/>
+            <column name="platform_component_group_template_id" value="54000000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Default components"/>
+            <column name="description" value="Standard payroll wage components provisioned for new companies."/>
+        </insert>
+                <insert tableName="platform_component_group_template_locale">
+            <column name="id" value="53900000-0000-0000-0000-000000000002"/>
+            <column name="platform_component_group_template_id" value="54000000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Default components"/>
+            <column name="description" value="Standard payroll wage components provisioned for new companies."/>
+        </insert>
+
+        <insert tableName="platform_component_header_template">
+            <column name="id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_component_group_template_id" value="54000000-0000-0000-0000-000000000001"/>
+            <column name="sort_order" valueNumeric="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_header_template_locale">
+            <column name="id" value="54500000-0000-0000-0000-000000000001"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Components"/>
+        </insert>
+                <insert tableName="platform_component_header_template_locale">
+            <column name="id" value="54500000-0000-0000-0000-000000000002"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Components"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000001"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000001"/>
+            <column name="sort_order" valueNumeric="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000001"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Base salary"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000002"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000001"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Base salary"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000002"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000004"/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000003"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000002"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Taxable income"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000004"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000002"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Taxable income"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000003"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000005"/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000005"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000003"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Tax exempt"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000006"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000003"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Tax exempt"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000004"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000000c"/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000007"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000004"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV premium"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000008"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000004"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV premium"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000005"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000000d"/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000009"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000005"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV overtime"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000a"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000005"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV overtime"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000006"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000000e"/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000b"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000006"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV vacation allowance"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000c"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000006"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV vacation allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000007"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000000f"/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000d"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000007"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV bonus"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000e"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000007"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV bonus"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000008"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000010"/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000000f"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000008"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV child allowance"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000010"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000008"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV child allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000009"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000011"/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000011"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000009"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV lump sum"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000012"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000009"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV lump sum"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000a"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000012"/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000013"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000a"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="AOV extra earnings"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000014"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000a"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="AOV extra earnings"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000b"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000013"/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000015"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000b"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000016"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000b"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000c"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000014"/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000017"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000c"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax overtime"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000018"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000c"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax overtime"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000d"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000015"/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000019"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000d"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax vacation allowance"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001a"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000d"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax vacation allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000e"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000016"/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001b"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000e"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax bonus"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001c"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000e"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax bonus"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000000f"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000017"/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001d"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000f"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax child allowance"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001e"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000000f"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax child allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000010"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000018"/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000001f"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000010"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax lump sum"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000020"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000010"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax lump sum"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000011"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000019"/>
+            <column name="sort_order" valueNumeric="16"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000021"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000011"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Wage tax extra earnings"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000022"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000011"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Wage tax extra earnings"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000012"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000001a"/>
+            <column name="sort_order" valueNumeric="17"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000023"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000012"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Net wage"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000024"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000012"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Net wage"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000013"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000001b"/>
+            <column name="sort_order" valueNumeric="18"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000025"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000013"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Rounding"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000026"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000013"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Rounding"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000014"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000022"/>
+            <column name="sort_order" valueNumeric="19"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000027"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000014"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Tax deductions"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000028"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000014"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Tax deductions"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000015"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000024"/>
+            <column name="sort_order" valueNumeric="20"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000029"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000015"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Deductible costs"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002a"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000015"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Deductible costs"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000016"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000025"/>
+            <column name="sort_order" valueNumeric="21"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002b"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000016"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="FVO employers premium"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002c"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000016"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="FVO employers premium"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000017"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000026"/>
+            <column name="sort_order" valueNumeric="22"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002d"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000017"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="FVO employees premium"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002e"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000017"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="FVO employees premium"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000018"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002a"/>
+            <column name="sort_order" valueNumeric="23"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-000000002f"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000018"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Free medical care"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000030"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000018"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Free medical care"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000019"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002b"/>
+            <column name="sort_order" valueNumeric="24"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000031"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000019"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="APF employer contribution"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000032"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000019"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="APF employer contribution"/>
+        </insert>
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-00000000001a"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000002c"/>
+            <column name="sort_order" valueNumeric="25"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000033"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001a"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="APF employee contribution"/>
+        </insert>
+                <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000034"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-00000000001a"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="APF employee contribution"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

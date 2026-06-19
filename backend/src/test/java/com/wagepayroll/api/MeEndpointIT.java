@@ -28,6 +28,17 @@ class MeEndpointIT {
 	private MockMvc mockMvc;
 
 	@Test
+	void anonymousReturns401() throws Exception {
+		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me")).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void returns401WhenPrincipalUserIdNotInDatabase() throws Exception {
+		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me").with(user("99999999-9999-9999-9999-999999999999")))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void returnsMeWithoutTenantWhenHostHasNoTenant() throws Exception {
 		mockMvc.perform(get("/api/v1/me").header("Host", "localhost:8300").with(user(ADMIN_USER_ID)))
 				.andExpect(status().isOk())

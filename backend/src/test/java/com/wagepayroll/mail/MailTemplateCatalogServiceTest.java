@@ -37,14 +37,14 @@ class MailTemplateCatalogServiceTest {
 	}
 
 	@Test
-	void emailVerificationNlSrResolvesNlRow() {
+	void emailVerificationNlBeVariantResolvesNlRow() {
 		UUID templateId = UUID.randomUUID();
 		stubActiveTemplate(MailTemplateCodes.EMAIL_VERIFICATION, templateId);
 		when(mailTemplateLocaleRepository.findByMailTemplateIdOrderByLocaleAsc(templateId)).thenReturn(List.of(
 				locale(templateId, "en", "Verify {{firstName}}", "<p><a href=\"{{verifyLink}}\">Go</a></p>"),
 				locale(templateId, "nl", "Verifieer {{firstName}}", "<p><a href=\"{{verifyLink}}\">Ga</a></p>")));
 
-		Optional<RenderedCatalogEmail> rendered = service.tryRenderEmailVerification("nl-sr",
+		Optional<RenderedCatalogEmail> rendered = service.tryRenderEmailVerification("nl-be",
 				Map.of("firstName", "Ada", "verifyLink", "https://verify", "tenantHandle", "demo"));
 
 		assertThat(rendered).isPresent();
@@ -90,14 +90,14 @@ class MailTemplateCatalogServiceTest {
 	}
 
 	@Test
-	void passwordResetNlSrResolvesNlRow() {
+	void passwordResetNlBeVariantResolvesNlRow() {
 		UUID templateId = UUID.randomUUID();
 		stubActiveTemplate(MailTemplateCodes.PASSWORD_RESET_REQUEST, templateId);
 		when(mailTemplateLocaleRepository.findByMailTemplateIdOrderByLocaleAsc(templateId)).thenReturn(List.of(
 				locale(templateId, "en", "Reset {{firstName}}", "<p>{{resetLink}} {{expiryMinutes}}</p>"),
 				locale(templateId, "nl", "Herstel {{firstName}}", "<p>{{resetLink}} {{expiryMinutes}}</p>")));
 
-		Optional<RenderedCatalogEmail> rendered = service.tryRenderPasswordResetRequest("nl-sr",
+		Optional<RenderedCatalogEmail> rendered = service.tryRenderPasswordResetRequest("nl-be",
 				Map.of("firstName", "Lin", "resetLink", "https://reset", "expiryMinutes", "60"));
 
 		assertThat(rendered).isPresent();

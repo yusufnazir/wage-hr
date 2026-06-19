@@ -70,6 +70,12 @@ public class TenantCompanyEntity extends TenantScopedEntity {
 	@Column(name = "timesheet_end_date")
 	private LocalDate timesheetEndDate;
 
+	@Column(name = "current_year")
+	private Integer currentYear;
+
+	@Column(name = "current_period")
+	private Integer currentPeriod;
+
 	@Column(name = "logo_storage_key", length = 512)
 	private String logoStorageKey;
 
@@ -232,6 +238,22 @@ public class TenantCompanyEntity extends TenantScopedEntity {
 
 	public void setTimesheetEndDate(LocalDate timesheetEndDate) {
 		this.timesheetEndDate = timesheetEndDate;
+	}
+
+	public Integer getCurrentYear() {
+		return currentYear;
+	}
+
+	public void setCurrentYear(Integer currentYear) {
+		this.currentYear = currentYear;
+	}
+
+	public Integer getCurrentPeriod() {
+		return currentPeriod;
+	}
+
+	public void setCurrentPeriod(Integer currentPeriod) {
+		this.currentPeriod = currentPeriod;
 	}
 
 	public boolean isActive() {

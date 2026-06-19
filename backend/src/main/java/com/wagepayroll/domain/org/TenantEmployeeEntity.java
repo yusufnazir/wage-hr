@@ -57,6 +57,42 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 	@Column(name = "active", nullable = false)
 	private boolean active;
 
+	@Column(name = "badge_number", length = 40)
+	private String badgeNumber;
+
+	@Column(name = "id_number", length = 60)
+	private String idNumber;
+
+	@Column(name = "gender", length = 20)
+	private String gender;
+
+	@Column(name = "nationality", length = 2, columnDefinition = "CHAR(2)")
+	private String nationality;
+
+	@Column(name = "place_of_birth", length = 120)
+	private String placeOfBirth;
+
+	@Column(name = "civil_state", length = 20)
+	private String civilState;
+
+	@Column(name = "resignation_date")
+	private LocalDate resignationDate;
+
+	@Column(name = "address_street", length = 180)
+	private String addressStreet;
+
+	@Column(name = "address_number", length = 20)
+	private String addressNumber;
+
+	@Column(name = "address_city", length = 120)
+	private String addressCity;
+
+	@Column(name = "address_country", length = 2, columnDefinition = "CHAR(2)")
+	private String addressCountry;
+
+	@Column(name = "address_postal_code", length = 30)
+	private String addressPostalCode;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -157,6 +193,102 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public String getBadgeNumber() {
+		return badgeNumber;
+	}
+
+	public void setBadgeNumber(String badgeNumber) {
+		this.badgeNumber = badgeNumber;
+	}
+
+	public String getIdNumber() {
+		return idNumber;
+	}
+
+	public void setIdNumber(String idNumber) {
+		this.idNumber = idNumber;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getNationality() {
+		return nationality;
+	}
+
+	public void setNationality(String nationality) {
+		this.nationality = nationality;
+	}
+
+	public String getPlaceOfBirth() {
+		return placeOfBirth;
+	}
+
+	public void setPlaceOfBirth(String placeOfBirth) {
+		this.placeOfBirth = placeOfBirth;
+	}
+
+	public String getCivilState() {
+		return civilState;
+	}
+
+	public void setCivilState(String civilState) {
+		this.civilState = civilState;
+	}
+
+	public LocalDate getResignationDate() {
+		return resignationDate;
+	}
+
+	public void setResignationDate(LocalDate resignationDate) {
+		this.resignationDate = resignationDate;
+	}
+
+	public String getAddressStreet() {
+		return addressStreet;
+	}
+
+	public void setAddressStreet(String addressStreet) {
+		this.addressStreet = addressStreet;
+	}
+
+	public String getAddressNumber() {
+		return addressNumber;
+	}
+
+	public void setAddressNumber(String addressNumber) {
+		this.addressNumber = addressNumber;
+	}
+
+	public String getAddressCity() {
+		return addressCity;
+	}
+
+	public void setAddressCity(String addressCity) {
+		this.addressCity = addressCity;
+	}
+
+	public String getAddressCountry() {
+		return addressCountry;
+	}
+
+	public void setAddressCountry(String addressCountry) {
+		this.addressCountry = addressCountry;
+	}
+
+	public String getAddressPostalCode() {
+		return addressPostalCode;
+	}
+
+	public void setAddressPostalCode(String addressPostalCode) {
+		this.addressPostalCode = addressPostalCode;
 	}
 
 	public Instant getCreatedAt() {

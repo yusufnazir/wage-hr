@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- tenant_company table -->
+    <changeSet id="schema-m5-tenant-company-1" author="wagepayroll">
+        <createTable tableName="tenant_company">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legal_name" type="VARCHAR(180)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="registration_number" type="VARCHAR(80)"/>
+            <column name="tax_id" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payroll_country" type="CHAR(2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="CHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payroll_frequency" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="timezone" type="VARCHAR(60)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_format" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contact_email" type="VARCHAR(190)"/>
+            <column name="contact_phone" type="VARCHAR(40)"/>
+            <column name="address_line1" type="VARCHAR(180)"/>
+            <column name="address_line2" type="VARCHAR(180)"/>
+            <column name="city" type="VARCHAR(120)"/>
+            <column name="state_region" type="VARCHAR(120)"/>
+            <column name="postal_code" type="VARCHAR(30)"/>
+            <column name="country" type="CHAR(2)"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="logo_storage_key" type="VARCHAR(512)"/>
+            <column name="pay_period_end_date" type="DATE"/>
+            <column name="timesheet_end_date" type="DATE"/>
+            <column name="current_year" type="INT"/>
+            <column name="current_period" type="INT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_company_tenant"
+                                 baseTableName="tenant_company" baseColumnNames="tenant_id"
+                                 referencedTableName="tenant" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-company-idx-id-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_company_id_tenant" tableName="tenant_company" unique="true">
+            <column name="id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-company-idx-tenant-tax-id-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_company_tenant_tax_id" tableName="tenant_company" unique="true">
+            <column name="tenant_id"/>
+            <column name="tax_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-company-idx-tenant-active-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_company_tenant_active" tableName="tenant_company">
+            <column name="tenant_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- tenant_department table -->
+    <changeSet id="schema-m5-tenant-department-1" author="wagepayroll">
+        <createTable tableName="tenant_department">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="parent_department_id" type="VARCHAR(36)"/>
+            <column name="manager_employee_id" type="VARCHAR(36)"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_department_company"
+                                 baseTableName="tenant_department" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-department-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_department_id_company_tenant" tableName="tenant_department" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-department-idx-company-code-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_department_company_code" tableName="tenant_department" unique="true">
+            <column name="company_id"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-department-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_department_tenant_company" tableName="tenant_department">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-department-idx-parent-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_department_parent" tableName="tenant_department">
+            <column name="parent_department_id"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_tenant_department_parent"
+                                 baseTableName="tenant_department" baseColumnNames="parent_department_id,company_id,tenant_id"
+                                 referencedTableName="tenant_department" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+    <!-- tenant_job table -->
+    <changeSet id="schema-m5-tenant-job-1" author="wagepayroll">
+        <createTable tableName="tenant_job">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(140)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="salary_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="default_salary" type="DECIMAL(18,2)"/>
+            <column name="default_hourly_rate" type="DECIMAL(18,2)"/>
+            <column name="standard_hours_per_week" type="DECIMAL(5,2)"/>
+            <column name="job_level" type="VARCHAR(40)"/>
+            <column name="job_category" type="VARCHAR(60)"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_job_department"
+                                 baseTableName="tenant_job" baseColumnNames="department_id,company_id,tenant_id"
+                                 referencedTableName="tenant_department" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-job-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_job_id_company_tenant" tableName="tenant_job" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-job-idx-company-code-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_job_company_code" tableName="tenant_job" unique="true">
+            <column name="company_id"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-job-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_job_tenant_company" tableName="tenant_job">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-job-idx-department-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_job_department" tableName="tenant_job">
+            <column name="department_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- tenant_employee_group table -->
+    <changeSet id="schema-m5-tenant-employee-group-1" author="wagepayroll">
+        <createTable tableName="tenant_employee_group">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_group_company"
+                                 baseTableName="tenant_employee_group" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-group-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_group_id_company_tenant" tableName="tenant_employee_group" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-group-idx-company-code-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_group_company_code" tableName="tenant_employee_group" unique="true">
+            <column name="company_id"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-group-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_group_tenant_company" tableName="tenant_employee_group">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- tenant_employee table -->
+    <changeSet id="schema-m5-tenant-employee-1" author="wagepayroll">
+        <createTable tableName="tenant_employee">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="job_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_group_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_birth" type="DATE"/>
+            <column name="hire_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(190)"/>
+            <column name="phone" type="VARCHAR(40)"/>
+            <column name="status" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_company"
+                                 baseTableName="tenant_employee" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_department"
+                                 baseTableName="tenant_employee" baseColumnNames="department_id,company_id,tenant_id"
+                                 referencedTableName="tenant_department" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_job"
+                                 baseTableName="tenant_employee" baseColumnNames="job_id,company_id,tenant_id"
+                                 referencedTableName="tenant_job" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_group"
+                                 baseTableName="tenant_employee" baseColumnNames="employee_group_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee_group" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_id_company_tenant" tableName="tenant_employee" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-company-email-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_company_email" tableName="tenant_employee" unique="true">
+            <column name="company_id"/>
+            <column name="email"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_tenant_company" tableName="tenant_employee">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-department-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_department" tableName="tenant_employee">
+            <column name="department_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-job-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_job" tableName="tenant_employee">
+            <column name="job_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-group-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_group" tableName="tenant_employee">
+            <column name="employee_group_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m5-tenant-employee-idx-status-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_employee_status" tableName="tenant_employee">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- FK: department manager (added after employee exists) -->
+    <changeSet id="schema-m5-tenant-department-fk-manager-1" author="wagepayroll">
+        <addForeignKeyConstraint constraintName="fk_tenant_department_manager_employee"
+                                 baseTableName="tenant_department" baseColumnNames="manager_employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+</databaseChangeLog>

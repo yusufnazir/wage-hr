@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m26-remove-nl-sr-locale-1" author="wagepayroll">
+        <comment>Retire nl-sr: normalize user preference to nl and drop nl-sr translation rows from component grouping.</comment>
+        <update tableName="user_account">
+            <column name="preferred_locale" value="nl"/>
+            <where>LOWER(preferred_locale) = 'nl-sr'</where>
+        </update>
+        <delete tableName="platform_component_group_locale">
+            <where>LOWER(locale) = 'nl-sr'</where>
+        </delete>
+        <delete tableName="platform_component_header_locale">
+            <where>LOWER(locale) = 'nl-sr'</where>
+        </delete>
+        <delete tableName="platform_component_item_locale">
+            <where>LOWER(locale) = 'nl-sr'</where>
+        </delete>
+    </changeSet>
+</databaseChangeLog>

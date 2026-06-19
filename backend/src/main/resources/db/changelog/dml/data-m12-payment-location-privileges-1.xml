@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m12-priv-payment-location-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000033"/>
+            <param name="code" value="PAYMENT_LOCATION_VIEW"/>
+            <param name="description" value="View company payment locations"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m12-priv-payment-location-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000034"/>
+            <param name="code" value="PAYMENT_LOCATION_MANAGE"/>
+            <param name="description" value="Manage company payment locations (create, edit, activate, deactivate)"/>
+        </customChange>
+    </changeSet>
+
+    <!-- Grant both privileges to demo tenant admin role -->
+    <changeSet id="data-m12-grant-rp-demo-admin-payment-location-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000033"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m12-grant-rp-demo-admin-payment-location-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000034"/>
+        </customChange>
+    </changeSet>
+
+    <!-- Grant view to demo tenant viewer role -->
+    <changeSet id="data-m12-grant-rp-demo-viewer-payment-location-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000033"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

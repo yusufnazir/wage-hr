@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Bulk demo employees so the directory list is rich enough to demonstrate
+        the card layout, pagination and the chip-style filter bar. Inserts about
+        28 additional employees on top of Maria Jansen and André Ling (~30 total)
+        spread across Operations, Finance and Human Resources.
+        Mix of statuses: ACTIVE (most), ON_LEAVE, INACTIVE, TERMINATED.
+    -->
+
+    <!-- ============================ OPERATIONS ============================ -->
+    <changeSet id="data-m20-demo-employee-bulk-001" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000020"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Sanjay"/>
+            <param name="lastName" value="Ramnandanlal"/>
+            <param name="dateOfBirth" value="1990-06-22"/>
+            <param name="hireDate" value="2020-02-10"/>
+            <param name="email" value="sanjay.ramnandanlal@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0001"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-002" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000021"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000013"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Patrick"/>
+            <param name="lastName" value="Wong"/>
+            <param name="dateOfBirth" value="1985-03-14"/>
+            <param name="hireDate" value="2018-09-05"/>
+            <param name="email" value="patrick.wong@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0002"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-003" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000022"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Naomi"/>
+            <param name="lastName" value="Pengel"/>
+            <param name="dateOfBirth" value="1992-07-01"/>
+            <param name="hireDate" value="2021-11-18"/>
+            <param name="email" value="naomi.pengel@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0003"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-004" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000023"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000014"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Roy"/>
+            <param name="lastName" value="Brunings"/>
+            <param name="dateOfBirth" value="1998-12-30"/>
+            <param name="hireDate" value="2024-04-08"/>
+            <param name="email" value="roy.brunings@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0004"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-005" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000024"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Indira"/>
+            <param name="lastName" value="Sewdien"/>
+            <param name="dateOfBirth" value="1991-09-10"/>
+            <param name="hireDate" value="2019-06-22"/>
+            <param name="email" value="indira.sewdien@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0005"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-006" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000025"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000014"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Kevin"/>
+            <param name="lastName" value="Pinas"/>
+            <param name="dateOfBirth" value="1999-05-19"/>
+            <param name="hireDate" value="2023-08-14"/>
+            <param name="email" value="kevin.pinas@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0006"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-007" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000026"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Jeffrey"/>
+            <param name="lastName" value="Doerga"/>
+            <param name="dateOfBirth" value="1989-04-22"/>
+            <param name="hireDate" value="2018-01-15"/>
+            <param name="email" value="jeffrey.doerga@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0007"/>
+            <param name="status" value="INACTIVE"/>
+            <param name="active" value="false"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-008" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000027"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000013"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Astrid"/>
+            <param name="lastName" value="Tjon"/>
+            <param name="dateOfBirth" value="1983-08-08"/>
+            <param name="hireDate" value="2017-05-10"/>
+            <param name="email" value="astrid.tjon@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0008"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-009" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000028"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Wendell"/>
+            <param name="lastName" value="Karto"/>
+            <param name="dateOfBirth" value="1994-02-27"/>
+            <param name="hireDate" value="2022-02-14"/>
+            <param name="email" value="wendell.karto@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0009"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-010" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000029"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000014"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Carmen"/>
+            <param name="lastName" value="Hoeblal"/>
+            <param name="dateOfBirth" value="2000-10-05"/>
+            <param name="hireDate" value="2024-09-02"/>
+            <param name="email" value="carmen.hoeblal@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0010"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-011" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002a"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Brandon"/>
+            <param name="lastName" value="Wijntuin"/>
+            <param name="dateOfBirth" value="1988-11-11"/>
+            <param name="hireDate" value="2019-03-11"/>
+            <param name="email" value="brandon.wijntuin@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0011"/>
+            <param name="status" value="TERMINATED"/>
+            <param name="active" value="false"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-012" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002b"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Cynthia"/>
+            <param name="lastName" value="Vrede"/>
+            <param name="dateOfBirth" value="1996-04-04"/>
+            <param name="hireDate" value="2023-01-23"/>
+            <param name="email" value="cynthia.vrede@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0012"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-013" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002c"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000013"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Donovan"/>
+            <param name="lastName" value="Mac Donald"/>
+            <param name="dateOfBirth" value="1981-01-15"/>
+            <param name="hireDate" value="2016-07-08"/>
+            <param name="email" value="donovan.macdonald@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0013"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-014" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002d"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000014"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Erica"/>
+            <param name="lastName" value="Liesdek"/>
+            <param name="dateOfBirth" value="2001-03-21"/>
+            <param name="hireDate" value="2025-01-15"/>
+            <param name="email" value="erica.liesdek@demo-payroll.invalid"/>
+            <param name="phone" value="+597-310-0014"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <!-- ============================ FINANCE ============================ -->
+    <changeSet id="data-m20-demo-employee-bulk-015" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002e"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Hilary"/>
+            <param name="lastName" value="Sabajo"/>
+            <param name="dateOfBirth" value="1987-06-30"/>
+            <param name="hireDate" value="2020-05-12"/>
+            <param name="email" value="hilary.sabajo@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0001"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-016" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000002f"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Marlon"/>
+            <param name="lastName" value="Goerdajal"/>
+            <param name="dateOfBirth" value="1986-02-17"/>
+            <param name="hireDate" value="2019-09-09"/>
+            <param name="email" value="marlon.goerdajal@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0002"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-017" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000030"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Rinia"/>
+            <param name="lastName" value="Babel"/>
+            <param name="dateOfBirth" value="1993-11-23"/>
+            <param name="hireDate" value="2022-06-01"/>
+            <param name="email" value="rinia.babel@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0003"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-018" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000031"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Stefan"/>
+            <param name="lastName" value="Doelwijt"/>
+            <param name="dateOfBirth" value="1990-08-19"/>
+            <param name="hireDate" value="2021-03-15"/>
+            <param name="email" value="stefan.doelwijt@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0004"/>
+            <param name="status" value="ON_LEAVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-019" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000032"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Tanja"/>
+            <param name="lastName" value="Vasilda"/>
+            <param name="dateOfBirth" value="1985-12-12"/>
+            <param name="hireDate" value="2018-10-20"/>
+            <param name="email" value="tanja.vasilda@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0005"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-020" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000033"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Ravi"/>
+            <param name="lastName" value="Bhagwandien"/>
+            <param name="dateOfBirth" value="1995-04-04"/>
+            <param name="hireDate" value="2023-04-04"/>
+            <param name="email" value="ravi.bhagwandien@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0006"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-021" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000034"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Patrice"/>
+            <param name="lastName" value="Cheung"/>
+            <param name="dateOfBirth" value="1982-09-09"/>
+            <param name="hireDate" value="2017-02-08"/>
+            <param name="email" value="patrice.cheung@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0007"/>
+            <param name="status" value="INACTIVE"/>
+            <param name="active" value="false"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-022" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000035"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Sharon"/>
+            <param name="lastName" value="Toelsi"/>
+            <param name="dateOfBirth" value="1997-06-06"/>
+            <param name="hireDate" value="2024-07-01"/>
+            <param name="email" value="sharon.toelsi@demo-payroll.invalid"/>
+            <param name="phone" value="+597-320-0008"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <!-- ============================ HUMAN RESOURCES ============================ -->
+    <changeSet id="data-m20-demo-employee-bulk-023" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000036"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Ingrid"/>
+            <param name="lastName" value="Tjokrodikromo"/>
+            <param name="dateOfBirth" value="1980-04-15"/>
+            <param name="hireDate" value="2017-11-01"/>
+            <param name="email" value="ingrid.tjokrodikromo@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0001"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-024" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000037"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Melvin"/>
+            <param name="lastName" value="Kromodimedjo"/>
+            <param name="dateOfBirth" value="1991-01-25"/>
+            <param name="hireDate" value="2020-08-17"/>
+            <param name="email" value="melvin.kromodimedjo@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0002"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-025" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000038"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Yvonne"/>
+            <param name="lastName" value="Lala"/>
+            <param name="dateOfBirth" value="1994-07-29"/>
+            <param name="hireDate" value="2022-12-05"/>
+            <param name="email" value="yvonne.lala@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0003"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-026" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000039"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Bram"/>
+            <param name="lastName" value="Sondervan"/>
+            <param name="dateOfBirth" value="1979-02-28"/>
+            <param name="hireDate" value="2016-04-04"/>
+            <param name="email" value="bram.sondervan@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0004"/>
+            <param name="status" value="TERMINATED"/>
+            <param name="active" value="false"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-027" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000003a"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Sylvia"/>
+            <param name="lastName" value="Pawironadi"/>
+            <param name="dateOfBirth" value="1989-10-14"/>
+            <param name="hireDate" value="2021-07-11"/>
+            <param name="email" value="sylvia.pawironadi@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0005"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-employee-bulk-028" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000003b"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Dharmindra"/>
+            <param name="lastName" value="Persaud"/>
+            <param name="dateOfBirth" value="2000-08-08"/>
+            <param name="hireDate" value="2025-02-15"/>
+            <param name="email" value="dharmindra.persaud@demo-payroll.invalid"/>
+            <param name="phone" value="+597-330-0006"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m14-tenant-ledger-1" author="wagepayroll">
+        <createTable tableName="tenant_ledger">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform_ledger_template_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_ledger_company"
+                                 baseTableName="tenant_ledger" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_ledger_platform_template"
+                                 baseTableName="tenant_ledger" baseColumnNames="platform_ledger_template_id"
+                                 referencedTableName="platform_ledger_template" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m14-tenant-ledger-uidx-company-code-1" author="wagepayroll">
+        <addUniqueConstraint tableName="tenant_ledger" columnNames="tenant_id, company_id, code"
+                             constraintName="uidx_tenant_ledger_company_code"/>
+    </changeSet>
+
+    <changeSet id="schema-m14-tenant-ledger-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_ledger_tenant_company" tableName="tenant_ledger">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

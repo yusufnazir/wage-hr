@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m16-tenant-wage-component-template-mirrored-fields-1" author="wagepayroll">
+        <addColumn tableName="tenant_wage_component">
+            <column name="print_on_payslip" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auxiliary" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="apply_in_payroll" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recurrence" type="VARCHAR(20)"/>
+            <column name="country_rule_key" type="VARCHAR(64)"/>
+            <column name="platform_country_tax_rule_id" type="VARCHAR(36)"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_tenant_wc_platform_country_tax_rule"
+                                 baseTableName="tenant_wage_component"
+                                 baseColumnNames="platform_country_tax_rule_id"
+                                 referencedTableName="platform_country_tax_rule"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+      Demo Payroll NV (m20) is inserted before the default component group template (m29).
+      Bank templates are copied from the platform catalog in m20; wage catalog provisioning runs at startup
+      via DemoPayrollCatalogInitializer.
+    -->
+    <changeSet id="data-m30-demo-default-catalog-provision-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM tenant_company
+                WHERE id = '5fa00000-0000-4000-8000-000000000001'
+                  AND tenant_id = '10000000-0000-0000-0000-000000000001'
+            </sqlCheck>
+        </preConditions>
+        <comment>Marker: demo company wage catalog and payroll-input standing amounts (vacation, bonus, child allowance, lump sum, extra earnings, overtime) run at application startup (post-m29/m40).</comment>
+    </changeSet>
+
+</databaseChangeLog>

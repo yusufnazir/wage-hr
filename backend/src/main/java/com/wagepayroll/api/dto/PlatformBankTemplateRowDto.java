@@ -11,7 +11,6 @@ public record PlatformBankTemplateRowDto(
 		String swiftBic,
 		String bankCode,
 		String accountNumberFormat,
-		String currencyCode,
 		boolean active,
 		Instant createdAt,
 		Instant updatedAt) {

@@ -18,6 +18,18 @@ public record TenantEmployeeItemDto(
 		String phone,
 		String status,
 		boolean active,
+		String badgeNumber,
+		String idNumber,
+		String gender,
+		String nationality,
+		String placeOfBirth,
+		String civilState,
+		LocalDate resignationDate,
+		String addressStreet,
+		String addressNumber,
+		String addressCity,
+		String addressCountry,
+		String addressPostalCode,
 		Instant createdAt,
 		Instant updatedAt) {
 }

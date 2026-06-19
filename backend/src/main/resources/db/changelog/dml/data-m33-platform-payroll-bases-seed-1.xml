@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m33-platform-payroll-bases-seed-1" author="wagepayroll">
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000001"/>
+            <column name="code" value="GROSS"/>
+            <column name="name" value="Gross Salary"/>
+            <column name="category" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000002"/>
+            <column name="code" value="NET"/>
+            <column name="name" value="Net Salary"/>
+            <column name="category" value="NET"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000003"/>
+            <column name="code" value="LOONBELASTING"/>
+            <column name="name" value="Wage Tax"/>
+            <column name="category" value="TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000004"/>
+            <column name="code" value="AOV"/>
+            <column name="name" value="Old Age Insurance"/>
+            <column name="category" value="CONTRIBUTION"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000005"/>
+            <column name="code" value="AWW"/>
+            <column name="name" value="Widow Insurance"/>
+            <column name="category" value="CONTRIBUTION"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000006"/>
+            <column name="code" value="SZF"/>
+            <column name="name" value="Health Insurance"/>
+            <column name="category" value="CONTRIBUTION"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000007"/>
+            <column name="code" value="PENSION"/>
+            <column name="name" value="Pension"/>
+            <column name="category" value="CONTRIBUTION"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000008"/>
+            <column name="code" value="VACATION"/>
+            <column name="name" value="Vacation Accrual"/>
+            <column name="category" value="ACCRUAL"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-000000000009"/>
+            <column name="code" value="THIRTEENTH_MONTH"/>
+            <column name="name" value="13th Month Accrual"/>
+            <column name="category" value="ACCRUAL"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-00000000000a"/>
+            <column name="code" value="SEVERANCE"/>
+            <column name="name" value="Severance Calculation"/>
+            <column name="category" value="ACCRUAL"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="platform_payroll_base">
+            <column name="id" value="52001000-0000-0000-0000-00000000000b"/>
+            <column name="code" value="OVERTIME"/>
+            <column name="name" value="Overtime Calculation"/>
+            <column name="category" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

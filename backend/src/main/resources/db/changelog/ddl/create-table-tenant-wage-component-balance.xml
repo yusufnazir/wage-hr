@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m13-tenant-wage-component-balance-1" author="wagepayroll">
+        <createTable tableName="tenant_wage_component_balance">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="CHAR(3)"/>
+            <column name="current_balance" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_twcb_company"
+                                 baseTableName="tenant_wage_component_balance" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_twcb_employee"
+                                 baseTableName="tenant_wage_component_balance" baseColumnNames="employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_twcb_component"
+                                 baseTableName="tenant_wage_component_balance" baseColumnNames="tenant_wage_component_id"
+                                 referencedTableName="tenant_wage_component" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-wage-component-balance-uidx-1" author="wagepayroll">
+        <addUniqueConstraint tableName="tenant_wage_component_balance"
+                             columnNames="tenant_id, company_id, employee_id, tenant_wage_component_id"
+                             constraintName="uidx_tenant_wage_component_balance_slot"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-wage-component-balance-uidx-id-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_wage_component_balance_id_tenant" tableName="tenant_wage_component_balance" unique="true">
+            <column name="id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

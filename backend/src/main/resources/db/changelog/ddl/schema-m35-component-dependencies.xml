@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m35-platform-wage-component-template-dependency-1" author="wagepayroll">
+        <createTable tableName="platform_wage_component_template_dependency">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="platform_wage_component_template_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="depends_on_template_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_template_dependency"
+                                 baseColumnNames="platform_wage_component_template_id"
+                                 constraintName="fk_pwct_dep_template_dependent"
+                                 referencedTableName="platform_wage_component_template"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="platform_wage_component_template_dependency"
+                                 baseColumnNames="depends_on_template_id"
+                                 constraintName="fk_pwct_dep_template_prerequisite"
+                                 referencedTableName="platform_wage_component_template"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="platform_wage_component_template_dependency"
+                             columnNames="platform_wage_component_template_id,depends_on_template_id"
+                             constraintName="uk_pwct_dep_template_pair"/>
+        <createIndex indexName="idx_pwct_dep_depends_on_template" tableName="platform_wage_component_template_dependency">
+            <column name="depends_on_template_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m35-tenant-wage-component-dependency-1" author="wagepayroll">
+        <createTable tableName="tenant_wage_component_dependency">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="depends_on_tenant_wage_component_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tenant_wage_component_dependency"
+                                 baseColumnNames="tenant_wage_component_id"
+                                 constraintName="fk_twc_dep_component_dependent"
+                                 referencedTableName="tenant_wage_component"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="tenant_wage_component_dependency"
+                                 baseColumnNames="depends_on_tenant_wage_component_id"
+                                 constraintName="fk_twc_dep_component_prerequisite"
+                                 referencedTableName="tenant_wage_component"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="tenant_wage_component_dependency"
+                             columnNames="tenant_id,tenant_wage_component_id,depends_on_tenant_wage_component_id"
+                             constraintName="uk_twc_dep_tenant_pair"/>
+        <createIndex indexName="idx_twc_dep_prerequisite" tableName="tenant_wage_component_dependency">
+            <column name="depends_on_tenant_wage_component_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

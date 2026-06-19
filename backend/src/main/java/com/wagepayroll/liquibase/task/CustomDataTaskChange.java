@@ -1,6 +1,7 @@
 package com.wagepayroll.liquibase.task;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -107,8 +108,28 @@ public abstract class CustomDataTaskChange implements CustomTaskChange {
 			ps.setBigDecimal(index, bd);
 		} else if (value instanceof Timestamp t) {
 			ps.setTimestamp(index, t);
+		} else if (value instanceof Date d) {
+			ps.setDate(index, d);
 		} else {
 			ps.setObject(index, value);
+		}
+	}
+
+	/** Bind {@code DATE} from {@code yyyy-MM-dd}, or SQL NULL when blank. */
+	protected void setDate(PreparedStatement ps, int index, String isoDate) throws SQLException {
+		if (isoDate == null || isoDate.isBlank()) {
+			ps.setNull(index, Types.DATE);
+		} else {
+			ps.setDate(index, Date.valueOf(isoDate.trim()));
+		}
+	}
+
+	/** Bind {@code DECIMAL} from plain numeric text, or SQL NULL when blank. */
+	protected void setDecimal(PreparedStatement ps, int index, String raw) throws SQLException {
+		if (raw == null || raw.isBlank()) {
+			ps.setNull(index, Types.DECIMAL);
+		} else {
+			ps.setBigDecimal(index, new BigDecimal(raw.trim()));
 		}
 	}
 }

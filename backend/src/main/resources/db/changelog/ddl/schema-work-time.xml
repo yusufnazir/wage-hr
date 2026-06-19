@@ -5,8 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="schema-m8-work-time-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DdlM8WorkTime1"/>
-    </changeSet>
+    <include file="create-table-work-time.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

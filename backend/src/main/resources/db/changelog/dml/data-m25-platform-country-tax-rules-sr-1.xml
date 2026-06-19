@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+      Suriname (SR): legacy country 740 tariff types + brackets as multiple platform_country_tax_rule rows.
+      parameters_json contract: v=2, see docs/modules/payroll-wage-component-engine.md §4.1.
+      FKs from wage templates continue to reference SR_WAGE_TAX_DEFAULT id ...000001.
+    -->
+    <changeSet id="data-m25-platform-country-tax-rules-sr-1" author="wagepayroll">
+        <update tableName="platform_country_tax_rule">
+            <column name="name" value="Suriname annual wage tax (tariff type 1)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":1,"freq":"YEAR","kind":"MARGINAL_RATES","source":"legacy-740-2024","rows":[{"i":2,"pct":8,"min":0,"max":42000},{"i":3,"pct":18,"min":42000,"max":84000},{"i":4,"pct":28,"min":84000,"max":126000},{"i":5,"pct":38,"min":126000}]}'/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '52000000-0000-0000-0000-000000000001'</where>
+        </update>
+
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000002"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_PAYMENTS_AT_ONCE_YEAR"/>
+            <column name="name" value="Suriname payments at once — annual (tariff type 2)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":2,"freq":"YEAR","kind":"MARGINAL_RATES","source":"legacy-740-2024","rows":[{"i":1,"pct":5,"min":0,"max":42000},{"i":2,"pct":15,"min":42000,"max":84000},{"i":3,"pct":25,"min":84000,"max":126000},{"i":4,"pct":35,"min":126000}]}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000003"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_OVERTIME_MONTH"/>
+            <column name="name" value="Suriname overtime — monthly (tariff type 3)"/>
+            <column name="effective_from" valueDate="2025-07-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":3,"freq":"MONTH","kind":"MARGINAL_RATES","source":"legacy-740-2025-07","rows":[{"i":1,"pct":5,"min":0,"max":2500},{"i":2,"pct":15,"min":2500,"max":7500},{"i":3,"pct":25,"min":7500}]}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000004"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_SERVICE_YEARS_17A_MONTH"/>
+            <column name="name" value="Suriname tax-free service years art. 17a (tariff type 4)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":4,"freq":"MONTH","kind":"LEGACY_SERVICE_YEAR_TABLE","source":"legacy-740-2024","rows":[{"i":1,"pct":0,"lo":0,"hi":9},{"i":2,"pct":25,"lo":10,"hi":14},{"i":3,"pct":50,"lo":15,"hi":19},{"i":4,"pct":75,"lo":20,"hi":24},{"i":5,"pct":100,"lo":25,"hi":29},{"i":6,"pct":150,"lo":30,"hi":34},{"i":7,"pct":200,"lo":35,"hi":39},{"i":8,"pct":300,"lo":40}]}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000005"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_AOV_PREMIUM_MONTH"/>
+            <column name="name" value="Suriname AOV premium percentage (tariff type 5)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":5,"freq":"MONTH","kind":"FLAT_RATE","source":"legacy-740-2024","pct":4}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000006"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_DEDUCTIBLE_EXPENSES_YEAR"/>
+            <column name="name" value="Suriname deductible expenses (tariff type 6)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":6,"freq":"YEAR","kind":"MARGINAL_RATES","source":"legacy-740-2024","rows":[{"i":1,"pct":4,"min":4800}]}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000007"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_TAX_FREE_WAGE_TAX_YEAR"/>
+            <column name="name" value="Suriname tax-free wage tax threshold (tariff type 8)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":8,"freq":"YEAR","kind":"THRESHOLD_AMOUNT","source":"legacy-740-2024","amount":108000}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000008"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_TAX_FREE_VACATION_YEAR"/>
+            <column name="name" value="Suriname tax-free vacation allowance (tariff type 9)"/>
+            <column name="effective_from" valueDate="2025-07-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":9,"freq":"YEAR","kind":"THRESHOLD_AMOUNT","source":"legacy-740-2025-07","amount":19500}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000009"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_TAX_FREE_BONUS_YEAR"/>
+            <column name="name" value="Suriname tax-free bonus (tariff type 10)"/>
+            <column name="effective_from" valueDate="2025-07-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":10,"freq":"YEAR","kind":"THRESHOLD_AMOUNT","source":"legacy-740-2025-07","amount":19500}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-00000000000a"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_CHILD_ALLOWANCE_MONTH"/>
+            <column name="name" value="Suriname tax-free child allowance band (tariff type 11)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":11,"freq":"MONTH","kind":"AMOUNT_BAND","source":"legacy-740-2024","min":125,"max":500}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-00000000000b"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_FREE_MEDICAL_YEAR"/>
+            <column name="name" value="Suriname free medical care (tariff type 12)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":12,"freq":"YEAR","kind":"MARGINAL_RATES","source":"legacy-740-2024","rows":[{"i":1,"pct":3,"min":0,"max":200}]}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-00000000000c"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_AP_CONTRIBUTION_MONTH"/>
+            <column name="name" value="Suriname APF pension schedule (Algemeen Pensioenfonds)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"><![CDATA[{"v":2,"legacyTariffTypeId":13,"freq":"MONTH","kind":"APF_YEARLY_SCHEDULE","source":"suriname-apf-law-2014","employeeSharePct":50,"rows":[{"year":2025,"minimumAmount":500,"maximumAmount":5000,"percentage":8},{"year":2026,"minimumAmount":500,"maximumAmount":5000,"percentage":8.5},{"year":2027,"minimumAmount":500,"maximumAmount":5000,"percentage":9},{"year":2028,"minimumAmount":500,"maximumAmount":5000,"percentage":9.5},{"year":2029,"minimumAmount":500,"maximumAmount":5000,"percentage":10},{"year":2030,"minimumAmount":500,"maximumAmount":5000,"percentage":10.5},{"year":2031,"minimumAmount":500,"maximumAmount":5000,"percentage":11},{"year":2032,"minimumAmount":500,"maximumAmount":5000,"percentage":11.5},{"year":2033,"minimumAmount":500,"maximumAmount":5000,"percentage":12},{"year":2034,"minimumAmount":500,"maximumAmount":5000,"percentage":12.5},{"year":2035,"minimumAmount":500,"maximumAmount":5000,"percentage":13},{"year":2036,"minimumAmount":500,"maximumAmount":5000,"percentage":13.5},{"year":2037,"minimumAmount":500,"maximumAmount":5000,"percentage":14},{"year":2038,"minimumAmount":500,"maximumAmount":5000,"percentage":14.5},{"year":2039,"minimumAmount":500,"maximumAmount":5000,"percentage":15},{"year":2040,"minimumAmount":500,"maximumAmount":5000,"percentage":15.5},{"year":2041,"minimumAmount":500,"maximumAmount":5000,"percentage":16},{"year":2042,"minimumAmount":500,"maximumAmount":5000,"percentage":16.5},{"year":2043,"minimumAmount":500,"maximumAmount":5000,"percentage":17},{"year":2044,"minimumAmount":500,"maximumAmount":5000,"percentage":17.5},{"year":2045,"minimumAmount":500,"maximumAmount":5000,"percentage":18},{"year":2046,"minimumAmount":500,"maximumAmount":5000,"percentage":18.5},{"year":2047,"minimumAmount":500,"maximumAmount":5000,"percentage":19},{"year":2048,"minimumAmount":500,"maximumAmount":5000,"percentage":19.5},{"year":2049,"minimumAmount":500,"maximumAmount":5000,"percentage":20},{"year":2050,"minimumAmount":500,"maximumAmount":5000,"percentage":20.5},{"year":2051,"minimumAmount":500,"maximumAmount":5000,"percentage":21},{"year":2052,"minimumAmount":500,"maximumAmount":5000,"percentage":21.5},{"year":2053,"minimumAmount":500,"maximumAmount":5000,"percentage":22},{"year":2054,"minimumAmount":500,"maximumAmount":5000,"percentage":22.5},{"year":2055,"minimumAmount":500,"maximumAmount":5000,"percentage":23},{"year":2056,"minimumAmount":500,"maximumAmount":5000,"percentage":23.5},{"year":2057,"minimumAmount":500,"maximumAmount":5000,"percentage":24},{"year":2058,"minimumAmount":500,"maximumAmount":5000,"percentage":24.5},{"year":2059,"minimumAmount":500,"maximumAmount":5000,"percentage":25},{"year":2060,"minimumAmount":500,"maximumAmount":5000,"percentage":25.5},{"year":2061,"minimumAmount":500,"maximumAmount":5000,"percentage":26},{"year":2062,"minimumAmount":500,"maximumAmount":5000,"percentage":26.5},{"year":2063,"minimumAmount":500,"maximumAmount":5000,"percentage":27},{"year":2064,"minimumAmount":500,"maximumAmount":5000,"percentage":27.5},{"year":2065,"minimumAmount":500,"maximumAmount":5000,"percentage":28}]}]]></column>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-00000000000d"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_FVO_PREMIUM_MONTH"/>
+            <column name="name" value="Suriname FVO premium — party share (0.5% of base salary)"/>
+            <column name="effective_from" valueDate="2024-01-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"freq":"MONTH","kind":"FLAT_RATE","source":"suriname-fvo","pct":0.5,"note":"Each party pays 0.5%; total FVO premium is 1% of basisloon without emoluments."}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- After tax rules exist: point templates at the correct rule rows (m24 only references ...000001). -->
+    <changeSet id="data-m25-link-wct-tax-rule-fks" author="wagepayroll">
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000007"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-000000000005'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000006"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-000000000024'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="country_rule_key" value="SUR_FREE_MEDICAL_BENEFIT"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000b"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-00000000002a'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000d"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-000000000025'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000d"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-000000000026'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000c"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-00000000002b'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000c"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-00000000002c'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

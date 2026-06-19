@@ -18,7 +18,7 @@ You are a **principal engineer** shipping a **production-grade multi-tenant** pr
 
 It is **normal** for the repo root to show **only `docs/`** (plus dotfiles) **before** Phase 2 — there is often **no** `backend/` or `frontend/` yet. **That is not a docs-only workspace mistake** and **not** a reason to stop. **Phase 2’s job is to create** the scaffold directories and files (e.g. `backend/`, `frontend/`, Maven wrapper, Next app) per **`ARCHITECTURE-DEFINITION.md`** and **`docs/templates/2. SCAFFOLD-GENERATOR-PROMPT.md`**.
 
-**Do not** tell the human to “open the full repo” or “switch workspace” solely because those folders are missing. **Do** stop only if the opened folder is **not** the product root (e.g. only `docs/` was opened as the Cursor workspace so `docs` sits at the **top** of the tree with no parent in the workspace — then the agent cannot create sibling `backend/`). If **`docs/` is a child** of the root (as in `WAGE-PAYROLL/docs/`), proceed with Phase 2 and create siblings under that root.
+**Do not** tell the human to “open the full repo” or “switch workspace” solely because those folders are missing. **Do** stop only if the opened folder is **not** the product root (e.g. only `docs/` was opened as the Cursor workspace so `docs` sits at the **top** of the tree with no parent in the workspace — then the agent cannot create sibling `backend/`). If **`docs/` is a child** of the root (as in `[project-name]/docs/`), proceed with Phase 2 and create siblings under that root.
 
 ---
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Extend tenant_employee with personal-details fields (badge number,
+        national ID, gender, civil state, place of birth, nationality, address)
+        and an offboarding field (resignation date). All columns are nullable
+        so existing rows remain valid. badge_number is uniquely indexed per
+        company; MariaDB treats NULL as distinct in unique indexes, so
+        employees without a badge stay allowed.
+    -->
+
+    <changeSet id="schema-m21-tenant-employee-personal-1" author="wagepayroll">
+        <addColumn tableName="tenant_employee">
+            <column name="badge_number" type="VARCHAR(40)"/>
+            <column name="id_number" type="VARCHAR(60)"/>
+            <column name="gender" type="VARCHAR(20)"/>
+            <column name="nationality" type="CHAR(2)"/>
+            <column name="place_of_birth" type="VARCHAR(120)"/>
+            <column name="civil_state" type="VARCHAR(20)"/>
+            <column name="resignation_date" type="DATE"/>
+            <column name="address_street" type="VARCHAR(180)"/>
+            <column name="address_number" type="VARCHAR(20)"/>
+            <column name="address_city" type="VARCHAR(120)"/>
+            <column name="address_country" type="CHAR(2)"/>
+            <column name="address_postal_code" type="VARCHAR(30)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="schema-m21-tenant-employee-idx-company-badge-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_employee_company_badge" tableName="tenant_employee" unique="true">
+            <column name="company_id"/>
+            <column name="badge_number"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

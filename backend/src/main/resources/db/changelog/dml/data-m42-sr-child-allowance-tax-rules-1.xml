@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+      SR_CHILD_ALLOWANCE_MONTH (Art. 10(h)): perChild rate; maxAmount = monthly exclusion from loon (not gross cap).
+      Jan–Jun 2021: SRD 75/child, max 300; from Jul 2021: SRD 125/child, max 500.
+    -->
+    <changeSet id="data-m42-sr-child-allowance-tax-rules-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM platform_country_tax_rule
+                WHERE rule_code = 'SR_CHILD_ALLOWANCE_MONTH'
+                  AND effective_from = '2021-01-01'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000010"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_CHILD_ALLOWANCE_MONTH"/>
+            <column name="name" value="Suriname child allowance per child (Jan–Jun 2021)"/>
+            <column name="effective_from" valueDate="2021-01-01"/>
+            <column name="effective_to" valueDate="2021-06-30"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":11,"freq":"MONTH","kind":"PER_CHILD_MONTHLY","source":"legacy-740-2021-h1","perChild":75,"maxChildren":4,"maxAmount":300}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000011"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_CHILD_ALLOWANCE_MONTH"/>
+            <column name="name" value="Suriname child allowance per child (from Jul 2021)"/>
+            <column name="effective_from" valueDate="2021-07-01"/>
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":11,"freq":"MONTH","kind":"PER_CHILD_MONTHLY","source":"legacy-740-2021-h2","perChild":125,"maxChildren":4,"maxAmount":500}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m42-sr-child-allowance-tax-rules-legacy-band-2" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM platform_country_tax_rule
+                WHERE id = '52000000-0000-0000-0000-00000000000a'
+            </sqlCheck>
+        </preConditions>
+        <comment>Align 2024+ row with PER_CHILD_MONTHLY (125/child; Art. 10(h) exclusion max 500).</comment>
+        <update tableName="platform_country_tax_rule">
+            <column name="parameters_json"
+                    value='{"v":2,"legacyTariffTypeId":11,"freq":"MONTH","kind":"PER_CHILD_MONTHLY","source":"legacy-740-2024","perChild":125,"maxChildren":4,"maxAmount":500}'/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '52000000-0000-0000-0000-00000000000a'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

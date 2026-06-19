@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Jubilee wage tax line 1048 (SUR_WAGE_TAX_JUBILEE) → SR_SERVICE_YEARS_17A_MONTH. -->
+    <changeSet id="data-m44-sr-jubilee-wage-tax-template-1" author="wagepayroll">
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000001c"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1048"/>
+            <column name="name" value="Wage tax jubilee"/>
+            <column name="description" value="Wage tax on jubilee taxable portion per art. 17a service-year table."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"TAX","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"TAX","processingOrder":5280,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="5280"/>
+            <column name="phase_hint" value="TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000015"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_WAGE_TAX_JUBILEE"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000004"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

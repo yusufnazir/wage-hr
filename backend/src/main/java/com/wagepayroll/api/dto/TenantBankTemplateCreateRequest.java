@@ -9,6 +9,5 @@ public record TenantBankTemplateCreateRequest(
 		UUID companyId,
 		UUID platformBankTemplateId,
 		String accountNumber,
-		String currencyCode,
 		Boolean active) {
 }

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Component group line items reference platform wage component templates (catalog), not runtime platform_wage_component rows. -->
+    <changeSet id="schema-m28-component-item-wage-template-fk-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_ITEM_TEMPLATE'
+                  AND UPPER(COLUMN_NAME) = 'PLATFORM_WAGE_COMPONENT_ID'
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE UPPER(TABLE_NAME) = 'PLATFORM_COMPONENT_ITEM_TEMPLATE'
+                  AND UPPER(COLUMN_NAME) = 'PLATFORM_WAGE_COMPONENT_TEMPLATE_ID'
+            </sqlCheck>
+        </preConditions>
+
+        <addColumn tableName="platform_component_item_template">
+            <column name="platform_wage_component_template_id" type="VARCHAR(36)"/>
+        </addColumn>
+
+        <sql>
+            UPDATE platform_component_item_template pit
+            SET platform_wage_component_template_id = (
+                SELECT MIN(t.id)
+                FROM platform_wage_component w
+                INNER JOIN platform_wage_component_template t
+                    ON UPPER(t.country_code) = UPPER(w.country_code)
+                   AND UPPER(t.template_code) = UPPER(w.code)
+                WHERE w.id = pit.platform_wage_component_id
+            )
+            WHERE pit.platform_wage_component_id IS NOT NULL
+        </sql>
+
+        <sql>
+            DELETE FROM platform_component_item_template_locale
+            WHERE platform_component_item_template_id IN (
+                SELECT id FROM platform_component_item_template
+                WHERE platform_wage_component_template_id IS NULL
+            )
+        </sql>
+        <sql>
+            DELETE FROM platform_component_item_template
+            WHERE platform_wage_component_template_id IS NULL
+        </sql>
+
+        <dropForeignKeyConstraint baseTableName="platform_component_item_template"
+                                  constraintName="fk_platform_component_item_template_wage_component"/>
+        <dropUniqueConstraint tableName="platform_component_item_template"
+                              constraintName="uk_platform_component_item_template_header_wage"/>
+        <dropColumn tableName="platform_component_item_template" columnName="platform_wage_component_id"/>
+
+        <addNotNullConstraint tableName="platform_component_item_template"
+                              columnName="platform_wage_component_template_id"
+                              columnDataType="VARCHAR(36)"/>
+
+        <addForeignKeyConstraint baseTableName="platform_component_item_template"
+                                 baseColumnNames="platform_wage_component_template_id"
+                                 constraintName="fk_platform_component_item_template_wage_template"
+                                 referencedTableName="platform_wage_component_template"
+                                 referencedColumnNames="id"/>
+
+        <addUniqueConstraint tableName="platform_component_item_template"
+                             columnNames="platform_component_header_template_id,platform_wage_component_template_id"
+                             constraintName="uk_platform_component_item_template_header_wage_template"/>
+    </changeSet>
+
+</databaseChangeLog>

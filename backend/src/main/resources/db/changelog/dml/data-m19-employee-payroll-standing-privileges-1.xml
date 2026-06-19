@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Privilege catalog + demo tenant role grants for employee payroll standing instructions.
+        ADMIN role template grants live in data-m19-role-template-employee-payroll-standing-privileges-1.xml
+        (must run after privilege rows exist). Demo Admin gets VIEW + MANAGE; demo Viewer gets VIEW only.
+    -->
+
+    <changeSet id="data-m19-priv-employee-payroll-standing-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000037"/>
+            <param name="code" value="EMPLOYEE_PAYROLL_STANDING_VIEW"/>
+            <param name="description" value="View employee payroll standing instructions and period wage transactions"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m19-priv-employee-payroll-standing-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000038"/>
+            <param name="code" value="EMPLOYEE_PAYROLL_STANDING_MANAGE"/>
+            <param name="description" value="Manage standing instructions, period wage transactions, and materialization"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m19-grant-rp-demo-admin-standing-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000037"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m19-grant-rp-demo-admin-standing-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000038"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m19-grant-rp-demo-viewer-standing-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000002"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000037"/>
+        </customChange>
+    </changeSet>
+</databaseChangeLog>

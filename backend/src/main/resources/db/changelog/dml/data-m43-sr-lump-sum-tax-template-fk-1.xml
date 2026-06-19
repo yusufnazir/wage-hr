@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Template 1024 (SUR_WAGE_TAX_LUMP_SUM) → SR_PAYMENTS_AT_ONCE_YEAR (not SR_WAGE_TAX_DEFAULT). -->
+    <changeSet id="data-m43-sr-lump-sum-tax-template-fk-1" author="wagepayroll">
+        <update tableName="platform_wage_component_template">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000002"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>id = '51000000-0000-0000-0000-000000000018'</where>
+        </update>
+        <update tableName="tenant_wage_component">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000002"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>platform_template_id = '51000000-0000-0000-0000-000000000018'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="create-table-platform-wage-component.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-platform-wage-component-template.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-platform-ledger-template.xml" relativeToChangelogFile="true"/>
+    <include file="alter-platform-wage-component-template-ledger.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-platform-country-tax-rule.xml" relativeToChangelogFile="true"/>
+    <include file="alter-platform-wage-component-template-legacy-fields.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-wage-component.xml" relativeToChangelogFile="true"/>
+    <include file="alter-tenant-wage-component-template-mirrored-fields.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-ledger.xml" relativeToChangelogFile="true"/>
+    <include file="alter-tenant-wage-component-ledger-fk.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-wage-component-transaction.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-payroll-result-line.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-wage-component-balance.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-wage-component-balance-transaction.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-tenant-employee-payroll-standing-instruction.xml" relativeToChangelogFile="true"/>
+    <include file="alter-table-tenant-employee-payroll-standing-instruction-overrides.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

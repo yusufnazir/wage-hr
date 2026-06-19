@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Demo compensation rows. Maria (1000) uses PER_HOUR to mirror the
+        reference screenshot; everyone else gets PER_PERIOD so the rates table
+        has variety. All rows reference the Standard 40h work time
+        (5fa00000-0000-4000-8000-000000000007) and SRD currency. The seeding
+        task is keyed by employee_id, so re-running is idempotent.
+
+        Compensation row IDs: 5fa00000-0000-4000-8000-000000000200..00000000021d
+    -->
+
+    <changeSet id="data-m22-demo-employee-compensation-1000" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000200"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000005"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_HOUR"/>
+            <param name="wageAmount" value="100.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+            <param name="applyTaxes" value="true"/>
+            <param name="applyTaxExempt" value="false"/>
+            <param name="applyAov" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m22-demo-employee-compensation-1001" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000201"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000006"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="6000.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+            <param name="applyTaxes" value="true"/>
+            <param name="applyTaxExempt" value="false"/>
+            <param name="applyAov" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <!-- Bulk employees: PER_PERIOD for everyone, salaries vary by role -->
+    <changeSet id="data-m22-demo-employee-compensation-1002" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000202"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000020"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="7500.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1003" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000203"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000021"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="6800.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1004" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000204"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000022"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4200.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1005" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000205"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000023"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3900.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1006" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000206"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000024"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4700.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1007" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000207"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000025"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5100.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1008" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000208"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000026"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4400.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1009" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000209"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000027"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3800.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1010" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020a"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000028"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5600.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1011" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020b"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000029"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4900.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1012" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020c"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002a"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4100.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1013" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020d"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002b"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="6200.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1014" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020e"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002c"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3700.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1015" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000020f"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002d"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4600.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1016" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000210"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002e"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5300.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1017" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000211"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000002f"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4300.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1018" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000212"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000030"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="6900.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1019" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000213"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000031"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3600.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1020" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000214"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000032"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5800.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1021" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000215"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000033"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4500.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1022" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000216"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000034"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3950.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1023" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000217"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000035"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5400.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1024" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000218"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000036"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4250.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1025" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000219"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000037"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4800.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1026" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000021a"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000038"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="3850.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1027" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000021b"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000039"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="5050.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1028" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000021c"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000003a"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4150.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m22-demo-employee-compensation-1029" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeCompensation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000021d"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-00000000003b"/>
+            <param name="currencyCode" value="SRD"/>
+            <param name="wageType" value="PER_PERIOD"/>
+            <param name="wageAmount" value="4650.00"/>
+            <param name="workTimeId" value="5fa00000-0000-4000-8000-000000000007"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

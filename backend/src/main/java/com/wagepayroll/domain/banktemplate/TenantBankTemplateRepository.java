@@ -15,4 +15,7 @@ public interface TenantBankTemplateRepository extends JpaRepository<TenantBankTe
 			Pageable pageable);
 
 	Optional<TenantBankTemplateEntity> findByIdAndTenantId(UUID id, UUID tenantId);
+
+	boolean existsByTenantIdAndCompanyIdAndPlatformBankTemplateId(UUID tenantId, UUID companyId,
+			UUID platformBankTemplateId);
 }

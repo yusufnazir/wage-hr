@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m19-nav-employee-payroll-inputs-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <comment>Tenant navigation: recurring employee payroll inputs (standing instructions + period rows).</comment>
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertNavMenuItem">
+            <param name="id" value="50000000-0000-0000-0000-000000000020"/>
+            <param name="path" value="/app/employee-payroll-inputs"/>
+            <param name="labelKey" value="nav.employee_payroll_inputs"/>
+            <param name="sortOrder" value="48"/>
+            <param name="requiredPrivilegeCode" value="EMPLOYEE_PAYROLL_STANDING_VIEW"/>
+            <param name="requiredPlanFeatureCode" value=""/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

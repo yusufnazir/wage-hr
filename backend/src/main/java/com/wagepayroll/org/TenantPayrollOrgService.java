@@ -4,7 +4,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,8 +25,13 @@ import com.wagepayroll.api.dto.TenantJobUpsertRequest;
 import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
 import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
 import com.wagepayroll.banktemplate.BankTemplateCopyService;
+import com.wagepayroll.ledger.LedgerTemplateCopyService;
 import com.wagepayroll.document.MinioDocumentStorageGateway;
 import com.wagepayroll.domain.country.PlatformCountryRepository;
+import com.wagepayroll.domain.currency.PlatformCurrencyEntity;
+import com.wagepayroll.domain.currency.PlatformCurrencyRepository;
+import com.wagepayroll.domain.currency.TenantCurrencyEntity;
+import com.wagepayroll.domain.currency.TenantCurrencyRepository;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
 import com.wagepayroll.domain.org.TenantCompanyRepository;
 import com.wagepayroll.domain.org.TenantDepartmentEntity;
@@ -37,6 +44,9 @@ import com.wagepayroll.domain.org.TenantJobEntity;
 import com.wagepayroll.domain.org.TenantJobRepository;
 import com.wagepayroll.domain.org.TenantWorkTimeEntity;
 import com.wagepayroll.domain.org.TenantWorkTimeRepository;
+import com.wagepayroll.payperiod.TenantPayPeriodService;
+import com.wagepayroll.payroll.catalog.DefaultPayrollCatalogProvisioningService;
+import com.wagepayroll.payrollstanding.TenantEmployeePayrollStandingProvisionService;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -70,14 +80,25 @@ public class TenantPayrollOrgService {
 	private final TenantEmployeeRepository employeeRepository;
 	private final TenantWorkTimeRepository workTimeRepository;
 	private final PlatformCountryRepository platformCountryRepository;
+	private final PlatformCurrencyRepository platformCurrencyRepository;
+	private final TenantCurrencyRepository tenantCurrencyRepository;
 	private final MinioDocumentStorageGateway storageGateway;
 	private final BankTemplateCopyService bankTemplateCopyService;
+	private final LedgerTemplateCopyService ledgerTemplateCopyService;
+	private final TenantPayPeriodService payPeriodService;
+	private final DefaultPayrollCatalogProvisioningService defaultPayrollCatalogProvisioningService;
+	private final TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService;
 
 	public TenantPayrollOrgService(TenantCompanyRepository companyRepository, TenantDepartmentRepository departmentRepository,
 			TenantJobRepository jobRepository, TenantEmployeeGroupRepository employeeGroupRepository,
 			TenantEmployeeRepository employeeRepository, TenantWorkTimeRepository workTimeRepository,
-			PlatformCountryRepository platformCountryRepository, MinioDocumentStorageGateway storageGateway,
-			BankTemplateCopyService bankTemplateCopyService) {
+			PlatformCountryRepository platformCountryRepository,
+			PlatformCurrencyRepository platformCurrencyRepository,
+			TenantCurrencyRepository tenantCurrencyRepository, MinioDocumentStorageGateway storageGateway,
+			BankTemplateCopyService bankTemplateCopyService, LedgerTemplateCopyService ledgerTemplateCopyService,
+			TenantPayPeriodService payPeriodService,
+			DefaultPayrollCatalogProvisioningService defaultPayrollCatalogProvisioningService,
+			TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService) {
 		this.companyRepository = companyRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobRepository = jobRepository;
@@ -85,8 +106,14 @@ public class TenantPayrollOrgService {
 		this.employeeRepository = employeeRepository;
 		this.workTimeRepository = workTimeRepository;
 		this.platformCountryRepository = platformCountryRepository;
+		this.platformCurrencyRepository = platformCurrencyRepository;
+		this.tenantCurrencyRepository = tenantCurrencyRepository;
 		this.storageGateway = storageGateway;
 		this.bankTemplateCopyService = bankTemplateCopyService;
+		this.ledgerTemplateCopyService = ledgerTemplateCopyService;
+		this.payPeriodService = payPeriodService;
+		this.defaultPayrollCatalogProvisioningService = defaultPayrollCatalogProvisioningService;
+		this.payrollStandingProvisionService = payrollStandingProvisionService;
 	}
 
 	@Transactional(readOnly = true)
@@ -114,6 +141,9 @@ public class TenantPayrollOrgService {
 		entity.setUpdatedAt(now);
 		TenantCompanyEntity saved = saveWithConflict(entity);
 		bankTemplateCopyService.copyForCompany(tenantId, saved.getId(), saved.getPayrollCountry());
+		ledgerTemplateCopyService.copyForCompany(tenantId, saved.getId(), saved.getPayrollCountry());
+		defaultPayrollCatalogProvisioningService.provisionForCompany(tenantId, saved.getId(), saved.getPayrollCountry());
+		payPeriodService.generatePayPeriodsForCompany(tenantId, saved.getId(), null, 2);
 		return toCompanyDto(saved);
 	}
 
@@ -321,21 +351,44 @@ public class TenantPayrollOrgService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<TenantEmployeeItemDto> listEmployees(UUID tenantId, UUID companyId, UUID departmentId, UUID jobId,
-			UUID employeeGroupId, String status, int page, int size, String sort, Boolean active) {
-		requireCompany(tenantId, companyId);
+	public Page<TenantEmployeeItemDto> listEmployees(UUID tenantId, List<UUID> companyIds, UUID departmentId, UUID jobId,
+			UUID employeeGroupId, String status, String firstName, String lastName, int page, int size, String sort,
+			Boolean active) {
+		List<UUID> normalizedCompanyIds = companyIds == null ? List.of()
+				: companyIds.stream().filter(Objects::nonNull).distinct().toList();
+		UUID singleCompanyId = normalizedCompanyIds.size() == 1 ? normalizedCompanyIds.get(0) : null;
+		for (UUID cid : normalizedCompanyIds) {
+			requireCompany(tenantId, cid);
+		}
 		Specification<TenantEmployeeEntity> spec = (root, query, cb) -> cb.equal(root.get("tenantId"), tenantId);
-		spec = spec.and((root, query, cb) -> cb.equal(root.get("companyId"), companyId));
+		if (!normalizedCompanyIds.isEmpty()) {
+			spec = spec.and((root, query, cb) -> root.get("companyId").in(normalizedCompanyIds));
+		}
 		if (departmentId != null) {
-			requireDepartment(tenantId, departmentId, companyId);
+			if (singleCompanyId != null) {
+				requireDepartment(tenantId, departmentId, singleCompanyId);
+			}
+			else {
+				requireDepartment(tenantId, departmentId);
+			}
 			spec = spec.and((root, query, cb) -> cb.equal(root.get("departmentId"), departmentId));
 		}
 		if (jobId != null) {
-			requireJob(tenantId, jobId, companyId);
+			if (singleCompanyId != null) {
+				requireJob(tenantId, jobId, singleCompanyId);
+			}
+			else {
+				requireJob(tenantId, jobId);
+			}
 			spec = spec.and((root, query, cb) -> cb.equal(root.get("jobId"), jobId));
 		}
 		if (employeeGroupId != null) {
-			requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+			if (singleCompanyId != null) {
+				requireEmployeeGroup(tenantId, employeeGroupId, singleCompanyId);
+			}
+			else {
+				requireEmployeeGroup(tenantId, employeeGroupId);
+			}
 			spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeGroupId"), employeeGroupId));
 		}
 		if (status != null && !status.isBlank()) {
@@ -344,6 +397,14 @@ public class TenantPayrollOrgService {
 		}
 		if (active != null) {
 			spec = spec.and((root, query, cb) -> cb.equal(root.get("active"), active.booleanValue()));
+		}
+		if (firstName != null && !firstName.isBlank()) {
+			String pattern = "%" + firstName.trim().toLowerCase() + "%";
+			spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("firstName")), pattern));
+		}
+		if (lastName != null && !lastName.isBlank()) {
+			String pattern = "%" + lastName.trim().toLowerCase() + "%";
+			spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("lastName")), pattern));
 		}
 		Pageable pageable = pageable(page, size, sort, Set.of("lastName", "firstName", "hireDate", "updatedAt"),
 				"lastName");
@@ -379,7 +440,10 @@ public class TenantPayrollOrgService {
 		Instant now = Instant.now();
 		entity.setCreatedAt(now);
 		entity.setUpdatedAt(now);
-		return toEmployeeDto(saveWithConflict(entity));
+		TenantEmployeeEntity saved = saveWithConflict(entity);
+		payrollStandingProvisionService.provisionForNewEmployee(tenantId, companyId, saved.getId(),
+				saved.getHireDate());
+		return toEmployeeDto(saved);
 	}
 
 	@Transactional
@@ -497,6 +561,7 @@ public class TenantPayrollOrgService {
 			throw badRequest("payrollCountry must be active and payroll-enabled");
 		}
 		entity.setCurrency(normalizeIso3(request.currency(), "currency"));
+		ensureTenantCurrencyAssigned(entity.getTenantId(), entity.getCurrency());
 		entity.setPayrollFrequency(normalizePayrollFrequency(request.payrollFrequency()));
 		entity.setTimezone(requireText(request.timezone(), "timezone", 60));
 		entity.setDateFormat(requireText(request.dateFormat(), "dateFormat", 20));
@@ -531,6 +596,19 @@ public class TenantPayrollOrgService {
 
 		entity.setPayPeriodEndDate(payPeriodEndDate);
 		entity.setTimesheetEndDate(timesheetEndDate);
+
+		Integer currentYear = normalizeCurrentYear(request.currentYear());
+		if (currentYear == null) {
+			currentYear = entity.getCurrentYear() != null ? entity.getCurrentYear() : payPeriodEndDate.getYear();
+		}
+		Integer currentPeriod = normalizeCurrentPeriod(request.currentPeriod(), entity.getPayrollFrequency());
+		if (currentPeriod == null) {
+			currentPeriod = entity.getCurrentPeriod() != null ? entity.getCurrentPeriod()
+					: deriveCurrentPeriod(payPeriodEndDate, entity.getPayrollFrequency());
+		}
+		entity.setCurrentYear(currentYear);
+		entity.setCurrentPeriod(currentPeriod);
+
 		if (create) {
 			entity.setActive(request.active() == null ? true : request.active().booleanValue());
 		}
@@ -666,6 +744,73 @@ public class TenantPayrollOrgService {
 		else if (request.active() != null) {
 			entity.setActive(request.active().booleanValue());
 		}
+		String badgeNumber = trimToNull(request.badgeNumber());
+		if (badgeNumber != null && badgeNumber.length() > 40) {
+			throw badRequest("badgeNumber exceeds max length 40");
+		}
+		if (badgeNumber != null) {
+			boolean clash = create
+					? employeeRepository.existsByTenantIdAndCompanyIdAndBadgeNumber(entity.getTenantId(),
+							entity.getCompanyId(), badgeNumber)
+					: employeeRepository.existsByTenantIdAndCompanyIdAndBadgeNumberAndIdNot(entity.getTenantId(),
+							entity.getCompanyId(), badgeNumber, entity.getId());
+			if (clash) {
+				throw conflict("An employee with this badge number already exists in the company");
+			}
+		}
+		entity.setBadgeNumber(badgeNumber);
+		entity.setIdNumber(trimToNull(request.idNumber()));
+		entity.setGender(normalizeGender(request.gender()));
+		entity.setNationality(optionalIso2(request.nationality(), "nationality"));
+		entity.setPlaceOfBirth(trimToNull(request.placeOfBirth()));
+		entity.setCivilState(normalizeCivilState(request.civilState()));
+		entity.setResignationDate(request.resignationDate());
+		entity.setAddressStreet(trimToNull(request.addressStreet()));
+		entity.setAddressNumber(trimToNull(request.addressNumber()));
+		entity.setAddressCity(trimToNull(request.addressCity()));
+		entity.setAddressCountry(optionalIso2(request.addressCountry(), "addressCountry"));
+		entity.setAddressPostalCode(trimToNull(request.addressPostalCode()));
+	}
+
+	private static final Set<String> EMPLOYEE_GENDERS = Set.of("MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY");
+
+	private static final Set<String> EMPLOYEE_CIVIL_STATES = Set.of("SINGLE", "MARRIED", "DIVORCED", "WIDOWED",
+			"DOMESTIC_PARTNERSHIP");
+
+	private String normalizeGender(String value) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
+			return null;
+		}
+		String normalized = trimmed.toUpperCase(Locale.ROOT);
+		if (!EMPLOYEE_GENDERS.contains(normalized)) {
+			throw badRequest("gender must be one of " + EMPLOYEE_GENDERS);
+		}
+		return normalized;
+	}
+
+	private String normalizeCivilState(String value) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
+			return null;
+		}
+		String normalized = trimmed.toUpperCase(Locale.ROOT);
+		if (!EMPLOYEE_CIVIL_STATES.contains(normalized)) {
+			throw badRequest("civilState must be one of " + EMPLOYEE_CIVIL_STATES);
+		}
+		return normalized;
+	}
+
+	private String optionalIso2(String value, String field) {
+		String trimmed = trimToNull(value);
+		if (trimmed == null) {
+			return null;
+		}
+		String normalized = trimmed.toUpperCase(Locale.ROOT);
+		if (!normalized.matches("^[A-Z]{2}$")) {
+			throw badRequest(field + " must be ISO-2");
+		}
+		return normalized;
 	}
 
 	private void applyWorkTime(TenantWorkTimeEntity entity, TenantWorkTimeUpsertRequest request, boolean create) {
@@ -866,6 +1011,33 @@ public class TenantPayrollOrgService {
 		return normalized;
 	}
 
+	/**
+	 * Validates that {@code code} exists in the active platform currency catalog and ensures the tenant has a
+	 * {@code tenant_currency} link to it. Inserts the link if missing so company create/update works on tenants
+	 * that have not yet visited the Currencies setup screen. Mirrors {@code BankTemplateCopyService} as a silent
+	 * cascading side-effect of writing the parent entity.
+	 */
+	private void ensureTenantCurrencyAssigned(UUID tenantId, String code) {
+		PlatformCurrencyEntity platformCurrency = platformCurrencyRepository.findByCodeIgnoreCase(code)
+				.orElseThrow(() -> badRequest("UNKNOWN_OR_INACTIVE_PLATFORM_CURRENCY_CODE"));
+		if (!platformCurrency.isActive()) {
+			throw badRequest("UNKNOWN_OR_INACTIVE_PLATFORM_CURRENCY_CODE");
+		}
+		boolean alreadyLinked = tenantCurrencyRepository.findByTenantIdOrderByCreatedAtAsc(tenantId).stream()
+				.anyMatch((row) -> row.getPlatformCurrencyId().equals(platformCurrency.getId()));
+		if (alreadyLinked) {
+			return;
+		}
+		Instant now = Instant.now();
+		TenantCurrencyEntity link = new TenantCurrencyEntity();
+		link.setId(UUID.randomUUID());
+		link.setTenantId(tenantId);
+		link.setPlatformCurrencyId(platformCurrency.getId());
+		link.setCreatedAt(now);
+		link.setUpdatedAt(now);
+		tenantCurrencyRepository.save(link);
+	}
+
 	private String normalizeIso3(String value, String field) {
 		if (value == null || value.isBlank()) {
 			throw badRequest(field + " is required");
@@ -914,6 +1086,47 @@ public class TenantPayrollOrgService {
 
 	private boolean isLastDayOfMonth(LocalDate date) {
 		return date != null && date.getDayOfMonth() == date.lengthOfMonth();
+	}
+
+	private Integer normalizeCurrentYear(Integer value) {
+		if (value == null) {
+			return null;
+		}
+		if (value < 1900 || value > 2200) {
+			throw badRequest("currentYear must be a valid calendar year");
+		}
+		return value;
+	}
+
+	private Integer normalizeCurrentPeriod(Integer value, String payrollFrequency) {
+		if (value == null) {
+			return null;
+		}
+		if (value <= 0) {
+			throw badRequest("currentPeriod must be greater than 0");
+		}
+		int max = switch (payrollFrequency) {
+			case "WEEKLY" -> 53;
+			case "BIWEEKLY" -> 27;
+			case "SEMIMONTHLY" -> 24;
+			default -> 12;
+		};
+		if (value > max) {
+			throw badRequest("currentPeriod is out of range for payrollFrequency");
+		}
+		return value;
+	}
+
+	private int deriveCurrentPeriod(LocalDate endDate, String payrollFrequency) {
+		if (endDate == null) {
+			return 1;
+		}
+		return switch (payrollFrequency) {
+			case "WEEKLY" -> (endDate.getDayOfYear() + 6) / 7;
+			case "BIWEEKLY" -> (endDate.getDayOfYear() + 13) / 14;
+			case "SEMIMONTHLY" -> (endDate.getMonthValue() - 1) * 2 + (endDate.getDayOfMonth() <= 15 ? 1 : 2);
+			default -> endDate.getMonthValue();
+		};
 	}
 
 	private BigDecimal requirePositive(BigDecimal value, String message) {
@@ -968,6 +1181,7 @@ public class TenantPayrollOrgService {
 				e.getStateRegion(), e.getPostalCode(), e.getCountry(),
 				e.getPayPeriodEndDate() != null ? e.getPayPeriodEndDate().toString() : null,
 				e.getTimesheetEndDate() != null ? e.getTimesheetEndDate().toString() : null,
+				e.getCurrentYear(), e.getCurrentPeriod(),
 				e.isActive(), logoUrl, e.getCreatedAt(),
 				e.getUpdatedAt());
 	}
@@ -1036,7 +1250,10 @@ public class TenantPayrollOrgService {
 
 	private TenantEmployeeItemDto toEmployeeDto(TenantEmployeeEntity e) {
 		return new TenantEmployeeItemDto(e.getId(), e.getCompanyId(), e.getDepartmentId(), e.getJobId(),
-				e.getEmployeeGroupId(), e.getFirstName(), e.getLastName(), e.getDateOfBirth(), e.getHireDate(), e.getEmail(),
-				e.getPhone(), e.getStatus(), e.isActive(), e.getCreatedAt(), e.getUpdatedAt());
+				e.getEmployeeGroupId(), e.getFirstName(), e.getLastName(), e.getDateOfBirth(), e.getHireDate(),
+				e.getEmail(), e.getPhone(), e.getStatus(), e.isActive(), e.getBadgeNumber(), e.getIdNumber(),
+				e.getGender(), e.getNationality(), e.getPlaceOfBirth(), e.getCivilState(), e.getResignationDate(),
+				e.getAddressStreet(), e.getAddressNumber(), e.getAddressCity(), e.getAddressCountry(),
+				e.getAddressPostalCode(), e.getCreatedAt(), e.getUpdatedAt());
 	}
 }

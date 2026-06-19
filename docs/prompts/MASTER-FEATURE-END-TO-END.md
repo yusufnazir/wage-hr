@@ -80,10 +80,10 @@ If the module doc is incomplete, **expand it first** with explicit acceptance cr
 
 ## Example Cursor message (copy and adjust)
 
-Replace `{feature-slug}` with the real slug (e.g. `notifications-inbox`). Replace `@wage-payroll` with your **`@`** repo root folder name. **Omit** the two `docs/guides/…` lines only for features with **no** Liquibase, entity, or persistence changes.
+Replace `{feature-slug}` with the real slug (e.g. `notifications-inbox`). Replace `@[project-name]` with your **`@`** repo root folder name. **Omit** the two `docs/guides/…` lines only for features with **no** Liquibase, entity, or persistence changes.
 
 ```text
-Run feature (Phases 0–4): @docs/prompts/MASTER-FEATURE-END-TO-END.md — filled values: @docs/prompts/PROJECT-CONTEXT.md — module (sole behavioral + schema authority): @docs/modules/{feature-slug}.md — @docs/guides/SCHEMA-PERSISTENCE-PREFLIGHT.md — @docs/guides/DATA-MODEL-STANDARDS.md — docs: @docs — repo root: @wage-payroll
+Run feature (Phases 0–4): @docs/prompts/MASTER-FEATURE-END-TO-END.md — filled values: @docs/prompts/PROJECT-CONTEXT.md — module (sole behavioral + schema authority): @docs/modules/{feature-slug}.md — @docs/guides/SCHEMA-PERSISTENCE-PREFLIGHT.md — @docs/guides/DATA-MODEL-STANDARDS.md — docs: @docs — repo root: @[project-name]
 
 Existing codebase: foundation (scaffold + security) is already in place. Execute MASTER-FEATURE-END-TO-END for this feature using the single attached module doc as the contract — backend (depth of docs/templates/4. BACKEND-FEATURE-PROMPT.md), web (5), mobile (6), then Phase 4 verification. Read docs/guides/README.md and docs/output/ARCHITECTURE-DEFINITION.md; if architecture conflicts with PROJECT-CONTEXT or the module doc, follow PROJECT-CONTEXT + module. Do not merge schema assumptions from other module docs. Do not use MASTER-FOUNDATION-TO-FEATURES or greenfield scaffold Phases 2–3 unless the module explicitly requires net-new stack work. If the module doc is incomplete, expand it with acceptance criteria before implementing — do not shrink scope silently. When done, update the module doc, add or refresh docs/output/FEATURE-{feature-slug}-VERIFICATION.md if used, and confirm builds/tests for all touched areas.
 ```

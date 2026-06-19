@@ -61,8 +61,9 @@ class NavigationAndSettingsIT {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.items.length()").value(1))
 				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.group.administration"))
-				.andExpect(jsonPath("$.data.items[0].children.length()").value(6))
-				.andExpect(jsonPath("$.data.items[0].children[0].labelKey").value("nav.platform_tenants"));
+				.andExpect(jsonPath("$.data.items[0].children.length()").value(11))
+				.andExpect(jsonPath("$.data.items[0].children[*].labelKey", hasItem("nav.platform_tenants")))
+				.andExpect(jsonPath("$.data.items[0].children[*].labelKey", hasItem("nav.platform_component_group_templates")));
 	}
 
 	@Test
@@ -71,7 +72,7 @@ class NavigationAndSettingsIT {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.items.length()").value(2))
 				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.group.workspace"))
-				.andExpect(jsonPath("$.data.items[0].children.length()").value(2))
+				.andExpect(jsonPath("$.data.items[0].children.length()").value(9))
 				.andExpect(jsonPath("$.data.items[1].labelKey").value("nav.group.security"))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2));
 	}
@@ -82,11 +83,12 @@ class NavigationAndSettingsIT {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.items.length()").value(3))
 				.andExpect(jsonPath("$.data.items[0].labelKey").value("nav.group.workspace"))
-			.andExpect(jsonPath("$.data.items[0].children.length()").value(11))
+			.andExpect(jsonPath("$.data.items[0].children.length()").value(16))
 				.andExpect(jsonPath("$.data.items[1].labelKey").value("nav.group.security"))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
 				.andExpect(jsonPath("$.data.items[2].labelKey").value("nav.group.administration"))
-				.andExpect(jsonPath("$.data.items[2].children.length()").value(6));
+				.andExpect(jsonPath("$.data.items[2].children.length()").value(11))
+				.andExpect(jsonPath("$.data.items[2].children[*].labelKey", hasItem("nav.platform_component_group_templates")));
 	}
 
 	@Test
@@ -96,9 +98,9 @@ class NavigationAndSettingsIT {
 		navMenuItemRepository.save(dash);
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(10))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(15))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
-				.andExpect(jsonPath("$.data.items[2].children.length()").value(6));
+				.andExpect(jsonPath("$.data.items[2].children.length()").value(11));
 
 		UUID billingFeatureId = planFeatureRepository.findByCode("COMMERCIAL_BILLING").orElseThrow().getId();
 		String createPlan = "{\"code\":\"m3_navfeat\",\"sortOrder\":1,\"active\":true,\"planFeatureIds\":[\"%s\"]}"
@@ -113,9 +115,9 @@ class NavigationAndSettingsIT {
 				.content(subBody).with(user(ADMIN_USER_ID)).with(csrf())).andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/v1/me/navigation").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(11))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.items[0].children.length()").value(16))
 				.andExpect(jsonPath("$.data.items[1].children.length()").value(2))
-				.andExpect(jsonPath("$.data.items[2].children.length()").value(6));
+				.andExpect(jsonPath("$.data.items[2].children.length()").value(11));
 	}
 
 	@Test

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m16-platform-ledger-template-locale-table-1" author="wagepayroll">
+        <createTable tableName="platform_ledger_template_locale">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="platform_ledger_template_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="VARCHAR(35)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="platform_ledger_template_locale"
+                                 baseColumnNames="platform_ledger_template_id"
+                                 constraintName="fk_platform_ledger_template_locale_template"
+                                 referencedTableName="platform_ledger_template"
+                                 referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="platform_ledger_template_locale"
+                             columnNames="platform_ledger_template_id,locale"
+                             constraintName="uk_platform_ledger_template_locale_template_locale"/>
+        <createIndex indexName="idx_platform_ledger_template_locale_template"
+                     tableName="platform_ledger_template_locale">
+            <column name="platform_ledger_template_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="data-m16-platform-ledger-template-locale-seed-from-column-1" author="wagepayroll">
+        <comment>Copy legacy description into en and nl locale rows, then drop description column.</comment>
+        <sql>
+            INSERT INTO platform_ledger_template_locale (id, platform_ledger_template_id, locale, description)
+            SELECT UUID(), t.id, 'en', t.description
+            FROM platform_ledger_template t
+            WHERE NOT EXISTS (
+                SELECT 1 FROM platform_ledger_template_locale x
+                WHERE x.platform_ledger_template_id = t.id AND x.locale = 'en'
+            );
+        </sql>
+        <sql>
+            INSERT INTO platform_ledger_template_locale (id, platform_ledger_template_id, locale, description)
+            SELECT UUID(), t.id, 'nl', t.description
+            FROM platform_ledger_template t
+            WHERE NOT EXISTS (
+                SELECT 1 FROM platform_ledger_template_locale x
+                WHERE x.platform_ledger_template_id = t.id AND x.locale = 'nl'
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="data-m16-platform-ledger-template-drop-description-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="platform_ledger_template" columnName="description"/>
+        </preConditions>
+        <dropColumn tableName="platform_ledger_template" columnName="description"/>
+    </changeSet>
+
+</databaseChangeLog>

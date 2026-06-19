@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Placeholder statutory components for Suriname (SR). Rates live in platform_country_tax_rule / future engine. -->
+    <changeSet id="data-m13-seed-platform-wage-sr-1" author="wagepayroll">
+        <insert tableName="platform_wage_component">
+            <column name="id" value="50000000-0000-0000-0000-000000000001"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="WAGE_TAX"/>
+            <column name="name" value="Wage tax (placeholder)"/>
+            <column name="description" value="Statutory wage tax slot for Suriname; parameters from tax rules."/>
+            <column name="statutory" valueBoolean="true"/>
+            <column name="component_type" value="DEDUCTION"/>
+            <column name="category" value="TAX"/>
+            <column name="net_effect" value="SUBTRACT_FROM_NET"/>
+            <column name="taxable_wage_tax" valueBoolean="false"/>
+            <column name="taxable_social_security" valueBoolean="true"/>
+            <column name="taxable_pension" valueBoolean="false"/>
+            <column name="taxable_vacation_reserve" valueBoolean="false"/>
+            <column name="calculation_method" value="PERCENTAGE"/>
+            <column name="percentage_base" value="GROSS_TAXABLE"/>
+            <column name="rounding_strategy" value="HALF_UP"/>
+            <column name="processing_order" valueNumeric="100"/>
+            <column name="phase" value="TAX"/>
+            <column name="maintains_balance" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component">
+            <column name="id" value="50000000-0000-0000-0000-000000000002"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="SOCIAL_PREMIUM_EE"/>
+            <column name="name" value="Employee social premium (placeholder)"/>
+            <column name="description" value="Employee social premium; percentage from country rules."/>
+            <column name="statutory" valueBoolean="true"/>
+            <column name="component_type" value="DEDUCTION"/>
+            <column name="category" value="SOCIAL_SECURITY"/>
+            <column name="net_effect" value="SUBTRACT_FROM_NET"/>
+            <column name="taxable_wage_tax" valueBoolean="true"/>
+            <column name="taxable_social_security" valueBoolean="false"/>
+            <column name="taxable_pension" valueBoolean="false"/>
+            <column name="taxable_vacation_reserve" valueBoolean="false"/>
+            <column name="calculation_method" value="PERCENTAGE"/>
+            <column name="percentage_base" value="GROSS_TAXABLE"/>
+            <column name="rounding_strategy" value="HALF_UP"/>
+            <column name="processing_order" valueNumeric="110"/>
+            <column name="phase" value="TAX"/>
+            <column name="maintains_balance" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component">
+            <column name="id" value="50000000-0000-0000-0000-000000000003"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="SOCIAL_PREMIUM_ER"/>
+            <column name="name" value="Employer social premium (placeholder)"/>
+            <column name="description" value="Employer social premium; informational for net, expense-side posting later."/>
+            <column name="statutory" valueBoolean="true"/>
+            <column name="component_type" value="EMPLOYER_CONTRIBUTION"/>
+            <column name="category" value="SOCIAL_SECURITY"/>
+            <column name="net_effect" value="NO_EFFECT"/>
+            <column name="taxable_wage_tax" valueBoolean="false"/>
+            <column name="taxable_social_security" valueBoolean="false"/>
+            <column name="taxable_pension" valueBoolean="false"/>
+            <column name="taxable_vacation_reserve" valueBoolean="false"/>
+            <column name="calculation_method" value="PERCENTAGE"/>
+            <column name="percentage_base" value="GROSS_TAXABLE"/>
+            <column name="rounding_strategy" value="HALF_UP"/>
+            <column name="processing_order" valueNumeric="120"/>
+            <column name="phase" value="TAX"/>
+            <column name="maintains_balance" valueBoolean="false"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m13-seed-platform-wage-templates-sr-1" author="wagepayroll">
+        <comment>SR wage component templates: template_code is numeric (1001+). Human labels stay in name/description.</comment>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000001"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1001"/>
+            <column name="name" value="Base salary"/>
+            <column name="description" value="Standard monthly or hourly wage component."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"SALARY","netEffect":"ADD_TO_NET","calculationMethod":"FORMULA","formulaMode":"CRITERIA_RULES","formulaRules":[{"criteriaType":"WAGE_TYPE","itemKey":"PER_HOUR","itemLabel":"Per hour","formulaExpression":"transaction.quantity * transaction.rate"},{"criteriaType":"WAGE_TYPE","itemKey":"PER_PERIOD","itemLabel":"Per period","formulaExpression":"compensation.periodic_rate"}],"defaultFormulaExpression":"compensation.periodic_rate","phase":"GROSS","processingOrder":1010,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false}'/>
+            <column name="processing_order_hint" valueNumeric="1010"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000002"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1002"/>
+            <column name="name" value="Overtime"/>
+            <column name="description" value="Overtime earnings (hours × rate or transaction amount)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"OVERTIME","netEffect":"ADD_TO_NET","calculationMethod":"HOURLY","phase":"GROSS","processingOrder":1020,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false}'/>
+            <column name="processing_order_hint" valueNumeric="1020"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000003"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1003"/>
+            <column name="name" value="Loan repayment deduction"/>
+            <column name="description" value="Fixed or percentage repayment; pair with loan counter account via counter component."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"LOAN","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"FIXED_AMOUNT","phase":"POST_TAX","processingOrder":6010,"maintainsBalance":true,"balanceType":"LOAN","balanceDirection":"DEBIT","taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false}'/>
+            <column name="processing_order_hint" valueNumeric="6010"/>
+            <column name="phase_hint" value="POST_TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m13-seed-platform-tax-rule-sr-placeholder-1" author="wagepayroll">
+        <insert tableName="platform_country_tax_rule">
+            <column name="id" value="52000000-0000-0000-0000-000000000001"/>
+            <column name="country_code" value="SR"/>
+            <column name="rule_code" value="SR_WAGE_TAX_DEFAULT"/>
+            <column name="name" value="Suriname wage tax placeholder"/>
+            <column name="effective_from" valueDate="2026-01-01"/>
+            <column name="parameters_json" value='{"engineVersion":1,"note":"Replace with official brackets; used by SurinameCountryRuleProvider."}'/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

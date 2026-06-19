@@ -1,5 +1,7 @@
 package com.wagepayroll.domain.org;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +27,7 @@ public interface TenantWorkTimeRepository extends JpaRepository<TenantWorkTimeEn
 	boolean existsByTenantIdAndCompanyIdAndCode(UUID tenantId, UUID companyId, String code);
 
 	boolean existsByTenantIdAndCompanyIdAndCodeAndIdNot(UUID tenantId, UUID companyId, String code, UUID id);
+
+	List<TenantWorkTimeEntity> findByTenantIdAndCompanyIdAndIdIn(UUID tenantId, UUID companyId,
+			Collection<UUID> workTimeIds);
 }

@@ -42,9 +42,6 @@ public class TenantBankTemplateEntity extends TenantScopedEntity {
 	@Column(name = "account_number_format", length = 100)
 	private String accountNumberFormat;
 
-	@Column(name = "currency_code", length = 3, columnDefinition = "CHAR(3)")
-	private String currencyCode;
-
 	@Column(name = "active", nullable = false)
 	private boolean active;
 
@@ -116,14 +113,6 @@ public class TenantBankTemplateEntity extends TenantScopedEntity {
 
 	public void setAccountNumberFormat(String accountNumberFormat) {
 		this.accountNumberFormat = accountNumberFormat;
-	}
-
-	public String getCurrencyCode() {
-		return currencyCode;
-	}
-
-	public void setCurrencyCode(String currencyCode) {
-		this.currencyCode = currencyCode;
 	}
 
 	public boolean isActive() {

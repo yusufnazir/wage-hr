@@ -6,6 +6,10 @@ import type { MePayload, NavigationItem, TenantSummary } from "@/lib/api";
 
 export type TenantAppSessionValue = {
   me: MePayload;
+  hasCompany: boolean | null;
+  hasCompanyLoadError: number | null;
+  primaryCompanyId: string | null;
+  markCompanyCreated: (companyId?: string) => void;
   navigation: NavigationItem[];
   navigationLoadError: number | null;
   tenants: TenantSummary[];

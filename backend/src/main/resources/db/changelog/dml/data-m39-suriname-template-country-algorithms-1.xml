@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Propagate template algorithm links to existing tenant copies (requires m25 tax rules). -->
+    <changeSet id="data-m39-suriname-tenant-country-algorithms-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM platform_country_tax_rule WHERE id = '52000000-0000-0000-0000-00000000000b'
+            </sqlCheck>
+        </preConditions>
+        <update tableName="tenant_wage_component">
+            <column name="country_rule_key" value="SUR_FREE_MEDICAL_BENEFIT"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-00000000000b"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>platform_template_id = '51000000-0000-0000-0000-00000000002a'</where>
+        </update>
+        <update tableName="tenant_wage_component">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000006"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>platform_template_id = '51000000-0000-0000-0000-000000000024'</where>
+        </update>
+        <update tableName="tenant_wage_component">
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000007"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <where>platform_template_id = '51000000-0000-0000-0000-000000000005'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

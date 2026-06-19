@@ -202,7 +202,7 @@ Platform SuperAdmin manages the catalog. Tenant users manage their company-scope
 | BR-2 | `country_code` on `platform_bank_template` is **immutable** after creation. Return **400** if client sends it on edit. |
 | BR-3 | `name` is required, non-blank, max 150 characters (trimmed). |
 | BR-4 | `swift_bic`, when provided, must match the SWIFT/BIC pattern `^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$` (uppercase). Return **400** `INVALID_SWIFT_BIC` if violated. |
-| BR-5 | `currency_code`, when provided, must be a 3-letter uppercase string. Further validation against a known list is deferred; v1 validates format only. |
+| BR-5 | Deactivating an already-inactive template → **409 BANK_TEMPLATE_ALREADY_INACTIVE**. Activating an already-active template → **409 BANK_TEMPLATE_ALREADY_ACTIVE**. |
 | BR-6 | Deactivating an already-inactive template → **409 BANK_TEMPLATE_ALREADY_INACTIVE**. Activating an already-active template → **409 BANK_TEMPLATE_ALREADY_ACTIVE**. |
 | BR-7 | Platform templates **cannot be hard-deleted** (referenced by tenant copies). Deactivation is the only removal mechanism. |
 | BR-8 | On company create: fetch all active `platform_bank_template` rows for `payroll_country`; copy each into `tenant_bank_template`. If zero active templates exist for the country, no error is raised. |
@@ -252,13 +252,13 @@ All routes: **authenticated**; **no** `TenantContext` required. `PlatformOperato
 | Method | Path | Query / Body | Success | Errors |
 |---|---|---|---|---|
 | `GET` | `/api/v1/platform/bank-templates` | `page` (0-based, default 0), `size` (default 20, max 100), `country` (optional alpha-2 filter), `active` (optional boolean filter) | **200** `data`: `{ items: PlatformBankTemplateRow[], page, size, totalElements, totalPages }` | **403** |
-| `POST` | `/api/v1/platform/bank-templates` | `{ countryCode, name, bankName?, swiftBic?, bankCode?, accountNumberFormat?, currencyCode?, active? }` | **201** `data.template` | **400** validation; **403**; **422 COUNTRY_NOT_PAYROLL_ENABLED** |
+| `POST` | `/api/v1/platform/bank-templates` | `{ countryCode, name, bankName?, swiftBic?, bankCode?, accountNumberFormat?, active? }` | **201** `data.template` | **400** validation; **403**; **422 COUNTRY_NOT_PAYROLL_ENABLED** |
 | `GET` | `/api/v1/platform/bank-templates/{id}` | — | **200** `data.template` | **404**; **403** |
 | `PUT` | `/api/v1/platform/bank-templates/{id}` | All mutable fields (same shape as POST minus `countryCode`) | **200** `data.template` | **400** (including attempt to change `countryCode`); **404**; **403** |
 | `PATCH` | `/api/v1/platform/bank-templates/{id}/activate` | — | **200** `data.template` | **409 BANK_TEMPLATE_ALREADY_ACTIVE**; **404**; **403** |
 | `PATCH` | `/api/v1/platform/bank-templates/{id}/deactivate` | — | **200** `data.template` | **409 BANK_TEMPLATE_ALREADY_INACTIVE**; **404**; **403** |
 
-**`PlatformBankTemplateRow`:** `{ id, countryCode, name, bankName, swiftBic, bankCode, accountNumberFormat, currencyCode, active, createdAt, updatedAt }`.
+**`PlatformBankTemplateRow`:** `{ id, countryCode, name, bankName, swiftBic, bankCode, accountNumberFormat, active, createdAt, updatedAt }`.
 
 ---
 
@@ -270,11 +270,11 @@ All routes: **tenant-scoped** (`TenantContext` from subdomain). Privilege-gated.
 |---|---|---|---|---|
 | `GET` | `/api/v1/tenant/bank-templates` | `companyId` (required UUID), `page` (default 0), `size` (default 20, max 100), `active` (optional boolean filter) | **200** `data`: `{ items: TenantBankTemplateRow[], page, size, totalElements, totalPages }` | **400** missing `companyId`; **403**; **404** company not in tenant |
 | `GET` | `/api/v1/tenant/bank-templates/{id}` | — | **200** `data.template` | **404**; **403** |
-| `PUT` | `/api/v1/tenant/bank-templates/{id}` | `{ name, bankName?, swiftBic?, bankCode?, accountNumberFormat?, currencyCode?, active }` (all mutable fields) | **200** `data.template` | **400** (including attempt to change `countryCode` or `platformBankTemplateId`); **404**; **403** |
+| `PUT` | `/api/v1/tenant/bank-templates/{id}` | `{ name, bankName?, swiftBic?, bankCode?, accountNumberFormat?, active }` (all mutable fields) | **200** `data.template` | **400** (including attempt to change `countryCode` or `platformBankTemplateId`); **404**; **403** |
 | `PATCH` | `/api/v1/tenant/bank-templates/{id}/activate` | — | **200** `data.template` | **409 BANK_TEMPLATE_ALREADY_ACTIVE**; **404**; **403** |
 | `PATCH` | `/api/v1/tenant/bank-templates/{id}/deactivate` | — | **200** `data.template` | **409 BANK_TEMPLATE_ALREADY_INACTIVE**; **404**; **403** |
 
-**`TenantBankTemplateRow`:** `{ id, companyId, platformBankTemplateId, countryCode, name, bankName, swiftBic, bankCode, accountNumberFormat, currencyCode, active, createdAt, updatedAt }`.
+**`TenantBankTemplateRow`:** `{ id, companyId, platformBankTemplateId, countryCode, name, bankName, swiftBic, bankCode, accountNumberFormat, active, createdAt, updatedAt }`.
 
 Privilege guards:
 - `GET` (list + single): `@RequiresPrivilege("BANK_TEMPLATE_VIEW")`

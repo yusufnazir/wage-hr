@@ -199,7 +199,7 @@ active = false ──[activate]────►  active = true
 | Deactivating an already-inactive country | 409 `COUNTRY_ALREADY_INACTIVE` (idempotent alternative: return 200 no-op — choose one; recommended: 409 for clarity) |
 | Activating an already-active country | 409 `COUNTRY_ALREADY_ACTIVE` |
 | Unknown `id` on GET/PUT/PATCH | 404 `COUNTRY_NOT_FOUND` |
-| `locale` fallback: `nl-sr` requested but only `en`/`nl` exist | Return `nl` translation (closest match) if available; else `en`. For M5, only `en` and `nl` are seeded — `nl-sr` requests fall back to `nl`. |
+| `locale` not `en` or `nl` on tenant country list | **400** `UNSUPPORTED_LOCALE` |
 | Seed already applied (re-run Liquibase) | Changeset is idempotent; author includes `onFail="MARK_RAN"` or uses `preconditions` to skip if rows exist. |
 | Very large list (250 countries) | Pagination enforced: default `size=50`, max 100; total returned via `totalElements`. |
 | Search with empty string | Returns full paginated list (no filtering applied). |
@@ -231,7 +231,7 @@ All resolved before finalization:
 | OQ-2 | Tenant-level country activation? | **Out of scope** — natural extension for a later sub-feature. |
 | OQ-3 | Hard delete? | **Disallowed** — deactivation only (referential safety). |
 | OQ-4 | Tenant read needs privilege? | **No** — authenticated only; countries are non-sensitive reference data. |
-| OQ-5 | Locale fallback for `nl-sr`? | Fall back to `nl` if available, else `en`. |
+| OQ-5 | Supported read locales for tenant country list? | **`en`** and **`nl`** only; other tags → **400**. |
 | OQ-6 | Are alpha-2 / alpha-3 editable? | **Yes for M5** (no downstream FKs yet). When downstream FKs exist, codes become immutable. |
 
 ---

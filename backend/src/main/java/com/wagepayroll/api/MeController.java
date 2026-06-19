@@ -23,6 +23,7 @@ import com.wagepayroll.subscription.SubscriptionGatingService;
 import com.wagepayroll.tenant.TenantContext;
 import com.wagepayroll.tenant.TenantDirectoryService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -60,7 +62,8 @@ public class MeController {
 	public ApiResponse<Map<String, Object>> me(HttpServletRequest request) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		UUID userId = UUID.fromString(auth.getName());
-		UserAccountEntity user = userAccountRepository.findById(userId).orElseThrow();
+		UserAccountEntity user = userAccountRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unknown or removed user"));
 		String rid = RequestIdFilter.currentRequestId(request);
 		var tenant = TenantContext.current();
 		Map<String, Object> payload = new LinkedHashMap<>();
@@ -95,6 +98,9 @@ public class MeController {
 	public ApiResponse<Map<String, List<TenantSummaryDto>>> tenants(HttpServletRequest request) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		UUID userId = UUID.fromString(auth.getName());
+		if (userAccountRepository.findById(userId).isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unknown or removed user");
+		}
 		List<TenantSummaryDto> list = tenantDirectoryService.listTenantSummaries(userId);
 		String rid = RequestIdFilter.currentRequestId(request);
 		return ApiResponse.of(Map.of("tenants", list), rid);
@@ -104,6 +110,9 @@ public class MeController {
 	public ResponseEntity<Void> patchLocale(@RequestBody LocalePatchRequest body, HttpServletRequest request) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		UUID userId = UUID.fromString(auth.getName());
+		if (userAccountRepository.findById(userId).isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unknown or removed user");
+		}
 		String locale = userLocaleService.setPreferredLocale(userId, body.locale());
 		auditService.append(null, userId, AuditActionCodes.USER_LOCALE_CHANGED, AuditResourceTypes.USER_ACCOUNT,
 				userId.toString(), RequestIdFilter.currentRequestId(request), Map.of("locale", locale));

@@ -24,6 +24,8 @@ public record TenantCompanyItemDto(
 		String country,
 		String payPeriodEndDate,
 		String timesheetEndDate,
+		Integer currentYear,
+		Integer currentPeriod,
 		boolean active,
 		String logoUrl,
 		Instant createdAt,

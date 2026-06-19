@@ -22,5 +22,7 @@ public record TenantCompanyUpsertRequest(
 		String country,
 		LocalDate payPeriodEndDate,
 		LocalDate timesheetEndDate,
+		Integer currentYear,
+		Integer currentPeriod,
 		Boolean active) {
 }

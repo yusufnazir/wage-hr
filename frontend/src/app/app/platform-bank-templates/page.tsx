@@ -242,7 +242,6 @@ export default function PlatformBankTemplatesPage() {
                 <th className="px-3 py-2">{t("platformBankTemplates.col.name")}</th>
                 <th className="px-3 py-2">{t("platformBankTemplates.col.bankName")}</th>
                 <th className="px-3 py-2">{t("platformBankTemplates.col.swift")}</th>
-                <th className="px-3 py-2">{t("platformBankTemplates.col.currency")}</th>
                 <th className="px-3 py-2">{t("platformBankTemplates.col.status")}</th>
                 <th className="px-3 py-2" />
               </tr>
@@ -254,7 +253,6 @@ export default function PlatformBankTemplatesPage() {
                   <td className="px-3 py-2">{row.name}</td>
                   <td className="px-3 py-2">{row.bankName ?? "—"}</td>
                   <td className="px-3 py-2 font-mono">{row.swiftBic ?? "—"}</td>
-                  <td className="px-3 py-2 font-mono">{row.currencyCode ?? "—"}</td>
                   <td className="px-3 py-2">
                     {row.active ? t("platformBankTemplates.status.active") : t("platformBankTemplates.status.inactive")}
                   </td>

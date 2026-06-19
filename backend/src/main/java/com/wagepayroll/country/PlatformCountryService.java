@@ -36,7 +36,7 @@ public class PlatformCountryService {
 	private static final Pattern ISO_ALPHA3 = Pattern.compile("^[A-Z]{3}$");
 	private static final Pattern ISO_NUMERIC = Pattern.compile("^\\d{1,3}$");
 	private static final Pattern DIAL_CODE = Pattern.compile("^\\+[1-9]\\d{0,14}$");
-	private static final Set<String> SUPPORTED_READ_LOCALES = Set.of("en", "nl", "nl-sr");
+	private static final Set<String> SUPPORTED_READ_LOCALES = Set.of("en", "nl");
 	private static final Set<String> REQUIRED_TRANSLATION_LOCALES = Set.of("en", "nl");
 	private static final int MAX_PAGE_SIZE = 100;
 
@@ -225,9 +225,6 @@ public class PlatformCountryService {
 		if (direct != null) {
 			return direct;
 		}
-		if ("nl-sr".equals(locale) && names.containsKey("nl")) {
-			return names.get("nl");
-		}
 		if (names.containsKey("en")) {
 			return names.get("en");
 		}
@@ -338,9 +335,6 @@ public class PlatformCountryService {
 	}
 
 	private static Set<String> searchLocales(String locale) {
-		if ("nl-sr".equals(locale)) {
-			return Set.of("nl", "en");
-		}
 		if ("nl".equals(locale)) {
 			return Set.of("nl", "en");
 		}

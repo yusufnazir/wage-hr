@@ -1,96 +1,116 @@
-# Filter field standards (chip-based, URL-state backed)
+# Filter field standards (employee-style chip bar)
 
-This guide defines an application-wide contract for building **table/list filter UI** (filter chips, menu/select controls, clear filters behavior) and the corresponding **URL query parameter** mapping for server-side pagination correctness.
+This guide defines the **canonical list-filter UX** for tenant and platform web apps: the same **chip row**, **popover editor**, and **clear** behavior as the **Employees** list (`/app/employees`).
 
-## Inspiration (Stripe pattern)
-- Stripe’s “filter controls” pattern uses a **chip filter bar** above a DataTable, where each chip represents one filterable attribute.
-- Each chip has two states:
-  - **Suggested** (no value selected): shows a `+` and opens a menu.
-  - **Active** (value selected): shows the selected value with an `×` and allows clearing.
-- Active chips are rendered separately from the menu-trigger path to avoid simultaneous “close + navigation” event issues.
-- A **Clear filters** affordance is shown only when at least one filter is active.
+A second, **URL-first** variant exists for some screens (`/app/users`) using `@/components/filters/FilterBar.tsx` and a different chip affordance. **New list pages should follow the Employees pattern** unless the product explicitly requires shareable filter URLs on day one—in that case, use the UI component below **and** wire `onApply` / clear actions to `useRouter` + `@/lib/filter-url` (see [URL-backed filters](#url-backed-filters-optional)).
 
-(See: [Stripe Filter controls](https://docs.stripe.com/stripe-apps/patterns/filter-controls) and the associated dashboard search/filter docs.)
+## Reference implementation
+
+- **Primary example:** `frontend/src/app/app/employees/page.tsx` — filter row, `Clear filters`, pagination placement.
+- **Component:** `frontend/src/components/ui/FilterChip.tsx` — `FilterChip<T>` with suggested vs active states and built-in **Apply** in the popover.
+- **URL + chips:** `frontend/src/app/app/platform-wage-component-templates/page.tsx` — same chip UX with shareable URL keys `country`, `active`, and `page` via `useSearchParams` + `@/lib/filter-url`.
 
 ## Goals
-1. Consistent UX across modules (same “shape” of filters, same clear/reset behavior).
-2. Deterministic server-side pagination: the UI must filter **before** applying row counts/paging (no client-side filtering that desyncs totals).
-3. Shareable links: filter state is encoded in URL query params and survives reload/back/forward.
-4. Backend remains final authority: frontend only hides/disables actions based on permissions, never enforces authorization itself.
+
+1. Consistent UX across modules (same chip shape, popover, Apply, clear-all).
+2. Deterministic server-side pagination: filters apply on the server **before** row counts and paging (no client-side filtering that desyncs totals).
+3. Shareable links **when required**: encode filter + `page` in the URL (see below); otherwise in-memory state is acceptable if documented for that screen.
+4. Backend remains the authority for authorization; the UI only hides or disables actions.
 
 ## Concepts
+
 ### Filter field
-A single filterable attribute in a list view (e.g. `email`, `status`, `role`).
 
-### Filter chip
-The chip UI representing a single filter field.
+A single filterable attribute (e.g. company, first name, country, “active only”).
 
-### Filter menu / editor
-The UI shown when the user activates a chip in suggested state (e.g. select options, enter value, date range).
+### Filter chip (`FilterChip`)
+
+One chip per field, from **`@/components/ui/FilterChip`**:
+
+| State | Appearance | Interaction |
+|-------|------------|-------------|
+| **Suggested** (no value) | Rounded pill, **dashed** border, small **+** icon, label | Opens popover; does not change the list until **Apply**. |
+| **Active** | Solid border, light primary-tint background, **×** (clear), label, then a short separator and truncated **value** | **×** clears that field only (calls `onApply(null)`). Clicking the pill toggles the popover for edits. |
+
+Popover content:
+
+- Title: `Filter by {label}` (from the component).
+- Body: your `renderInput(draft, setDraft, apply)` (inputs, multi-select list, etc.).
+- Footer: primary **Apply** (commits draft via `onApply`).
+
+Use **`formatValue`** for readable active labels (e.g. country name, `"3 selected"`, `Active` / `Inactive`).
+
+### Filter row layout (Employees)
+
+Place the chip row **above** the list or table:
+
+- Container: `flex flex-wrap items-center gap-2`.
+- Chips: one `FilterChip` per field, in a stable order.
+- **Clear filters:** show only when at least one field is active. Plain text button next to the chips, same style as Employees:
+
+  `text-xs font-medium text-muted underline-offset-4 hover:text-foreground hover:underline`
+
+  Action: clear every filter and reload from page **0** (and reset any URL filter keys if the screen is URL-backed).
+
+- **Pagination** (if present on the same row): `ml-auto` on a wrapper so chips stay left and paging stays right (Employees pattern).
+
+Do **not** wrap the chip row in a separate heavy fieldset unless the product design calls for it; Employees uses the flat flex row only.
+
+## URL-backed filters (optional)
+
+When filters must be **shareable** and survive reload/back/forward:
+
+1. Read **`page`** and filter keys from `useSearchParams()`.
+2. On **Apply** / per-chip clear / **Clear filters**, update the URL with `router.push` + helpers from **`@/lib/filter-url`** (`nextSearchParams`, `toQueryString`).
+3. Treat “unset” as **missing** query keys (not empty strings), per [URL query parameter contract](#url-query-parameter-contract).
+4. Refetch when search params change (e.g. `useEffect` depending on parsed params).
 
 ## URL query parameter contract
-Every filterable list endpoint must follow these rules:
-1. **Canonical keys**:
-   - Pagination: `page`, `size`
-   - Sorting: `sort` (single stable token)
-   - Filters: each filter field gets one or more query keys (see below)
-2. **Empty vs unset**:
-   - When a filter field is “not set”, omit its key from the URL (prefer `undefined` on the client, not empty strings).
-   - When set, include the key with the filter’s encoded value.
-3. **Determinism**:
-   - Always include a deterministic tie-break in server sort order (commonly `user_id ASC`) so pages don’t reshuffle.
-4. **Pagination correctness**:
-   - Server must apply filters in SQL (or equivalent) before computing row counts and returning the paged result.
 
-## Filter field types (UI + server mapping)
-Define a filter field in your module’s code using this conceptual model:
+When using URL state, every filterable list should follow:
 
-| Type | UI control | URL encoding (example) | Server semantics |
-|------|-------------|--------------------------|------------------|
-| `TEXT_CONTAINS` | text input (freeform) | `email=jane` | case-insensitive substring match (typically `LIKE` on normalized column) |
-| `ENUM_EXACT` | dropdown/select (single) | `status=ACTIVE` | exact match on a short enum code or canonical display name |
-| `ENUM_EXACT_MAPPED` | dropdown/select (single) | `role=Viewer` (display name) | server maps display -> stored rows (see module doc for exact mapping) |
-| `DATE_RANGE` | date inputs (from/to) | `created_from=...&created_to=...` | inclusive/exclusive rules must be documented per endpoint |
-| `NUMBER_RANGE` | numeric inputs (min/max) | `amount_min=...&amount_max=...` | documented numeric comparison |
-| `MULTI_ENUM_EXACT` | multi-select | `status=ACTIVE,PAUSED` OR repeated keys | documented set membership semantics |
+1. **Canonical keys**
+   - Pagination: `page`, `size` (size may be fixed in code but should be documented).
+   - Sorting: `sort` (single stable token), if the list supports sort.
+   - Filters: one or more keys per field (documented per module).
+2. **Empty vs unset** — omit keys when the filter is not applied; use real values when applied.
+3. **Determinism** — server sort includes a stable tie-break (e.g. id ASC).
+4. **Pagination correctness** — server applies filters before totals and page slices.
 
-Notes:
-- For `TEXT_CONTAINS`, treat values as potentially PII; still store only what the module allows (do not add speculative DB columns).
-- For `ENUM_EXACT_MAPPED`, the module must document what the URL value represents (stored enum code vs display label).
+## Filter field types (UI + server / URL)
+
+| Type | Chip `T` / editor | URL example (when URL-backed) | Server semantics |
+|------|-------------------|-------------------------------|------------------|
+| `TEXT_CONTAINS` | `string \| null`, text input in popover | `firstName=ann` | Case-insensitive contains / `LIKE` (document per API) |
+| `ENUM_EXACT` | `string \| null`, select or radio in popover | `country=SR` | Exact match on code |
+| `MULTI_ENUM_EXACT` | `string[]` / empty = inactive chip, multi checkbox list | `companyId=id1&companyId=id2` or comma form (document per API) | Set membership |
+| `BOOLEAN_FLAG` | e.g. `"active" \| null` for “active only” | `active=true` | Document mapping (e.g. only send `active=true` when set) |
 
 ## Chip behavior rules
-1. **Suggested vs active rendering is separate**:
-   - Suggested chip: opens a menu; does not navigate immediately.
-   - Active chip: shows a clear affordance; clearing updates the URL by removing keys.
-2. **Clear filters**:
-   - The “Clear filters” control is shown only if at least one filter field is active.
-   - Clearing removes filter keys from the URL, resets `page` to `0`, and keeps `size`/`sort` as module-defined (or resets them if documented).
-3. **Apply / cancel**:
-   - For menu-based filters, prefer an explicit Apply action if selecting multiple values or entering ranges.
-   - For simple ENUM_EXACT, selecting an option can immediately apply.
 
-## Sorting token standards (server required)
-Modules must encode sorting as a single `sort` token string.
-Suggested naming:
-- `FIELD_ASC` / `FIELD_DESC`
-- Include deterministic tie-break behavior on the server for stable pagination.
+1. **Apply** — multi-step or ambiguous edits use **Apply** in the popover (default from `FilterChip`). Single immediate apply is allowed only if it does not fight popover close/navigation (prefer Apply for consistency).
+2. **Per-chip clear** — the **×** on an active chip clears that field only (`onApply(null)`).
+3. **Clear filters** — visible only when any filter is active; clears all filters and resets **`page`** to `0`; keeps `size` / `sort` unless the module documents otherwise.
 
-Example fields used in this codebase:
-- `EMAIL_ASC|DESC`
-- `LAST_ACTIVE_ASC|DESC`
-- `STATUS_ASC|DESC`
-- `ROLES_ASC|DESC` (server defines role sort key semantics)
+## Sorting token standards (server)
+
+Encode sorting as one `sort` token, e.g. `FIELD_ASC` / `FIELD_DESC`, with a deterministic tie-break on the server.
 
 ## Acceptance checklist (per list page)
-- [ ] Filter chips appear above the table.
-- [ ] Each chip opens a control only for suggested state.
-- [ ] Active chips can clear and update the URL without full page reload.
-- [ ] “Clear filters” is present only when something is active.
-- [ ] Server applies filters before computing row totals.
-- [ ] Filter state is encoded in URL params and round-trips correctly.
 
-## Implementation plan (recommended order)
-1. Implement filter chip bar component + URL encoding helpers.
-2. Migrate one module (e.g. `/app/users`) to the standard.
-3. Reuse for other list modules once the pattern proves stable.
+- [ ] Filter chips from **`@/components/ui/FilterChip`** sit in a **`flex flex-wrap items-center gap-2`** row above the list/table.
+- [ ] Suggested chips show **+**; active chips show **×** and a readable value (`formatValue` where needed).
+- [ ] Popover edits commit with **Apply** (component default).
+- [ ] **Clear filters** appears only when at least one filter is active, and matches Employees’ text-button styling.
+- [ ] Server applies filters before row totals; pagination matches filtered totals.
+- [ ] If the screen is URL-backed: filter + `page` round-trip in the URL; clearing removes filter keys and sets `page=0`.
 
+## Implementation notes
+
+- **Imports:** `import { FilterChip } from "@/components/ui/FilterChip";`
+- **Do not** confuse with `FilterChip` / `FilterBar` under `@/components/filters/FilterBar.tsx` (different API; reserved for legacy or URL-heavy screens until migrated).
+- Reuse list patterns inside `renderInput` (e.g. checkbox list like Employees’ `MultiSelectBody`, text inputs with `placeholder="contains…"`, **Enter** to `apply()` where appropriate).
+
+## Related docs
+
+- Theming / tokens: [`WEB-THEMING-AND-DESIGN-SYSTEM.md`](./WEB-THEMING-AND-DESIGN-SYSTEM.md) — use design tokens for borders, `text-muted`, `primary`, etc., consistent with `FilterChip` and the Employees page.

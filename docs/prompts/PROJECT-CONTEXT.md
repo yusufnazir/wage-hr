@@ -14,7 +14,7 @@
 
 | Field | Value (replaces template token / intent) |
 |-------|-------------------------------------------|
-| **Project name** | wage-payroll |
+| **Project name** | [project-name] |
 | **One-line summary** | Multi-tenant hr/payroll SaaS for operations and reporting; customer admins manage their org data per region. Internal operations dashboard for our team to manage tenants, billing, and support tickets. |
 | **Primary users / tenants** | Users who switch between multiple client organizations (tenants) under one login. users can have different roles per tenant. a tenant can have multiple business units. |
 
@@ -86,7 +86,7 @@ Example browser URL: `http://auth.lvh.me:3007/...` (front-end port).
 Product scope, stack, and constraints. **Delivery is phased** using milestones in `docs/product/BUILD-CHECKLIST.md` (M1…M7). This contract describes the **target product**, not a single release date.
 
 ## Product
-- **Name:** wage-payroll
+- **Name:** [project-name]
 - **One-line summary:** Multi-tenant HR/payroll SaaS: tenant-scoped operations, reporting, employee self-service, time and leave, country-based payroll engines, subscriptions and billing, and strong platform governance (privileges, audit, SuperAdmin).
 - **Primary users:** Staff who work across **multiple tenants** with **different roles per tenant** (and per **business unit** where applicable); **tenant admins**; **employees** (self-service); **platform SuperAdmins** and internal ops (tenant support, catalog management).
 
@@ -111,7 +111,7 @@ Product scope, stack, and constraints. **Delivery is phased** using milestones i
 
 ## Payroll / HR capabilities (target)
 - **Multi-currency**; **multiple business units per tenant**; **roles per business unit** where the domain requires it.
-- **Payroll rules by country:** add countries over time; **country-specific payroll UI/layout** via adapter/strategy pattern; **tax rules per country**; **gross** and **net wage** calculation; **sandbox payroll** for simulation. **First full payroll implementation country: Suriname (SR)** — rules, layouts, and dependent legal enums start there; other countries follow as separate adapters.
+- **Payroll rules by country:** add countries over time; **country-specific payroll UI/layout** via adapter/strategy pattern; **tax rules per country**; **gross** and **net wage** calculation; **sandbox payroll** for simulation. **First full payroll implementation country: Suriname (SR)** — rules, layouts, and dependent legal enums start there; other countries follow as separate adapters. **Component grouping:** platform **templates** (`platform_component_*_template`) define defaults; tenants maintain **company-scoped** `tenant_component_*` hierarchies linked to **tenant** wage components (see `docs/modules/platform-component-grouping.md`).
 - **Core HR:** organization structure; employment and compensation history; employee master; **partners and children** with **legal status per country**; leave requests; time and attendance; **employee self-service** portal.
 - **Sharing:** URLs reflect layout and, where specified, **filtered list state** for sharing views.
 
@@ -189,9 +189,9 @@ Pick the **active** module from [`docs/product/MODULE-INDEX.md`](../product/MODU
 
 | Field | Value |
 |-------|--------|
-| **Feature slug / module doc path** | `docs/modules/payroll-org-structure.md` |
-| **Feature name** | Payroll organization structure (Company -> Department -> Job -> Employee + Employee Group) |
-| **What the feature should do** | Implement tenant-scoped payroll organizational foundations with strict company boundaries. Add entities and APIs for Company, Department, Job, Employee Group, and Employee. Company stores legal/payroll metadata (tax_id, payroll_country, currency, frequency, timezone). Departments and Jobs define organizational structure, Employees belong to one company/department/job, and each Employee belongs to exactly one Employee Group for non-structural classification. Include pagination, filtering by companyId, validation, and tenant/company isolation safeguards in persistence and service layers. |
+| **Feature slug / module doc path** | `docs/modules/employee-periodic-payroll-transactions.md` |
+| **Feature name** | Employee periodic payroll transactions |
+| **What the feature should do** | Tenant APIs and persistence for recurring per-employee payroll inputs linked to tenant wage components; materialization into tenant_wage_component_transaction per pay period with idempotency and manual_override preservation; payroll engine continues to read only period transactions. |
 
 *Previous slice (still documented):* **`docs/modules/account-registration.md`** — register + verify-email + default role; **`docs/modules/role-admin.md`** — tenant roles UI + role templates CRUD; **`docs/modules/tenant-web-vertical-slice.md`** — tenant app shell + demo read.
 

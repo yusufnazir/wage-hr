@@ -7,6 +7,8 @@
 
 This document defines a **strict versioned migration system built on top of Liquibase**.
 
+**Deployment assumption (this repository):** environments use a **new schema** (empty database + full changelog). Changelog and docs are optimized for that path, not for carrying forward legacy rows or in-place upgrade narratives.
+
 It introduces a logical versioning model where:
 
 * Each database change is identified by a stable entity name and type (schema/data)
@@ -180,9 +182,7 @@ public class DataUpsertPrivilege extends CustomDataTaskChange {
 
 ### 4.6 Example Changeset (parameterized)
 
-Each changeset represents **one row of data**. Use `onValidationFail="MARK_RAN"` on seed changesets
-so an existing database with a checksum mismatch (e.g. after content was updated) skips gracefully
-instead of failing.
+Each changeset represents **one row of data**. Use `onValidationFail="MARK_RAN"` on parameterized seed changesets so **local dev** can tolerate checksum drift if you edit a changeset after it already ran on your machine (Liquibase treats the body as part of the checksum).
 
 ```xml
 <changeSet id="data-scaffold-priv-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
@@ -218,34 +218,85 @@ instead of failing.
 
 ## 5. DDL (Schema) Rules
 
-### 5.1 Rules
+### 5.1 Required Approach
 
-* Schema changes MUST use versioned changeSets
-* No modification of previous schema changeSets
-* Every structural change must increment version
+All DDL MUST use **native Liquibase declarative changesets** (e.g., `<createTable>`, `<createIndex>`, `<addForeignKeyConstraint>`).
 
----
-
-### 5.2 Schema Custom Change
-
-Schema changes must also use custom Java classes:
-
-```
-SchemaCustomChange
-```
+**Do NOT** wrap DDL in Java custom classes. DDL is declarative and benefits from native Liquibase support.
 
 ---
 
-### 5.3 Example
+### 5.2 Folder Organization
+
+```
+/db/changelog/ddl/
+    create-table-*.xml    (one file per logical entity/table group)
+    schema-*.xml          (master includes)
+```
+
+---
+
+### 5.3 Example: Single Table
 
 ```xml
-<changeSet id="schema-user-1" author="system">
-    <customChange class="com.example.liquibase.SchemaAddColumn">
-        <param name="tableName"><![CDATA[user]]></param>
-        <param name="columnName"><![CDATA[tenant_id]]></param>
-        <param name="type"><![CDATA[UUID]]></param>
-    </customChange>
+<changeSet id="schema-m5-tenant-company-1" author="wagepayroll">
+    <createTable tableName="tenant_company">
+        <column name="id" type="VARCHAR(36)">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="tenant_id" type="VARCHAR(36)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="name" type="VARCHAR(120)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+            <constraints nullable="false"/>
+        </column>
+        <column name="created_at" type="TIMESTAMP">
+            <constraints nullable="false"/>
+        </column>
+        <column name="updated_at" type="TIMESTAMP">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+    <addForeignKeyConstraint constraintName="fk_tenant_company_tenant"
+                             baseTableName="tenant_company" baseColumnNames="tenant_id"
+                             referencedTableName="tenant" referencedColumnNames="id"/>
 </changeSet>
+
+<changeSet id="schema-m5-tenant-company-idx-1" author="wagepayroll">
+    <createIndex indexName="idx_tenant_company_tenant_active" tableName="tenant_company">
+        <column name="tenant_id"/>
+        <column name="active"/>
+    </createIndex>
+</changeSet>
+```
+
+---
+
+### 5.4 Rules
+
+* Use `<createTable>` for table creation, **never raw SQL**
+* Use `<createIndex>` for indexes; separate changesets per index (for clarity)
+* Use `<addForeignKeyConstraint>` for FKs (can be in same changeset as table or separate)
+* DDL changesets normally omit `onValidationFail="MARK_RAN"`; add it only for narrow dev/test cases if needed
+* One file per entity group (e.g., `create-table-payroll-org-structure.xml` for company + department + job + employee)
+* Versioning: `schema-[entity]-[version]`, e.g., `schema-m5-tenant-company-1`
+
+---
+
+### 5.5 Master Changelog
+
+The master DDL changelog includes all individual files:
+
+```xml
+<databaseChangeLog>
+    <include file="create-table-payroll-org-structure.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-work-time.xml" relativeToChangelogFile="true"/>
+    <include file="create-table-bank-templates.xml" relativeToChangelogFile="true"/>
+    <!-- ... etc ... -->
+</databaseChangeLog>
 ```
 
 ---
@@ -354,22 +405,20 @@ All DML custom task classes that insert seed or reference data **MUST** use upse
 * If a row with the given `id` already exists → **UPDATE** it
 * If no row with that `id` exists → **INSERT** it
 
-This ensures migrations are safe to run against both fresh and existing databases without duplicates or skipped updates.
+This keeps seed tasks **idempotent** (handy for tests and local re-runs) while the canonical path remains a **fresh** `DATABASECHANGELOG`.
 
 ### 11.2 Version Increment = New Changeset
 
 The changeset ID always ends with `-<versionnumber>` (e.g. `data-m11-platform-bank-templates-seed-1`).
 
 * Liquibase tracks executed changesets by ID — once run, a changeset is **never re-executed**
-* To change data that was already seeded, **increment the version** to create a new changeset ID
-* The new changeset runs against all environments (including those that already have the old data)
-* The new changeset's Java class must still apply upsert logic so it is safe on fresh databases too
+* To change seeded data in a way that must run again, **increment the version** to create a new changeset ID
+* Prefer **folding fixes into the current DDL or seed** (single linear changelog) rather than stacking parallel “patch” files
 
 Example:
 
 ```
-data-m11-platform-bank-templates-seed-1   ← original seed (ran, immutable)
-data-m11-platform-bank-templates-seed-2   ← correction/addition (new, will run)
+data-m11-platform-bank-templates-seed-1   ← idempotent custom seed (upsert in Java)
 ```
 
 ### 11.3 Upsert Pattern
@@ -417,10 +466,7 @@ on the `<changeSet>` element:
 <changeSet id="data-scaffold-priv-user-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
 ```
 
-**Why:** When a seed changeset's content is updated (e.g. description text changed, param reordered),
-Liquibase detects a checksum mismatch on databases that already ran the old version. `MARK_RAN` tells
-Liquibase to accept the mismatch and mark it as run without re-executing — preventing false failures
-on existing environments. Fresh databases always execute the current content.
+**Why:** When you edit a parameterized seed’s XML after it ran locally, Liquibase sees a checksum mismatch. `MARK_RAN` marks the changeset as satisfied without re-running it, so your dev database does not block startup. A **new** database always executes the current XML once.
 
 **Exception:** Pure-SQL native changesets (e.g. `<update>` backfills) do not need this attribute
 because Liquibase manages their checksum natively.
@@ -433,7 +479,7 @@ because Liquibase manages their checksum natively.
 
 ---
 
-## 11. Environment Rules
+## 12. Environment Rules
 
 * No secrets in changeSets
 * All environment-specific values must use parameters
@@ -441,7 +487,7 @@ because Liquibase manages their checksum natively.
 
 ---
 
-## 12. AI Generation Rules (CRITICAL)
+## 13. AI Generation Rules (CRITICAL)
 
 When generating migrations, AI MUST:
 
@@ -454,7 +500,7 @@ When generating migrations, AI MUST:
 
 ---
 
-## 13. Mandatory Checklist (Per PR)
+## 14. Mandatory Checklist (Per PR)
 
 * [ ] Versioned changeSets used correctly
 * [ ] No modification of executed changeSets

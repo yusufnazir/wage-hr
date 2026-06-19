@@ -16,7 +16,7 @@ function initialsFromEmail(email: string): string {
   return local.slice(0, 2).toUpperCase() || "?";
 }
 
-const LOCALES = ["en", "nl", "nl-sr"] as const;
+const LOCALES = ["en", "nl"] as const;
 
 export function UserMenu() {
   const { me, patchLocale, localeBusy } = useTenantAppSession();

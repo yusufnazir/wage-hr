@@ -5,8 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="schema-m9-pay-period-1" author="wagepayroll">
-        <customChange class="com.wagepayroll.liquibase.task.DdlM9PayPeriod1"/>
-    </changeSet>
+    <include file="create-table-pay-period.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

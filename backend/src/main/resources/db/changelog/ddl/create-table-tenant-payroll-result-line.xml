@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m13-tenant-payroll-result-line-1" author="wagepayroll">
+        <createTable tableName="tenant_payroll_result_line">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_period_run_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="component_source" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="component_ref_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phase" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processing_order_snapshot" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="DECIMAL(19,4)"/>
+            <column name="rate" type="DECIMAL(19,4)"/>
+            <column name="amount" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rounded_amount" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tprl_run"
+                                 baseTableName="tenant_payroll_result_line" baseColumnNames="pay_period_run_id"
+                                 referencedTableName="tenant_pay_period_run" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_tprl_company"
+                                 baseTableName="tenant_payroll_result_line" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tprl_employee"
+                                 baseTableName="tenant_payroll_result_line" baseColumnNames="employee_id,company_id,tenant_id"
+                                 referencedTableName="tenant_employee" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-payroll-result-line-uidx-1" author="wagepayroll">
+        <addUniqueConstraint tableName="tenant_payroll_result_line"
+                             columnNames="pay_period_run_id, employee_id, component_source, component_ref_id"
+                             constraintName="uidx_tenant_payroll_result_line_slot"/>
+    </changeSet>
+
+    <changeSet id="schema-m13-tenant-payroll-result-line-idx-run-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_payroll_result_line_run" tableName="tenant_payroll_result_line">
+            <column name="tenant_id"/>
+            <column name="pay_period_run_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

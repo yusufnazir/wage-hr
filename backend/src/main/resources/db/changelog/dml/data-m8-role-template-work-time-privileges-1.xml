@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Grants work-time privileges to the ADMIN role template. Must run AFTER
+        data-m8-work-time-privileges-1.xml seeds the WORK_TIME_* privilege rows.
+        Mirrors data-m7-role-template-currency-privileges-1.xml.
+    -->
+
+    <changeSet id="data-m8-rtp-admin-work-time-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="WORK_TIME_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m8-rtp-admin-work-time-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="WORK_TIME_MANAGE"/>
+        </customChange>
+    </changeSet>
+</databaseChangeLog>

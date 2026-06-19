@@ -86,7 +86,6 @@ public class PlatformBankTemplateService {
 		String swiftBic = BankTemplateValidation.normalizeSwiftBicOrNull(body.swiftBic());
 		String bankCode = BankTemplateValidation.trimBankCode(body.bankCode());
 		String accountNumberFormat = BankTemplateValidation.trimAccountFormat(body.accountNumberFormat());
-		String currencyCode = BankTemplateValidation.normalizeCurrencyOrNull(body.currencyCode());
 		boolean active = body.active() == null || body.active().booleanValue();
 		Instant now = Instant.now();
 		PlatformBankTemplateEntity e = new PlatformBankTemplateEntity();
@@ -97,7 +96,6 @@ public class PlatformBankTemplateService {
 		e.setSwiftBic(swiftBic);
 		e.setBankCode(bankCode);
 		e.setAccountNumberFormat(accountNumberFormat);
-		e.setCurrencyCode(currencyCode);
 		e.setActive(active);
 		e.setCreatedAt(now);
 		e.setUpdatedAt(now);
@@ -125,13 +123,11 @@ public class PlatformBankTemplateService {
 		String swiftBic = BankTemplateValidation.normalizeSwiftBicOrNull(body.swiftBic());
 		String bankCode = BankTemplateValidation.trimBankCode(body.bankCode());
 		String accountNumberFormat = BankTemplateValidation.trimAccountFormat(body.accountNumberFormat());
-		String currencyCode = BankTemplateValidation.normalizeCurrencyOrNull(body.currencyCode());
 		e.setName(name);
 		e.setBankName(bankName);
 		e.setSwiftBic(swiftBic);
 		e.setBankCode(bankCode);
 		e.setAccountNumberFormat(accountNumberFormat);
-		e.setCurrencyCode(currencyCode);
 		e.setActive(body.active().booleanValue());
 		e.setUpdatedAt(Instant.now());
 		repository.save(e);
@@ -186,7 +182,6 @@ public class PlatformBankTemplateService {
 		m.put("swiftBic", e.getSwiftBic());
 		m.put("bankCode", e.getBankCode());
 		m.put("accountNumberFormat", e.getAccountNumberFormat());
-		m.put("currencyCode", e.getCurrencyCode());
 		m.put("active", e.isActive());
 		return m;
 	}
@@ -208,7 +203,7 @@ public class PlatformBankTemplateService {
 
 	private PlatformBankTemplateRowDto toRow(PlatformBankTemplateEntity e) {
 		return new PlatformBankTemplateRowDto(e.getId(), e.getCountryCode(), e.getName(), e.getBankName(), e.getSwiftBic(),
-				e.getBankCode(), e.getAccountNumberFormat(), e.getCurrencyCode(), e.isActive(), e.getCreatedAt(),
+				e.getBankCode(), e.getAccountNumberFormat(), e.isActive(), e.getCreatedAt(),
 				e.getUpdatedAt());
 	}
 }

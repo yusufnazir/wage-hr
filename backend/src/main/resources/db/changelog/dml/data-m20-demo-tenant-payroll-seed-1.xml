@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m20-demo-tenant-currency-srd-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <comment>Enable SRD for demo tenant so payroll companies can use Surinamese Dollar.</comment>
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantCurrency">
+            <param name="id" value="5fa00000-0000-4000-8000-0000000000c0"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="platformCurrencyId" value="70000000-0000-0000-0000-000000000003"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-company-sr-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantCompany">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="name" value="Demo Payroll NV"/>
+            <param name="legalName" value="Demo Payroll N.V."/>
+            <param name="registrationNumber" value="SR-DEMO-REG-001"/>
+            <param name="taxId" value="SR-DEMO-TAX-0001"/>
+            <param name="payrollCountry" value="SR"/>
+            <param name="currency" value="SRD"/>
+            <param name="payrollFrequency" value="MONTHLY"/>
+            <param name="timezone" value="America/Paramaribo"/>
+            <param name="dateFormat" value="dd/MM/yyyy"/>
+            <param name="contactEmail" value="payroll@demo.lvh.me"/>
+            <param name="contactPhone" value="+597-000-0000"/>
+            <param name="addressLine1" value="Keizerstraat 1"/>
+            <param name="addressLine2" value=""/>
+            <param name="city" value="Paramaribo"/>
+            <param name="stateRegion" value=""/>
+            <param name="postalCode" value=""/>
+            <param name="country" value="SR"/>
+            <param name="active" value="true"/>
+            <param name="payPeriodEndDate" value="2026-01-31"/>
+            <param name="timesheetEndDate" value="2026-01-31"/>
+            <param name="currentYear" value="2026"/>
+            <param name="currentPeriod" value="2"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-department-ops-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantDepartment">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="Operations"/>
+            <param name="code" value="OPS"/>
+            <param name="description" value="Demo department"/>
+            <param name="parentDepartmentId" value=""/>
+            <param name="managerEmployeeId" value=""/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-job-dev-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantJob">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="title" value="Software Developer"/>
+            <param name="code" value="DEV-01"/>
+            <param name="description" value="Monthly salaried developer role"/>
+            <param name="salaryType" value="MONTHLY"/>
+            <param name="defaultSalary" value="18500.00"/>
+            <param name="defaultHourlyRate" value=""/>
+            <param name="standardHoursPerWeek" value="40"/>
+            <param name="jobLevel" value="L2"/>
+            <param name="jobCategory" value="Engineering"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-employee-group-default-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeeGroup">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="All staff"/>
+            <param name="code" value="ALL"/>
+            <param name="description" value="Default demo employee group"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-employee-maria-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000005"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="Maria"/>
+            <param name="lastName" value="Jansen"/>
+            <param name="dateOfBirth" value="1988-04-12"/>
+            <param name="hireDate" value="2019-03-01"/>
+            <param name="email" value="maria.jansen@demo-payroll.invalid"/>
+            <param name="phone" value="+597-111-1111"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-employee-andre-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployee">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000006"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="jobId" value="5fa00000-0000-4000-8000-000000000003"/>
+            <param name="employeeGroupId" value="5fa00000-0000-4000-8000-000000000004"/>
+            <param name="firstName" value="André"/>
+            <param name="lastName" value="Ling"/>
+            <param name="dateOfBirth" value="1995-11-03"/>
+            <param name="hireDate" value="2022-07-15"/>
+            <param name="email" value="andre.ling@demo-payroll.invalid"/>
+            <param name="phone" value="+597-222-2222"/>
+            <param name="status" value="ACTIVE"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-department-manager-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataPatchTenantDepartmentManager">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="managerEmployeeId" value="5fa00000-0000-4000-8000-000000000005"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-work-time-std-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantWorkTime">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000007"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="Standard 40h"/>
+            <param name="code" value="WT-40"/>
+            <param name="hoursPerDay" value="8"/>
+            <param name="workDaysPerWeek" value="5"/>
+            <param name="description" value="Five-day week, eight hours per day"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-bank-templates-from-platform-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <comment>Copy all active SR platform bank templates to Demo Payroll NV (same as API company create).</comment>
+        <customChange class="com.wagepayroll.liquibase.task.DataCopyTenantBankTemplatesFromPlatform">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="payrollCountry" value="SR"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-payment-loc-cash-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantPaymentLocation">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000009"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="Cash desk (HQ)"/>
+            <param name="paymentType" value="CASH"/>
+            <param name="currency" value="SRD"/>
+            <param name="bankTemplateId" value=""/>
+            <param name="accountNumber" value=""/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-payment-loc-bank-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantPaymentLocation">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000000a"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="DSB operating account"/>
+            <param name="paymentType" value="BANK_ACCOUNT"/>
+            <param name="currency" value="SRD"/>
+            <param name="platformBankTemplateId" value="2f110000-0000-4000-8000-000000000002"/>
+            <param name="accountNumber" value="0001234567890"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-pay-period-jan-2026-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantPayPeriod">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000000b"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="year" value="2026"/>
+            <param name="startDate" value="2026-01-01"/>
+            <param name="endDate" value="2026-01-31"/>
+            <param name="status" value="CLOSED"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-pay-period-feb-2026-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantPayPeriod">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000000c"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="year" value="2026"/>
+            <param name="startDate" value="2026-02-01"/>
+            <param name="endDate" value="2026-02-28"/>
+            <param name="status" value="OPEN"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-ledger-netwage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantLedger">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000000d"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="platformLedgerTemplateId" value="53100000-0000-0000-0000-000000000022"/>
+            <param name="code" value="3100"/>
+            <param name="description" value="Net wages (demo)"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-wage-component-basic-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantWageComponent">
+            <param name="id" value="5fa00000-0000-4000-8000-00000000000f"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="platformTemplateId" value="51000000-0000-0000-0000-000000000001"/>
+            <param name="code" value="1001"/>
+            <param name="name" value="Base salary (demo)"/>
+            <param name="description" value="Demo recurring base salary component"/>
+            <param name="componentType" value="EARNING"/>
+            <param name="category" value="SALARY"/>
+            <param name="netEffect" value="ADD_TO_NET"/>
+            <param name="taxableWageTax" value="true"/>
+            <param name="taxableSocialSecurity" value="true"/>
+            <param name="taxablePension" value="true"/>
+            <param name="taxableVacationReserve" value="false"/>
+            <param name="calculationMethod" value="FORMULA"/>
+            <param name="percentageBase" value=""/>
+            <param name="formulaExpression" value='{"formulaMode":"CRITERIA_RULES","formulaRules":[{"criteriaType":"WAGE_TYPE","itemKey":"PER_HOUR","formulaExpression":"transaction.quantity*transaction.rate"}],"defaultFormulaExpression":"compensation.periodic_rate"}'/>
+            <param name="defaultAmount" value="18500.0000"/>
+            <param name="roundingStrategy" value="HALF_UP"/>
+            <param name="processingOrder" value="10"/>
+            <param name="phase" value="GROSS"/>
+            <param name="maintainsBalance" value="false"/>
+            <param name="balanceType" value=""/>
+            <param name="balanceDirection" value=""/>
+            <param name="counterComponentId" value=""/>
+            <param name="postingStrategy" value=""/>
+            <param name="printOnPayslip" value="true"/>
+            <param name="auxiliary" value="false"/>
+            <param name="applyInPayroll" value="true"/>
+            <param name="recurrence" value="RECURRENT"/>
+            <param name="countryRuleKey" value="SUR_NORMAL_WAGE"/>
+            <param name="platformCountryTaxRuleId" value="52000000-0000-0000-0000-000000000001"/>
+            <param name="debitTenantLedgerId" value=""/>
+            <param name="creditTenantLedgerId" value=""/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-standing-instruction-andre-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeePayrollStandingInstruction">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000010"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="employeeId" value="5fa00000-0000-4000-8000-000000000006"/>
+            <param name="tenantWageComponentId" value="5fa00000-0000-4000-8000-00000000000f"/>
+            <param name="effectiveFrom" value="2026-01-01"/>
+            <param name="effectiveTo" value=""/>
+            <param name="amount" value="19250.0000"/>
+            <param name="quantity" value=""/>
+            <param name="rate" value=""/>
+            <param name="recurrence" value="EACH_PAY_PERIOD"/>
+            <param name="active" value="true"/>
+            <param name="remarks" value="Demo standing instruction: negotiated base above job default"/>
+        </customChange>
+    </changeSet>
+
+    <!-- Extra org structure for richer demo lists (departments + jobs). -->
+    <changeSet id="data-m20-demo-tenant-department-finance-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantDepartment">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="Finance"/>
+            <param name="code" value="FIN"/>
+            <param name="description" value="Payroll, AP, and treasury"/>
+            <param name="parentDepartmentId" value=""/>
+            <param name="managerEmployeeId" value=""/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-department-hr-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantDepartment">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="name" value="Human Resources"/>
+            <param name="code" value="HR"/>
+            <param name="description" value="Recruitment and employee relations"/>
+            <param name="parentDepartmentId" value=""/>
+            <param name="managerEmployeeId" value=""/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-job-lead-dev-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantJob">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000013"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="title" value="Lead Software Developer"/>
+            <param name="code" value="DEV-LEAD"/>
+            <param name="description" value="Senior IC; mentors developers"/>
+            <param name="salaryType" value="MONTHLY"/>
+            <param name="defaultSalary" value="24500.00"/>
+            <param name="defaultHourlyRate" value=""/>
+            <param name="standardHoursPerWeek" value="40"/>
+            <param name="jobLevel" value="L3"/>
+            <param name="jobCategory" value="Engineering"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-job-junior-dev-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantJob">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000014"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000002"/>
+            <param name="title" value="Junior Software Developer"/>
+            <param name="code" value="DEV-JR"/>
+            <param name="description" value="Entry-level engineering role"/>
+            <param name="salaryType" value="MONTHLY"/>
+            <param name="defaultSalary" value="12500.00"/>
+            <param name="defaultHourlyRate" value=""/>
+            <param name="standardHoursPerWeek" value="40"/>
+            <param name="jobLevel" value="L1"/>
+            <param name="jobCategory" value="Engineering"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-job-payroll-specialist-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantJob">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000015"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000011"/>
+            <param name="title" value="Payroll Specialist"/>
+            <param name="code" value="FIN-PAY-01"/>
+            <param name="description" value="Monthly payroll processing and controls"/>
+            <param name="salaryType" value="MONTHLY"/>
+            <param name="defaultSalary" value="16800.00"/>
+            <param name="defaultHourlyRate" value=""/>
+            <param name="standardHoursPerWeek" value="40"/>
+            <param name="jobLevel" value="L2"/>
+            <param name="jobCategory" value="Finance"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m20-demo-tenant-job-hr-officer-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantJob">
+            <param name="id" value="5fa00000-0000-4000-8000-000000000016"/>
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+            <param name="departmentId" value="5fa00000-0000-4000-8000-000000000012"/>
+            <param name="title" value="HR Officer"/>
+            <param name="code" value="HR-OFF-01"/>
+            <param name="description" value="Generalist HR support"/>
+            <param name="salaryType" value="MONTHLY"/>
+            <param name="defaultSalary" value="15200.00"/>
+            <param name="defaultHourlyRate" value=""/>
+            <param name="standardHoursPerWeek" value="40"/>
+            <param name="jobLevel" value="L2"/>
+            <param name="jobCategory" value="Human Resources"/>
+            <param name="active" value="true"/>
+        </customChange>
+    </changeSet>
+</databaseChangeLog>

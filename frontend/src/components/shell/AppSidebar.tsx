@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -44,9 +44,24 @@ function NavBranch({
   depth: number;
   onPick?: () => void;
 }) {
-  // Track which group nodes are open; default all open
+  // Track which group nodes are open; default all open once groups exist.
   const groupIds = items.filter((i) => !i.path).map((i) => i.id);
+  const groupIdsKey = groupIds.join("|");
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(groupIds));
+
+  useEffect(() => {
+    if (!groupIdsKey) {
+      return;
+    }
+    const ids = groupIdsKey.split("|");
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) {
+        next.add(id);
+      }
+      return next;
+    });
+  }, [groupIdsKey]);
 
   function toggleGroup(id: string) {
     setOpenGroups((prev) => {
@@ -58,7 +73,7 @@ function NavBranch({
   }
 
   return (
-    <ul className={depth === 0 ? "space-y-0.5" : "ml-2 mt-1 space-y-0.5 border-l border-border/60 pl-2"} data-testid={depth === 0 ? "app-sidebar-nav" : undefined}>
+    <ul className={depth === 0 ? "space-y-1" : "ml-2 mt-1 space-y-1 border-l border-border/60 pl-2"} data-testid={depth === 0 ? "app-sidebar-nav" : undefined}>
       {items.map((item) => {
         const active = navItemActive(pathname, item);
         const isGroup = !item.path;

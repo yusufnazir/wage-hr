@@ -49,14 +49,10 @@ class MeLocalePatchIT {
 	}
 
 	@Test
-	void patchLocaleAcceptsNlSrCasing() throws Exception {
+	void patchLocaleRejectsNlSr() throws Exception {
 		mockMvc.perform(
 				patch("/api/v1/me/locale").header("Host", "demo.lvh.me").contentType(MediaType.APPLICATION_JSON)
-						.content("{\"locale\":\"NL-SR\"}").with(user(ADMIN_USER_ID)).with(csrf()))
-				.andExpect(status().isNoContent());
-
-		mockMvc.perform(get("/api/v1/me").header("Host", "demo.lvh.me").with(user(ADMIN_USER_ID)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.locale").value("nl-sr"));
+						.content("{\"locale\":\"nl-sr\"}").with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isBadRequest());
 	}
 }

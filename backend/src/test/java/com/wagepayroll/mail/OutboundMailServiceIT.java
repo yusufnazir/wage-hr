@@ -61,7 +61,7 @@ class OutboundMailServiceIT {
 				.thenReturn(Optional.of(new RenderedCatalogEmail("Verify", "<h1>Verify</h1><a href=\"https://verify\">Open</a>",
 						"Verify text")));
 
-		service.sendEmailVerificationLink("ada@example.test", "https://verify", "Ada", "demo", "nl-sr");
+		service.sendEmailVerificationLink("ada@example.test", "https://verify", "Ada", "demo", "nl");
 
 		RecordedRequest req = mockWebServer.takeRequest();
 		JsonNode body = objectMapper.readTree(req.getBody().readUtf8());

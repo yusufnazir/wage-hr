@@ -39,15 +39,85 @@ export function isAdminWebOriginUrl(absoluteUrl: string): boolean {
   }
 }
 
+const AUTH_SURFACE_PATHS = [
+  "/login",
+  "/register",
+  "/verify-email",
+  "/forgot-password",
+  "/reset-password",
+  "/terms-of-service",
+  "/privacy-policy",
+] as const;
+
+/** Auth-host sign-in and registration paths (and legal pages served on the auth workspace). */
+export function isAuthSurfacePathname(pathname: string): boolean {
+  return AUTH_SURFACE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isLoginUrlOnAuthHost(url: URL): boolean {
+  try {
+    return url.origin === new URL(getAuthWebOrigin()).origin && url.pathname === "/login";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Walk nested {@code /login?returnTo=/login?returnTo=…} chains from a stale session redirect.
+ * Returns the first absolute URL that is not another login page, or {@code null} if none.
+ */
+export function unwrapLoginReturnToChain(absoluteUrl: string): string | null {
+  let current: string | null = absoluteUrl;
+  const seen = new Set<string>();
+  for (let depth = 0; depth < 16 && current; depth += 1) {
+    if (seen.has(current)) {
+      return null;
+    }
+    seen.add(current);
+    let url: URL;
+    try {
+      url = new URL(current);
+    } catch {
+      return null;
+    }
+    if (!isLoginUrlOnAuthHost(url)) {
+      return current;
+    }
+    current = url.searchParams.get("returnTo");
+  }
+  return null;
+}
+
 export function authLoginUrl(): string {
   return `${getAuthWebOrigin()}/login`;
 }
 
 /** Login URL on the auth host with optional post-login target (must pass backend {@code redirect-check}). */
 export function authLoginUrlWithReturnTo(absoluteReturnUrl: string): string {
+  const ultimate = unwrapLoginReturnToChain(absoluteReturnUrl) ?? absoluteReturnUrl;
+  try {
+    const target = new URL(ultimate);
+    if (isLoginUrlOnAuthHost(target)) {
+      return authLoginUrl();
+    }
+  } catch {
+    return authLoginUrl();
+  }
   const u = new URL("/login", `${getAuthWebOrigin()}/`);
-  u.searchParams.set("returnTo", absoluteReturnUrl);
+  u.searchParams.set("returnTo", ultimate);
   return u.toString();
+}
+
+/**
+ * Post-expiry redirect target from the current browser location.
+ * {@code null} on auth surfaces (e.g. login) where the UI already handles anonymous 401s.
+ */
+export function sessionExpiredReturnTo(location: Pick<Location, "origin" | "pathname" | "search" | "hash">): string | null {
+  if (isAuthSurfacePathname(location.pathname)) {
+    return null;
+  }
+  const raw = `${location.origin}${location.pathname}${location.search}${location.hash}`;
+  return unwrapLoginReturnToChain(raw) ?? raw;
 }
 
 export function defaultTenantAppUrl(): string {

@@ -40,7 +40,12 @@ public class NavigationController {
 	private static final UUID NAV_PLATFORM_MAIL_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000096");
 	private static final UUID NAV_PLATFORM_CURRENCIES_ID = UUID.fromString("50000000-0000-0000-0000-000000000095");
 	private static final UUID NAV_PLATFORM_COUNTRIES_ID = UUID.fromString("50000000-0000-0000-0000-000000000094");
+	private static final UUID NAV_PLATFORM_PAYROLL_BASES_ID = UUID.fromString("50000000-0000-0000-0000-000000000085");
+	private static final UUID NAV_PLATFORM_COUNTRY_TAX_RULES_ID = UUID.fromString("50000000-0000-0000-0000-000000000086");
 	private static final UUID NAV_PLATFORM_BANK_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000090");
+	private static final UUID NAV_PLATFORM_WAGE_COMPONENT_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000088");
+	private static final UUID NAV_PLATFORM_LEDGER_TEMPLATES_ID = UUID.fromString("50000000-0000-0000-0000-000000000089");
+	private static final UUID NAV_PLATFORM_COMPONENT_GROUPS_ID = UUID.fromString("50000000-0000-0000-0000-000000000087");
 
 	private final NavigationMenuService navigationMenuService;
 	private final UserAccountRepository userAccountRepository;
@@ -106,6 +111,16 @@ public class NavigationController {
 				"nav.platform_currencies", 29, List.of()));
 		items.add(new NavigationItemDto(NAV_PLATFORM_COUNTRIES_ID, "/app/platform-countries",
 				"nav.platform_countries", 30, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_PAYROLL_BASES_ID, "/app/platform-payroll-bases",
+				"nav.platform_payroll_bases", 30, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_COUNTRY_TAX_RULES_ID, "/app/platform-country-tax-rules",
+				"nav.platform_country_tax_rules", 31, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_WAGE_COMPONENT_TEMPLATES_ID, "/app/platform-wage-component-templates",
+				"nav.platform_wage_component_templates", 28, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_LEDGER_TEMPLATES_ID, "/app/platform-ledger-templates",
+				"nav.platform_ledger_templates", 29, List.of()));
+		items.add(new NavigationItemDto(NAV_PLATFORM_COMPONENT_GROUPS_ID, "/app/platform-component-group-templates",
+				"nav.platform_component_group_templates", 29, List.of()));
 		items.add(new NavigationItemDto(NAV_PLATFORM_BANK_TEMPLATES_ID, "/app/platform-bank-templates",
 				"nav.platform_bank_templates", 31, List.of()));
 		items.add(new NavigationItemDto(NAV_PLATFORM_MAIL_TEMPLATES_ID, "/app/platform-mail-templates",

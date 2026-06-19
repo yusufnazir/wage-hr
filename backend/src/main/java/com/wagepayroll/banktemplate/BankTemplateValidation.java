@@ -10,8 +10,6 @@ public final class BankTemplateValidation {
 
 	public static final Pattern SWIFT_BIC = Pattern.compile("^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$");
 
-	public static final Pattern ISO_CURRENCY = Pattern.compile("^[A-Z]{3}$");
-
 	private BankTemplateValidation() {
 	}
 
@@ -59,17 +57,6 @@ public final class BankTemplateValidation {
 		}
 		String t = raw.trim();
 		return t.isEmpty() ? null : (t.length() > 100 ? t.substring(0, 100) : t);
-	}
-
-	public static String normalizeCurrencyOrNull(String raw) {
-		if (raw == null || raw.isBlank()) {
-			return null;
-		}
-		String t = raw.trim().toUpperCase(Locale.ROOT);
-		if (!ISO_CURRENCY.matcher(t).matches()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_CURRENCY_CODE");
-		}
-		return t;
 	}
 
 	public static String normalizeIso2(String raw, String field) {

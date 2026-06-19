@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+      Add gross supplemental earnings (1008 child allowance, 1009 lump sum, 1011 extra earnings)
+      to the SR default component group so tenant catalog + payroll standing provision include them.
+    -->
+    <changeSet id="data-m41-sr-default-catalog-supplemental-earnings-1" author="wagepayroll">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM platform_component_group_template
+                WHERE id = '54000000-0000-0000-0000-000000000001'
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM platform_component_item_template
+                WHERE platform_wage_component_template_id = '51000000-0000-0000-0000-000000000008'
+            </sqlCheck>
+        </preConditions>
+        <comment>SR default catalog: child allowance, lump sum, extra earnings (templates 1008, 1009, 1011).</comment>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000020"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000008"/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000040"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000020"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Child allowance"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000041"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000020"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Child allowance"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000021"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000009"/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000042"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000021"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Lump sum"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000043"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000021"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Lump sum"/>
+        </insert>
+
+        <insert tableName="platform_component_item_template">
+            <column name="id" value="54200000-0000-0000-0000-000000000022"/>
+            <column name="platform_component_header_template_id" value="54100000-0000-0000-0000-000000000001"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000000b"/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000044"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000022"/>
+            <column name="locale" value="en"/>
+            <column name="name" value="Extra earnings"/>
+        </insert>
+        <insert tableName="platform_component_item_template_locale">
+            <column name="id" value="54400000-0000-0000-0000-0000000045"/>
+            <column name="platform_component_item_template_id" value="54200000-0000-0000-0000-000000000022"/>
+            <column name="locale" value="nl"/>
+            <column name="name" value="Extra earnings"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

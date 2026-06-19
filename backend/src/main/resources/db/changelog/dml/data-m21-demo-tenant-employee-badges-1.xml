@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Backfill badge numbers for the 30 demo employees so the directory view
+        displays a stable identifier (e.g. "[1000] Maria Jansen"). Each update
+        is its own changeSet so already-applied badges are skipped on re-run.
+        Updates use onValidationFail="MARK_RAN" to keep redeploys safe.
+    -->
+
+    <changeSet id="data-m21-demo-employee-badge-1000" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1000"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000005' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1001" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1001"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000006' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1002" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1002"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000020' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1003" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1003"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000021' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1004" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1004"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000022' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1005" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1005"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000023' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1006" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1006"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000024' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1007" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1007"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000025' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1008" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1008"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000026' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1009" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1009"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000027' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1010" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1010"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000028' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1011" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1011"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000029' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1012" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1012"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002a' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1013" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1013"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002b' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1014" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1014"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002c' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1015" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1015"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002d' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1016" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1016"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002e' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1017" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1017"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000002f' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1018" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1018"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000030' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1019" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1019"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000031' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1020" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1020"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000032' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1021" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1021"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000033' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1022" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1022"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000034' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1023" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1023"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000035' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1024" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1024"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000036' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1025" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1025"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000037' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1026" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1026"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000038' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1027" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1027"/>
+            <where>id = '5fa00000-0000-4000-8000-000000000039' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1028" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1028"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000003a' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+    <changeSet id="data-m21-demo-employee-badge-1029" author="wagepayroll" onValidationFail="MARK_RAN">
+        <update tableName="tenant_employee">
+            <column name="badge_number" value="1029"/>
+            <where>id = '5fa00000-0000-4000-8000-00000000003b' AND (badge_number IS NULL OR badge_number = '')</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

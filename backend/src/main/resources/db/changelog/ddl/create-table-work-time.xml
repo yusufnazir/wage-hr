@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m8-tenant-work-time-1" author="wagepayroll">
+        <createTable tableName="tenant_work_time">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hours_per_day" type="DECIMAL(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="work_days_per_week" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_tenant_work_time_company"
+                                 baseTableName="tenant_work_time" baseColumnNames="company_id,tenant_id"
+                                 referencedTableName="tenant_company" referencedColumnNames="id,tenant_id"/>
+    </changeSet>
+
+    <changeSet id="schema-m8-tenant-work-time-idx-id-company-tenant-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_work_time_id_company_tenant" tableName="tenant_work_time" unique="true">
+            <column name="id"/>
+            <column name="company_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m8-tenant-work-time-idx-company-code-1" author="wagepayroll">
+        <createIndex indexName="uidx_tenant_work_time_company_code" tableName="tenant_work_time" unique="true">
+            <column name="company_id"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="schema-m8-tenant-work-time-idx-tenant-company-1" author="wagepayroll">
+        <createIndex indexName="idx_tenant_work_time_tenant_company" tableName="tenant_work_time">
+            <column name="tenant_id"/>
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

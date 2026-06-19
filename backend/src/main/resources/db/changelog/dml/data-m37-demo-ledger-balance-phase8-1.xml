@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="data-m37-demo-tenant-ledger-gross-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantLedger">
+      <param name="id" value="5fa00000-0000-4000-8000-000000000020"/>
+      <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+      <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+      <param name="platformLedgerTemplateId" value="53100000-0000-0000-0000-000000000024"/>
+      <param name="code" value="3300"/>
+      <param name="description" value="Gross wages (demo)"/>
+      <param name="active" value="true"/>
+    </customChange>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-tenant-ledger-loan-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantLedger">
+      <param name="id" value="5fa00000-0000-4000-8000-000000000021"/>
+      <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+      <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+      <param name="platformLedgerTemplateId" value="53100000-0000-0000-0000-000000000026"/>
+      <param name="code" value="3500"/>
+      <param name="description" value="Employee loan (demo)"/>
+      <param name="active" value="true"/>
+    </customChange>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-basic-salary-ledgers-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantWageComponent">
+      <param name="id" value="5fa00000-0000-4000-8000-00000000000f"/>
+      <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+      <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+      <param name="platformTemplateId" value="51000000-0000-0000-0000-000000000001"/>
+      <param name="code" value="1001"/>
+      <param name="name" value="Base salary (demo)"/>
+      <param name="description" value="Demo recurring base salary component"/>
+      <param name="componentType" value="EARNING"/>
+      <param name="category" value="SALARY"/>
+      <param name="netEffect" value="ADD_TO_NET"/>
+      <param name="taxableWageTax" value="true"/>
+      <param name="taxableSocialSecurity" value="true"/>
+      <param name="taxablePension" value="true"/>
+      <param name="taxableVacationReserve" value="false"/>
+      <param name="calculationMethod" value="FORMULA"/>
+      <param name="percentageBase" value=""/>
+      <param name="formulaExpression" value='{"formulaMode":"CRITERIA_RULES","formulaRules":[{"criteriaType":"WAGE_TYPE","itemKey":"PER_HOUR","formulaExpression":"transaction.quantity*transaction.rate"}],"defaultFormulaExpression":"compensation.periodic_rate"}'/>
+      <param name="defaultAmount" value=""/>
+      <param name="roundingStrategy" value="HALF_UP"/>
+      <param name="processingOrder" value="1010"/>
+      <param name="phase" value="GROSS"/>
+      <param name="maintainsBalance" value="false"/>
+      <param name="balanceType" value=""/>
+      <param name="balanceDirection" value=""/>
+      <param name="counterComponentId" value=""/>
+      <param name="postingStrategy" value=""/>
+      <param name="printOnPayslip" value="true"/>
+      <param name="auxiliary" value="false"/>
+      <param name="applyInPayroll" value="true"/>
+      <param name="recurrence" value="RECURRENT"/>
+      <param name="countryRuleKey" value="SUR_NORMAL_WAGE"/>
+      <param name="platformCountryTaxRuleId" value="52000000-0000-0000-0000-000000000001"/>
+      <param name="debitTenantLedgerId" value="5fa00000-0000-4000-8000-000000000020"/>
+      <param name="creditTenantLedgerId" value="5fa00000-0000-4000-8000-00000000000d"/>
+      <param name="active" value="true"/>
+    </customChange>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-loan-component-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantWageComponent">
+      <param name="id" value="5fa00000-0000-4000-8000-000000000022"/>
+      <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+      <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+      <param name="platformTemplateId" value="51000000-0000-0000-0000-000000000003"/>
+      <param name="code" value="1003"/>
+      <param name="name" value="Loan repayment (demo)"/>
+      <param name="description" value="Demo loan repayment; balance-tracked"/>
+      <param name="componentType" value="DEDUCTION"/>
+      <param name="category" value="LOAN"/>
+      <param name="netEffect" value="SUBTRACT_FROM_NET"/>
+      <param name="taxableWageTax" value="false"/>
+      <param name="taxableSocialSecurity" value="false"/>
+      <param name="taxablePension" value="false"/>
+      <param name="taxableVacationReserve" value="false"/>
+      <param name="calculationMethod" value="MANUAL_INPUT"/>
+      <param name="percentageBase" value=""/>
+      <param name="formulaExpression" value=""/>
+      <param name="defaultAmount" value="500.0000"/>
+      <param name="roundingStrategy" value="HALF_UP"/>
+      <param name="processingOrder" value="6010"/>
+      <param name="phase" value="POST_TAX"/>
+      <param name="maintainsBalance" value="true"/>
+      <param name="balanceType" value="LOAN"/>
+      <param name="balanceDirection" value="DEBIT"/>
+      <param name="counterComponentId" value=""/>
+      <param name="postingStrategy" value=""/>
+      <param name="printOnPayslip" value="true"/>
+      <param name="auxiliary" value="false"/>
+      <param name="applyInPayroll" value="true"/>
+      <param name="recurrence" value="RECURRENT"/>
+      <param name="countryRuleKey" value="SUR_LOAN_REPAYMENT"/>
+      <param name="platformCountryTaxRuleId" value=""/>
+      <param name="debitTenantLedgerId" value="5fa00000-0000-4000-8000-00000000000d"/>
+      <param name="creditTenantLedgerId" value="5fa00000-0000-4000-8000-000000000021"/>
+      <param name="active" value="true"/>
+    </customChange>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-loan-standing-instruction-andre-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <customChange class="com.wagepayroll.liquibase.task.DataUpsertTenantEmployeePayrollStandingInstruction">
+      <param name="id" value="5fa00000-0000-4000-8000-000000000023"/>
+      <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+      <param name="companyId" value="5fa00000-0000-4000-8000-000000000001"/>
+      <param name="employeeId" value="5fa00000-0000-4000-8000-000000000006"/>
+      <param name="tenantWageComponentId" value="5fa00000-0000-4000-8000-000000000022"/>
+      <param name="effectiveFrom" value="2026-01-01"/>
+      <param name="effectiveTo" value=""/>
+      <param name="amount" value="500.0000"/>
+      <param name="quantity" value=""/>
+      <param name="rate" value=""/>
+      <param name="recurrence" value="EACH_PAY_PERIOD"/>
+      <param name="active" value="true"/>
+      <param name="remarks" value="Demo loan repayment 500/mo"/>
+    </customChange>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-loan-tx-feb-andre-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tenant_wage_component_transaction WHERE id = '5fa00000-0000-4000-8000-000000000025'</sqlCheck>
+    </preConditions>
+    <insert tableName="tenant_wage_component_transaction">
+      <column name="id" value="5fa00000-0000-4000-8000-000000000025"/>
+      <column name="tenant_id" value="10000000-0000-0000-0000-000000000001"/>
+      <column name="company_id" value="5fa00000-0000-4000-8000-000000000001"/>
+      <column name="employee_id" value="5fa00000-0000-4000-8000-000000000006"/>
+      <column name="pay_period_id" value="5fa00000-0000-4000-8000-00000000000c"/>
+      <column name="pay_period_run_id"/>
+      <column name="tenant_wage_component_id" value="5fa00000-0000-4000-8000-000000000022"/>
+      <column name="quantity"/>
+      <column name="rate"/>
+      <column name="amount" value="500.0000"/>
+      <column name="manual_override" valueBoolean="false"/>
+      <column name="remarks" value="Demo loan repayment Feb 2026"/>
+      <column name="created_at" valueComputed="NOW()"/>
+      <column name="updated_at" valueComputed="NOW()"/>
+    </insert>
+  </changeSet>
+
+  <changeSet id="data-m37-demo-loan-opening-balance-andre-1" author="wagepayroll" onValidationFail="MARK_RAN">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM tenant_wage_component_balance WHERE id = '5fa00000-0000-4000-8000-000000000024'</sqlCheck>
+    </preConditions>
+    <insert tableName="tenant_wage_component_balance">
+      <column name="id" value="5fa00000-0000-4000-8000-000000000024"/>
+      <column name="tenant_id" value="10000000-0000-0000-0000-000000000001"/>
+      <column name="company_id" value="5fa00000-0000-4000-8000-000000000001"/>
+      <column name="employee_id" value="5fa00000-0000-4000-8000-000000000006"/>
+      <column name="tenant_wage_component_id" value="5fa00000-0000-4000-8000-000000000022"/>
+      <column name="currency_code" value="SRD"/>
+      <column name="current_balance" value="10000.0000"/>
+      <column name="updated_at" valueComputed="NOW()"/>
+    </insert>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Grants employee payroll standing privileges to the ADMIN role template. Must run AFTER
+        data-m19-employee-payroll-standing-privileges-1.xml seeds the privilege rows.
+        New tenants copy this template into an Admin role on registration (default template ADMIN).
+        Mirrors data-m9-role-template-pay-period-privileges-1.xml.
+    -->
+
+    <changeSet id="data-m19-rtp-admin-standing-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="EMPLOYEE_PAYROLL_STANDING_VIEW"/>
+        </customChange>
+    </changeSet>
+    <changeSet id="data-m19-rtp-admin-standing-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="EMPLOYEE_PAYROLL_STANDING_MANAGE"/>
+        </customChange>
+    </changeSet>
+</databaseChangeLog>

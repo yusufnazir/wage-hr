@@ -95,7 +95,7 @@ Follow **`docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md`**.
 | GET | `/api/v1/auth/redirect-check?returnTo=` | Public | — | **204** allowed, **400** invalid open redirect |
 | GET | `/api/v1/me` | Authenticated | From `Host` / API header | JSON `ApiResponse` with `email`, `locale`, `tenantHandle`, `privileges`, `platformSuperadmin` |
 | GET | `/api/v1/me/tenants` | Authenticated | — | All memberships: `tenants[]` with `handle`, `name`, `roles` |
-| PATCH | `/api/v1/me/locale` | Authenticated | — | Body `{ "locale": "nl-sr" }`; **204**; CSRF |
+| PATCH | `/api/v1/me/locale` | Authenticated | — | Body `{ "locale": "nl" }`; **204**; CSRF |
 | GET | `/api/v1/demo/user-view` | Authenticated | Required | **`USER_VIEW`** or **403** |
 | GET | `/api/v1/tenant/billing/summary` | Authenticated | Required | **`USER_VIEW`**; provider flags + subscription snapshot |
 | GET | `/api/v1/tenant/billing/commercial-plans` | Authenticated | Required | **`TENANT_SETTINGS_EDIT`**; active plan catalog (Stripe/PayPal ids) |

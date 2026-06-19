@@ -83,7 +83,7 @@ class TenantBankTemplatesIT {
 
 		mockMvc.perform(get("/api/v1/tenant/bank-templates").header("Host", "demo.lvh.me")
 				.param("companyId", companyId).with(user(ADMIN_USER_ID))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.totalElements").value(4));
+				.andExpect(jsonPath("$.data.totalElements").value(11));
 	}
 
 	@Test
@@ -126,18 +126,16 @@ class TenantBankTemplatesIT {
 				.andExpect(status().isOk()).andReturn();
 		String templateId = com.jayway.jsonpath.JsonPath.read(listRes.getResponse().getContentAsString(),
 				"$.data.items[0].id");
+		String platformBankTemplateId = com.jayway.jsonpath.JsonPath.read(listRes.getResponse().getContentAsString(),
+				"$.data.items[0].platformBankTemplateId");
 
 		String put = """
 				{
-				  "name": "X",
-				  "bankName": null,
-				  "swiftBic": null,
-				  "bankCode": null,
-				  "accountNumberFormat": null,
-				  "currencyCode": null,
+				  "platformBankTemplateId": "%s",
+				  "accountNumber": null,
 				  "active": true
 				}
-				""";
+				""".formatted(platformBankTemplateId);
 		mockMvc.perform(put("/api/v1/tenant/bank-templates/" + templateId).header("Host", "demo.lvh.me")
 				.contentType(MediaType.APPLICATION_JSON).content(put).with(user(VIEWER_USER_ID)).with(csrf()))
 				.andExpect(status().isForbidden());
@@ -183,21 +181,21 @@ class TenantBankTemplatesIT {
 				.andExpect(status().isOk()).andReturn();
 		String templateId = com.jayway.jsonpath.JsonPath.read(listRes.getResponse().getContentAsString(),
 				"$.data.items[0].id");
+		String platformBankTemplateId = com.jayway.jsonpath.JsonPath.read(listRes.getResponse().getContentAsString(),
+				"$.data.items[0].platformBankTemplateId");
+		String originalName = com.jayway.jsonpath.JsonPath.read(listRes.getResponse().getContentAsString(),
+				"$.data.items[0].platformTemplateName");
 
 		String put = """
 				{
-				  "name": "Renamed",
-				  "bankName": null,
-				  "swiftBic": null,
-				  "bankCode": null,
-				  "accountNumberFormat": null,
-				  "currencyCode": null,
+				  "platformBankTemplateId": "%s",
+				  "accountNumber": null,
 				  "active": false
 				}
-				""";
+				""".formatted(platformBankTemplateId);
 		mockMvc.perform(put("/api/v1/tenant/bank-templates/" + templateId).header("Host", "demo.lvh.me")
 				.contentType(MediaType.APPLICATION_JSON).content(put).with(user(ADMIN_USER_ID)).with(csrf()))
-				.andExpect(status().isOk()).andExpect(jsonPath("$.data.template.name").value("Renamed"))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.data.template.platformTemplateName").value(originalName))
 				.andExpect(jsonPath("$.data.template.active").value(false));
 
 		mockMvc.perform(patch("/api/v1/tenant/bank-templates/" + templateId + "/deactivate").header("Host", "demo.lvh.me")

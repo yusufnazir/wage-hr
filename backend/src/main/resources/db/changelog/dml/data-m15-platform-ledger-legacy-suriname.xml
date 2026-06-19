@@ -1,0 +1,382 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m15-seed-platform-ledger-legacy-sr-1" author="wagepayroll">
+        <comment>Suriname platform ledger templates migrated from legacy general_ledger_templates (country 740 to SR); see docs/datafiles/Payroll data - general_ledger_templates.csv</comment>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000001"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1000"/>
+            <column name="description" value="Overtime"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000002"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1100"/>
+            <column name="description" value="Vacation allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000003"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1200"/>
+            <column name="description" value="Bonus"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000004"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1300"/>
+            <column name="description" value="Child allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000005"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1400"/>
+            <column name="description" value="Lump sum"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000006"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1500"/>
+            <column name="description" value="Jubilee"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000007"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1600"/>
+            <column name="description" value="Extra earnings"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000008"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1700"/>
+            <column name="description" value="AOV premium"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000009"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1800"/>
+            <column name="description" value="AOV overtime"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000010"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="1900"/>
+            <column name="description" value="AOV vacation allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000011"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2000"/>
+            <column name="description" value="AOV bonus"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000012"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2100"/>
+            <column name="description" value="AOV child allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000013"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2200"/>
+            <column name="description" value="AOV lump sum"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000014"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2300"/>
+            <column name="description" value="AOV extra earnings"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000015"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2400"/>
+            <column name="description" value="Wage tax"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000016"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2500"/>
+            <column name="description" value="Wage tax overtime"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000017"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2600"/>
+            <column name="description" value="Wage tax vacation allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000018"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2700"/>
+            <column name="description" value="Wage tax bonus"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000019"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2800"/>
+            <column name="description" value="Wage tax child allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000020"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="2900"/>
+            <column name="description" value="Wage tax lump sum"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000021"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3000"/>
+            <column name="description" value="Wage tax extra earnings"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3100"/>
+            <column name="description" value="Netwage"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000023"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3200"/>
+            <column name="description" value="Rounding"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3300"/>
+            <column name="description" value="Gross wages"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000026"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3500"/>
+            <column name="description" value="Loan"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000027"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3600"/>
+            <column name="description" value="Savings"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000028"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3700"/>
+            <column name="description" value="Wages in kind"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000029"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3800"/>
+            <column name="description" value="Non taxable allowance"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000030"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="3900"/>
+            <column name="description" value="Tax deductible"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000031"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4000"/>
+            <column name="description" value="Non taxable deduction"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000032"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4100"/>
+            <column name="description" value="Tax credit"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000033"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4200"/>
+            <column name="description" value="Tax deductions"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000034"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4300"/>
+            <column name="description" value="FVO employers premium"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000035"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4400"/>
+            <column name="description" value="FVO employees premium"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000036"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4500"/>
+            <column name="description" value="Employer retirement Contribution"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000037"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4600"/>
+            <column name="description" value="Employee retirement Contribution (Taxable)"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000038"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4700"/>
+            <column name="description" value="Employee retirement Contribution (Non-Taxable)"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000040"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="4900"/>
+            <column name="description" value="APF Employer Contribution"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_ledger_template">
+            <column name="id" value="53100000-0000-0000-0000-000000000041"/>
+            <column name="country_code" value="SR"/>
+            <column name="code" value="5000"/>
+            <column name="description" value="APF Employee Contribution"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m15-link-wage-component-templates-ledger-sr-legacy-1" author="wagepayroll">
+        <comment>Default ledger links for SR wage component templates (Gross wages / Netwage / Overtime / Loan)</comment>
+        <update tableName="platform_wage_component_template">
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000024"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <where>id = '51000000-0000-0000-0000-000000000001'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000001"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <where>id = '51000000-0000-0000-0000-000000000002'</where>
+        </update>
+        <update tableName="platform_wage_component_template">
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000026"/>
+            <where>id = '51000000-0000-0000-0000-000000000003'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

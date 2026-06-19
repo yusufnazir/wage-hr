@@ -13,11 +13,24 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ProblemDetailControllerAdvice {
+
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<ProblemDetail> missingServletRequestParameter(MissingServletRequestParameterException ex,
+			HttpServletRequest request) {
+		ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+				"Missing required query parameter: " + ex.getParameterName());
+		pd.setTitle("Bad Request");
+		pd.setInstance(URI.create(request.getRequestURI()));
+		pd.setProperty("code", "MISSING_PARAMETER");
+		pd.setProperty("traceId", RequestIdFilter.currentRequestId(request));
+		return ResponseEntity.badRequest().body(pd);
+	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ProblemDetail> validation(MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -46,12 +59,16 @@ public class ProblemDetailControllerAdvice {
 
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<ProblemDetail> denied(AccessDeniedException ex, HttpServletRequest request) {
-		ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Forbidden");
-		pd.setTitle("Forbidden");
+		boolean unauthenticated = "Unauthenticated".equals(ex.getMessage());
+		HttpStatus status = unauthenticated ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN;
+		String detail = unauthenticated ? "Authentication required" : "Forbidden";
+		String code = unauthenticated ? "UNAUTHORIZED" : "FORBIDDEN";
+		ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, detail);
+		pd.setTitle(unauthenticated ? "Unauthorized" : "Forbidden");
 		pd.setInstance(URI.create(request.getRequestURI()));
-		pd.setProperty("code", "FORBIDDEN");
+		pd.setProperty("code", code);
 		pd.setProperty("traceId", RequestIdFilter.currentRequestId(request));
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(pd);
+		return ResponseEntity.status(status).body(pd);
 	}
 
 	@ExceptionHandler(ResponseStatusException.class)

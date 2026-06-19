@@ -1,5 +1,6 @@
 package com.wagepayroll.domain.org;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,4 +31,10 @@ public interface TenantPayPeriodRepository extends JpaRepository<TenantPayPeriod
 			Pageable pageable);
 
 	Optional<TenantPayPeriodEntity> findByIdAndTenantId(UUID id, UUID tenantId);
+
+	Optional<TenantPayPeriodEntity> findByTenantIdAndCompanyIdAndYearAndEndDate(UUID tenantId, UUID companyId,
+			int year, LocalDate endDate);
+
+	boolean existsByTenantIdAndCompanyIdAndStartDateAndEndDate(UUID tenantId, UUID companyId,
+			java.time.LocalDate startDate, java.time.LocalDate endDate);
 }

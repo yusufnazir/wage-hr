@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+    <changeSet id="data-m7-platform-currencies-baseline-usd-eur-srd" author="wagepayroll">
+        <insert tableName="platform_currency">
+            <column name="id" value="70000000-0000-0000-0000-000000000001"/>
+            <column name="code" value="USD"/>
+            <column name="display_name" value="US Dollar"/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_currency">
+            <column name="id" value="70000000-0000-0000-0000-000000000002"/>
+            <column name="code" value="EUR"/>
+            <column name="display_name" value="Euro"/>
+            <column name="sort_order" valueNumeric="20"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_currency">
+            <column name="id" value="70000000-0000-0000-0000-000000000003"/>
+            <column name="code" value="SRD"/>
+            <column name="display_name" value="Surinamese Dollar"/>
+            <column name="sort_order" valueNumeric="30"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+
+    <!-- Full ISO 4217 active currency catalog (official list). Baseline USD/EUR/SRD first; no cross-changeset preconditions (greenfield install). -->
+
+
+    <changeSet id="data-m7-currencies-full-AED" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000001"/><column name="code" value="AED"/><column name="display_name" value="UAE Dirham"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AFN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000002"/><column name="code" value="AFN"/><column name="display_name" value="Afghan Afghani"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ALL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000003"/><column name="code" value="ALL"/><column name="display_name" value="Albanian Lek"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AMD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000004"/><column name="code" value="AMD"/><column name="display_name" value="Armenian Dram"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ANG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000005"/><column name="code" value="ANG"/><column name="display_name" value="Netherlands Antillean Guilder"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AOA" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000006"/><column name="code" value="AOA"/><column name="display_name" value="Angolan Kwanza"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ARS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000007"/><column name="code" value="ARS"/><column name="display_name" value="Argentine Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AUD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000008"/><column name="code" value="AUD"/><column name="display_name" value="Australian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AWG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000009"/><column name="code" value="AWG"/><column name="display_name" value="Aruban Florin"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-AZN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000010"/><column name="code" value="AZN"/><column name="display_name" value="Azerbaijani Manat"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BAM" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000011"/><column name="code" value="BAM"/><column name="display_name" value="Bosnia-Herzegovina Convertible Mark"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BBD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000012"/><column name="code" value="BBD"/><column name="display_name" value="Barbadian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BDT" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000013"/><column name="code" value="BDT"/><column name="display_name" value="Bangladeshi Taka"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BGN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000014"/><column name="code" value="BGN"/><column name="display_name" value="Bulgarian Lev"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BHD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000015"/><column name="code" value="BHD"/><column name="display_name" value="Bahraini Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BIF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000016"/><column name="code" value="BIF"/><column name="display_name" value="Burundian Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BMD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000017"/><column name="code" value="BMD"/><column name="display_name" value="Bermudian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BND" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000018"/><column name="code" value="BND"/><column name="display_name" value="Brunei Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BOB" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000019"/><column name="code" value="BOB"/><column name="display_name" value="Bolivian Boliviano"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BRL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000020"/><column name="code" value="BRL"/><column name="display_name" value="Brazilian Real"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BSD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000021"/><column name="code" value="BSD"/><column name="display_name" value="Bahamian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BTN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000022"/><column name="code" value="BTN"/><column name="display_name" value="Bhutanese Ngultrum"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BWP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000023"/><column name="code" value="BWP"/><column name="display_name" value="Botswana Pula"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BYN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000024"/><column name="code" value="BYN"/><column name="display_name" value="Belarusian Ruble"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-BZD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000025"/><column name="code" value="BZD"/><column name="display_name" value="Belize Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CAD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000026"/><column name="code" value="CAD"/><column name="display_name" value="Canadian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CDF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000027"/><column name="code" value="CDF"/><column name="display_name" value="Congolese Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CHF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000028"/><column name="code" value="CHF"/><column name="display_name" value="Swiss Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CLP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000029"/><column name="code" value="CLP"/><column name="display_name" value="Chilean Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CNY" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000030"/><column name="code" value="CNY"/><column name="display_name" value="Chinese Yuan"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-COP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000031"/><column name="code" value="COP"/><column name="display_name" value="Colombian Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CRC" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000032"/><column name="code" value="CRC"/><column name="display_name" value="Costa Rican Colón"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CVE" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000033"/><column name="code" value="CVE"/><column name="display_name" value="Cape Verdean Escudo"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-CZK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000034"/><column name="code" value="CZK"/><column name="display_name" value="Czech Koruna"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-DJF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000035"/><column name="code" value="DJF"/><column name="display_name" value="Djiboutian Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-DKK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000036"/><column name="code" value="DKK"/><column name="display_name" value="Danish Krone"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-DOP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000037"/><column name="code" value="DOP"/><column name="display_name" value="Dominican Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-DZD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000038"/><column name="code" value="DZD"/><column name="display_name" value="Algerian Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-EGP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000039"/><column name="code" value="EGP"/><column name="display_name" value="Egyptian Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ERN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000040"/><column name="code" value="ERN"/><column name="display_name" value="Eritrean Nakfa"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ETB" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000041"/><column name="code" value="ETB"/><column name="display_name" value="Ethiopian Birr"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-FJD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000042"/><column name="code" value="FJD"/><column name="display_name" value="Fijian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-FKP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000043"/><column name="code" value="FKP"/><column name="display_name" value="Falkland Islands Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GBP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000044"/><column name="code" value="GBP"/><column name="display_name" value="British Pound Sterling"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GEL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000045"/><column name="code" value="GEL"/><column name="display_name" value="Georgian Lari"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GHS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000046"/><column name="code" value="GHS"/><column name="display_name" value="Ghanaian Cedi"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GIP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000047"/><column name="code" value="GIP"/><column name="display_name" value="Gibraltar Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GMD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000048"/><column name="code" value="GMD"/><column name="display_name" value="Gambian Dalasi"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GNF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000049"/><column name="code" value="GNF"/><column name="display_name" value="Guinean Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GTQ" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000050"/><column name="code" value="GTQ"/><column name="display_name" value="Guatemalan Quetzal"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-GYD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000051"/><column name="code" value="GYD"/><column name="display_name" value="Guyanese Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-HKD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000052"/><column name="code" value="HKD"/><column name="display_name" value="Hong Kong Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-HNL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000053"/><column name="code" value="HNL"/><column name="display_name" value="Honduran Lempira"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-HTG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000054"/><column name="code" value="HTG"/><column name="display_name" value="Haitian Gourde"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-HUF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000055"/><column name="code" value="HUF"/><column name="display_name" value="Hungarian Forint"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-IDR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000056"/><column name="code" value="IDR"/><column name="display_name" value="Indonesian Rupiah"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ILS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000057"/><column name="code" value="ILS"/><column name="display_name" value="Israeli New Shekel"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-INR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000058"/><column name="code" value="INR"/><column name="display_name" value="Indian Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-IQD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000059"/><column name="code" value="IQD"/><column name="display_name" value="Iraqi Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-IRR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000060"/><column name="code" value="IRR"/><column name="display_name" value="Iranian Rial"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ISK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000061"/><column name="code" value="ISK"/><column name="display_name" value="Icelandic Króna"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-JMD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000062"/><column name="code" value="JMD"/><column name="display_name" value="Jamaican Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-JOD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000063"/><column name="code" value="JOD"/><column name="display_name" value="Jordanian Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-JPY" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000064"/><column name="code" value="JPY"/><column name="display_name" value="Japanese Yen"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KES" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000065"/><column name="code" value="KES"/><column name="display_name" value="Kenyan Shilling"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KGS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000066"/><column name="code" value="KGS"/><column name="display_name" value="Kyrgyzstani Som"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KHR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000067"/><column name="code" value="KHR"/><column name="display_name" value="Cambodian Riel"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KMF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000068"/><column name="code" value="KMF"/><column name="display_name" value="Comorian Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KRW" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000069"/><column name="code" value="KRW"/><column name="display_name" value="South Korean Won"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KWD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000070"/><column name="code" value="KWD"/><column name="display_name" value="Kuwaiti Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KYD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000071"/><column name="code" value="KYD"/><column name="display_name" value="Cayman Islands Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-KZT" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000072"/><column name="code" value="KZT"/><column name="display_name" value="Kazakhstani Tenge"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LAK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000073"/><column name="code" value="LAK"/><column name="display_name" value="Lao Kip"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LBP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000074"/><column name="code" value="LBP"/><column name="display_name" value="Lebanese Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LKR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000075"/><column name="code" value="LKR"/><column name="display_name" value="Sri Lankan Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LRD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000076"/><column name="code" value="LRD"/><column name="display_name" value="Liberian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LSL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000077"/><column name="code" value="LSL"/><column name="display_name" value="Lesotho Loti"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-LYD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000078"/><column name="code" value="LYD"/><column name="display_name" value="Libyan Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MAD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000079"/><column name="code" value="MAD"/><column name="display_name" value="Moroccan Dirham"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MDL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000080"/><column name="code" value="MDL"/><column name="display_name" value="Moldovan Leu"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MGA" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000081"/><column name="code" value="MGA"/><column name="display_name" value="Malagasy Ariary"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MKD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000082"/><column name="code" value="MKD"/><column name="display_name" value="Macedonian Denar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MMK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000083"/><column name="code" value="MMK"/><column name="display_name" value="Myanmar Kyat"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MNT" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000084"/><column name="code" value="MNT"/><column name="display_name" value="Mongolian Tögrög"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MOP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000085"/><column name="code" value="MOP"/><column name="display_name" value="Macanese Pataca"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MRU" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000086"/><column name="code" value="MRU"/><column name="display_name" value="Mauritanian Ouguiya"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MUR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000087"/><column name="code" value="MUR"/><column name="display_name" value="Mauritian Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MVR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000088"/><column name="code" value="MVR"/><column name="display_name" value="Maldivian Rufiyaa"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MWK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000089"/><column name="code" value="MWK"/><column name="display_name" value="Malawian Kwacha"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MXN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000090"/><column name="code" value="MXN"/><column name="display_name" value="Mexican Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MYR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000091"/><column name="code" value="MYR"/><column name="display_name" value="Malaysian Ringgit"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-MZN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000092"/><column name="code" value="MZN"/><column name="display_name" value="Mozambican Metical"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NAD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000093"/><column name="code" value="NAD"/><column name="display_name" value="Namibian Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NGN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000094"/><column name="code" value="NGN"/><column name="display_name" value="Nigerian Naira"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NIO" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000095"/><column name="code" value="NIO"/><column name="display_name" value="Nicaraguan Córdoba"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NOK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000096"/><column name="code" value="NOK"/><column name="display_name" value="Norwegian Krone"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NPR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000097"/><column name="code" value="NPR"/><column name="display_name" value="Nepalese Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-NZD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000098"/><column name="code" value="NZD"/><column name="display_name" value="New Zealand Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-OMR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000099"/><column name="code" value="OMR"/><column name="display_name" value="Omani Rial"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PAB" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000100"/><column name="code" value="PAB"/><column name="display_name" value="Panamanian Balboa"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PEN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000101"/><column name="code" value="PEN"/><column name="display_name" value="Peruvian Sol"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PGK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000102"/><column name="code" value="PGK"/><column name="display_name" value="Papua New Guinean Kina"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PHP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000103"/><column name="code" value="PHP"/><column name="display_name" value="Philippine Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PKR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000104"/><column name="code" value="PKR"/><column name="display_name" value="Pakistani Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PLN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000105"/><column name="code" value="PLN"/><column name="display_name" value="Polish Zloty"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-PYG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000106"/><column name="code" value="PYG"/><column name="display_name" value="Paraguayan Guaraní"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-QAR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000107"/><column name="code" value="QAR"/><column name="display_name" value="Qatari Riyal"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-RON" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000108"/><column name="code" value="RON"/><column name="display_name" value="Romanian Leu"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-RSD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000109"/><column name="code" value="RSD"/><column name="display_name" value="Serbian Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-RUB" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000110"/><column name="code" value="RUB"/><column name="display_name" value="Russian Ruble"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-RWF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000111"/><column name="code" value="RWF"/><column name="display_name" value="Rwandan Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SAR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000112"/><column name="code" value="SAR"/><column name="display_name" value="Saudi Riyal"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SBD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000113"/><column name="code" value="SBD"/><column name="display_name" value="Solomon Islands Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SCR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000114"/><column name="code" value="SCR"/><column name="display_name" value="Seychellois Rupee"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SDG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000115"/><column name="code" value="SDG"/><column name="display_name" value="Sudanese Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SEK" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000116"/><column name="code" value="SEK"/><column name="display_name" value="Swedish Krona"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SGD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000117"/><column name="code" value="SGD"/><column name="display_name" value="Singapore Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SHP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000118"/><column name="code" value="SHP"/><column name="display_name" value="Saint Helena Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SLE" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000119"/><column name="code" value="SLE"/><column name="display_name" value="Sierra Leonean Leone"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SOS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000120"/><column name="code" value="SOS"/><column name="display_name" value="Somali Shilling"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SSP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000122"/><column name="code" value="SSP"/><column name="display_name" value="South Sudanese Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-STN" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000123"/><column name="code" value="STN"/><column name="display_name" value="São Tomé and Príncipe Dobra"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SVC" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000124"/><column name="code" value="SVC"/><column name="display_name" value="Salvadoran Colón"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SYP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000125"/><column name="code" value="SYP"/><column name="display_name" value="Syrian Pound"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-SZL" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000126"/><column name="code" value="SZL"/><column name="display_name" value="Swazi Lilangeni"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-THB" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000127"/><column name="code" value="THB"/><column name="display_name" value="Thai Baht"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TJS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000128"/><column name="code" value="TJS"/><column name="display_name" value="Tajikistani Somoni"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TMT" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000129"/><column name="code" value="TMT"/><column name="display_name" value="Turkmenistani Manat"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TND" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000130"/><column name="code" value="TND"/><column name="display_name" value="Tunisian Dinar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TOP" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000131"/><column name="code" value="TOP"/><column name="display_name" value="Tongan Paʻanga"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TRY" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000132"/><column name="code" value="TRY"/><column name="display_name" value="Turkish Lira"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TTD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000133"/><column name="code" value="TTD"/><column name="display_name" value="Trinidad and Tobago Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TVD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000134"/><column name="code" value="TVD"/><column name="display_name" value="Tuvaluan Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TWD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000135"/><column name="code" value="TWD"/><column name="display_name" value="New Taiwan Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-TZS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000136"/><column name="code" value="TZS"/><column name="display_name" value="Tanzanian Shilling"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-UAH" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000137"/><column name="code" value="UAH"/><column name="display_name" value="Ukrainian Hryvnia"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-UGX" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000138"/><column name="code" value="UGX"/><column name="display_name" value="Ugandan Shilling"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-UYU" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000140"/><column name="code" value="UYU"/><column name="display_name" value="Uruguayan Peso"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-UZS" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000141"/><column name="code" value="UZS"/><column name="display_name" value="Uzbekistani Som"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-VES" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000142"/><column name="code" value="VES"/><column name="display_name" value="Venezuelan Bolívar Soberano"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-VND" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000143"/><column name="code" value="VND"/><column name="display_name" value="Vietnamese Dong"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-VUV" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000144"/><column name="code" value="VUV"/><column name="display_name" value="Vanuatu Vatu"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-WST" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000145"/><column name="code" value="WST"/><column name="display_name" value="Samoan Tala"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-XAF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000146"/><column name="code" value="XAF"/><column name="display_name" value="Central African CFA Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-XCD" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000147"/><column name="code" value="XCD"/><column name="display_name" value="East Caribbean Dollar"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-XOF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000148"/><column name="code" value="XOF"/><column name="display_name" value="West African CFA Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-XPF" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000149"/><column name="code" value="XPF"/><column name="display_name" value="CFP Franc"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-YER" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000150"/><column name="code" value="YER"/><column name="display_name" value="Yemeni Rial"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ZAR" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000151"/><column name="code" value="ZAR"/><column name="display_name" value="South African Rand"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ZMW" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000152"/><column name="code" value="ZMW"/><column name="display_name" value="Zambian Kwacha"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+    <changeSet id="data-m7-currencies-full-ZWG" author="seed">
+        <insert tableName="platform_currency"><column name="id" value="71000000-0000-0000-0000-000000000153"/><column name="code" value="ZWG"/><column name="display_name" value="Zimbabwe Gold"/><column name="sort_order" valueNumeric="100"/><column name="active" valueBoolean="true"/><column name="created_at" valueComputed="NOW()"/><column name="updated_at" valueComputed="NOW()"/></insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,6 +1,7 @@
 package com.wagepayroll.api;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,11 +19,13 @@ import com.wagepayroll.api.dto.TenantEmployeeStatusPatchRequest;
 import com.wagepayroll.api.dto.TenantEmployeeUpsertRequest;
 import com.wagepayroll.api.dto.TenantJobItemDto;
 import com.wagepayroll.api.dto.TenantJobUpsertRequest;
+import com.wagepayroll.api.dto.TenantPayPeriodGenerateRequest;
 import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
 import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
 import com.wagepayroll.common.api.ApiResponse;
 import com.wagepayroll.common.api.RequestIdFilter;
 import com.wagepayroll.org.TenantPayrollOrgService;
+import com.wagepayroll.payperiod.TenantPayPeriodService;
 import com.wagepayroll.security.RequiresPrivilege;
 import com.wagepayroll.tenant.TenantContext;
 
@@ -47,9 +50,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class TenantPayrollOrgController {
 
 	private final TenantPayrollOrgService service;
+	private final TenantPayPeriodService payPeriodService;
 
-	public TenantPayrollOrgController(TenantPayrollOrgService service) {
+	public TenantPayrollOrgController(TenantPayrollOrgService service, TenantPayPeriodService payPeriodService) {
 		this.service = service;
+		this.payPeriodService = payPeriodService;
 	}
 
 	@GetMapping("/companies")
@@ -112,6 +117,16 @@ public class TenantPayrollOrgController {
 	public ResponseEntity<ApiResponse<Object>> removeCompanyLogo(@PathVariable("id") UUID id) {
 		TenantCompanyItemDto item = service.removeCompanyLogo(TenantContext.requireTenantId(), id);
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.company.logo.removed"));
+	}
+
+	@PostMapping("/companies/{id}/pay-periods/generate")
+	@RequiresPrivilege("PAY_PERIOD_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> generatePayPeriods(@PathVariable("id") UUID id,
+			@RequestBody(required = false) TenantPayPeriodGenerateRequest request) {
+		int yearsAhead = (request != null && request.yearsAhead() != null) ? request.yearsAhead() : 2;
+		java.time.LocalDate fromDate = (request != null) ? request.fromDate() : null;
+		var result = payPeriodService.generatePayPeriodsForCompany(TenantContext.requireTenantId(), id, fromDate, yearsAhead);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("created", result.created()), "tenant.pay_period.generated"));
 	}
 
 	@GetMapping("/departments")
@@ -246,17 +261,19 @@ public class TenantPayrollOrgController {
 
 	@GetMapping("/employees")
 	@RequiresPrivilege("EMPLOYEE_VIEW")
-	public ResponseEntity<ApiResponse<Object>> listEmployees(@RequestParam(name = "companyId") UUID companyId,
+	public ResponseEntity<ApiResponse<Object>> listEmployees(@RequestParam(name = "companyId", required = false) List<UUID> companyIds,
 			@RequestParam(name = "departmentId", required = false) UUID departmentId,
 			@RequestParam(name = "jobId", required = false) UUID jobId,
 			@RequestParam(name = "employeeGroupId", required = false) UUID employeeGroupId,
 			@RequestParam(name = "status", required = false) String status,
+			@RequestParam(name = "firstName", required = false) String firstName,
+			@RequestParam(name = "lastName", required = false) String lastName,
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "20") int size,
 			@RequestParam(name = "sort", defaultValue = "lastName,asc") String sort,
 			@RequestParam(name = "active", required = false) Boolean active) {
-		Page<TenantEmployeeItemDto> result = service.listEmployees(TenantContext.requireTenantId(), companyId, departmentId,
-				jobId, employeeGroupId, status, page, size, sort, active);
+		Page<TenantEmployeeItemDto> result = service.listEmployees(TenantContext.requireTenantId(), companyIds, departmentId,
+				jobId, employeeGroupId, status, firstName, lastName, page, size, sort, active);
 		return ResponseEntity.ok(ApiResponse.of(pagePayload(result), "tenant.employee.listed"));
 	}
 

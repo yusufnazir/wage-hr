@@ -17,11 +17,13 @@ export function formatUserFacingDate(iso: string, dateFormat: string): string {
     return `${String(m).padStart(2, "0")}/${String(day).padStart(2, "0")}/${y}`;
   }
   if (isCustomDatePattern(token)) {
+    const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const yyyy = String(y).padStart(4, "0");
     const MM = String(m).padStart(2, "0");
+    const MMM = MONTHS_SHORT[m - 1] ?? MM;
     const dd = String(day).padStart(2, "0");
-    // Replace longest-first to avoid partial token collisions.
-    return token.replaceAll("yyyy", yyyy).replaceAll("MM", MM).replaceAll("dd", dd);
+    // Replace longest-first to avoid partial token collisions (MMM before MM).
+    return token.replaceAll("yyyy", yyyy).replaceAll("MMM", MMM).replaceAll("MM", MM).replaceAll("dd", dd);
   }
   return datePart;
 }

@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import type { PlatformCountryRow, TenantCurrencyItem } from "@/lib/api";
+import { formatUserFacingDate } from "@/lib/user-date-format";
+import { PlatformDateInput } from "@/components/ui/PlatformDateInput";
 
 // ─── Shared validation types & utilities ────────────────────────────────────
 
@@ -18,14 +21,17 @@ export function focusField(fieldId: string): void {
   if ("focus" in el) (el as HTMLInputElement | HTMLSelectElement).focus();
 }
 
-export function useUnsavedChangesGuard(isDirty: boolean, busy: boolean): void {
+export type UnsavedChangesGuardState = {
+  pendingHref: string | null;
+  confirmNavigation: () => void;
+  cancelNavigation: () => void;
+};
+
+export function useUnsavedChangesGuard(isDirty: boolean, busy: boolean): UnsavedChangesGuardState {
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isDirty || busy) return;
-    const confirmLeave = () => window.confirm("You have unsaved changes. Leave this page?");
-    const beforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
     const onDocumentClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
@@ -34,18 +40,72 @@ export function useUnsavedChangesGuard(isDirty: boolean, busy: boolean): void {
       if (!href || href.startsWith("#")) return;
       if (anchor.target && anchor.target !== "_self") return;
       if (anchor.hasAttribute("download")) return;
-      if (!confirmLeave()) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      e.preventDefault();
+      e.stopPropagation();
+      setPendingHref(href);
     };
-    window.addEventListener("beforeunload", beforeUnload);
     document.addEventListener("click", onDocumentClick, true);
     return () => {
-      window.removeEventListener("beforeunload", beforeUnload);
       document.removeEventListener("click", onDocumentClick, true);
     };
   }, [isDirty, busy]);
+
+  return {
+    pendingHref,
+    confirmNavigation: () => setPendingHref(null),
+    cancelNavigation: () => setPendingHref(null),
+  };
+}
+
+export function UnsavedChangesDialog({
+  guard,
+  onConfirm,
+}: {
+  guard: UnsavedChangesGuardState;
+  onConfirm: (href: string) => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted || guard.pendingHref === null) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="unsaved-dialog-title"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) guard.cancelNavigation(); }}
+    >
+      <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-6 shadow-xl">
+        <h2 id="unsaved-dialog-title" className="mb-2 text-base font-semibold text-foreground">
+          You have unsaved changes
+        </h2>
+        <p className="mb-6 text-sm text-muted">
+          If you leave now your changes will be lost. Are you sure you want to leave this page?
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => {
+              const href = guard.pendingHref!;
+              guard.confirmNavigation();
+              onConfirm(href);
+            }}
+            className="w-full rounded bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground hover:opacity-90"
+          >
+            Leave page
+          </button>
+          <button
+            onClick={guard.cancelNavigation}
+            className="w-full rounded border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface-alt"
+          >
+            Stay on page
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
 }
 
 export function ValidationSummary({
@@ -57,7 +117,7 @@ export function ValidationSummary({
 }) {
   if (issues.length === 0) return null;
   return (
-    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
+    <div className="rounded-md border border-destructive-border bg-destructive-soft p-4">
       <p className="text-sm font-semibold text-destructive">Please fix the following fields:</p>
       <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-destructive">
         {issues.map((issue) => (
@@ -85,7 +145,6 @@ export type CompanyFormState = {
   currency: string;
   payrollFrequency: string;
   timezone: string;
-  dateFormat: string;
   contactEmail: string;
   contactPhone: string;
   addressLine1: string;
@@ -96,6 +155,8 @@ export type CompanyFormState = {
   country: string;
   payPeriodEndDate: string;
   timesheetEndDate: string;
+  currentYear: string;
+  currentPeriod: string;
   active: boolean;
 };
 
@@ -114,8 +175,6 @@ type CompanyFormSectionsProps = {
   frequencies: readonly string[];
   form: CompanyFormState;
   onChange: (patch: Partial<CompanyFormState>) => void;
-  showAdvanced: boolean;
-  onToggleAdvanced: () => void;
   payrollCountries: PlatformCountryRow[];
   tenantCurrencies: TenantCurrencyItem[];
   timezoneOptionLabels: TimezoneOption[];
@@ -123,8 +182,8 @@ type CompanyFormSectionsProps = {
   countryInput: string;
   setCountryInput: (value: string) => void;
   selectedCountryLabel: string;
-  countryListId: string;
   brandingSection?: ReactNode;
+  platformDateFormat: string;
   footer: ReactNode;
 };
 
@@ -187,12 +246,8 @@ function nextPayPeriodDates(endDateIso: string, frequency: string, count: number
   return results;
 }
 
-function formatPreviewDate(iso: string): string {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function formatPreviewDate(iso: string, dateFormat: string): string {
+  return formatUserFacingDate(iso, dateFormat);
 }
 
 export function CompanyFormSections({
@@ -200,8 +255,6 @@ export function CompanyFormSections({
   frequencies,
   form,
   onChange,
-  showAdvanced,
-  onToggleAdvanced,
   payrollCountries,
   tenantCurrencies,
   timezoneOptionLabels,
@@ -209,28 +262,74 @@ export function CompanyFormSections({
   countryInput,
   setCountryInput,
   selectedCountryLabel,
-  countryListId,
   brandingSection,
+  platformDateFormat,
   footer,
 }: CompanyFormSectionsProps) {
+  const [countryMenuOpen, setCountryMenuOpen] = useState(false);
+  const [countryMenuPlacement, setCountryMenuPlacement] = useState<"above" | "below">("below");
+  const countryFieldRef = useRef<HTMLDivElement | null>(null);
+  const filteredCountryOptions = useMemo(() => {
+    const query = countryInput.trim().toLowerCase();
+    if (!query) {
+      return countryOptions;
+    }
+    return countryOptions.filter(
+      (option) => option.label.toLowerCase().includes(query) || option.isoAlpha2.toLowerCase().includes(query),
+    );
+  }, [countryInput, countryOptions]);
+
+  const selectCountry = (option: CountryOption) => {
+    setCountryInput(option.label);
+    onChange({ country: option.isoAlpha2 });
+    setCountryMenuOpen(false);
+  };
+
+  useLayoutEffect(() => {
+    if (!countryMenuOpen) {
+      return;
+    }
+
+    const updatePlacement = () => {
+      const field = countryFieldRef.current;
+      if (!field) {
+        return;
+      }
+      const rect = field.getBoundingClientRect();
+      const belowSpace = window.innerHeight - rect.bottom;
+      const aboveSpace = rect.top;
+      const estimatedMenuHeight = Math.min(Math.max(filteredCountryOptions.length, 1) * 40 + 8, 256);
+      setCountryMenuPlacement(belowSpace < estimatedMenuHeight && aboveSpace > belowSpace ? "above" : "below");
+    };
+
+    updatePlacement();
+    window.addEventListener("resize", updatePlacement);
+    window.addEventListener("scroll", updatePlacement, true);
+    return () => {
+      window.removeEventListener("resize", updatePlacement);
+      window.removeEventListener("scroll", updatePlacement, true);
+    };
+  }, [countryMenuOpen, filteredCountryOptions.length]);
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
       <aside className="hidden lg:block">
-        <nav className="sticky top-4 rounded-md border border-border bg-surface p-3">
+        <nav className="rounded-md border border-border bg-surface p-3">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Sections</p>
           <div className="space-y-1 text-sm">
-            <a href="#identity" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Identity</a>
-            <a href="#payroll" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Payroll setup</a>
-            <a href="#periods" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Period rules</a>
-            <a href="#locale" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Locale & time</a>
-            <a href="#contact" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Contact</a>
-            <a href="#address" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Address</a>
-            {brandingSection ? <a href="#branding" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt">Branding</a> : null}
+            {(["identity", "payroll", "periods", "locale", "contact", "address"] as const).map((id, i) => (
+              <a key={id} href={`#${id}`} className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt"
+                onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+              >{["Identity", "Payroll setup", "Period rules", "Locale & time", "Contact", "Address"][i]}</a>
+            ))}
+            {brandingSection ? <a href="#branding" className="block rounded px-2 py-1 text-foreground hover:bg-surface-alt"
+              onClick={(e) => { e.preventDefault(); document.getElementById("branding")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+            >Branding</a> : null}
           </div>
         </nav>
       </aside>
 
-      <div className="space-y-6">
+      <div className="space-y-6 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto lg:pr-1">
         <section id="identity" className="rounded-md border border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-foreground">Identity</h2>
           <p className="mt-1 text-sm text-muted">Core company identity used across payroll and reporting.</p>
@@ -240,29 +339,25 @@ export function CompanyFormSections({
               <input id="company-name" className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.name} onChange={(e) => onChange({ name: e.target.value })} />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("companies.label.taxId")}</span>
-              <input className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.taxId} onChange={(e) => onChange({ taxId: e.target.value })} />
+              <span className="text-sm text-muted">{t("companies.label.taxId")} *</span>
+              <input id="company-tax-id" className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.taxId} onChange={(e) => onChange({ taxId: e.target.value })} />
             </label>
           </div>
-          <button
-            type="button"
-            onClick={onToggleAdvanced}
-            className="mt-4 text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {showAdvanced ? "Hide advanced fields" : "Show advanced fields"}
-          </button>
-          {showAdvanced ? (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="block space-y-1">
-                <span className="text-sm text-muted">{t("companies.label.legalName")}</span>
-                <input className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.legalName} onChange={(e) => onChange({ legalName: e.target.value })} />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-sm text-muted">{t("companies.label.registrationNumber")}</span>
-                <input className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.registrationNumber} onChange={(e) => onChange({ registrationNumber: e.target.value })} />
-              </label>
-            </div>
-          ) : null}
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1">
+              <span className="text-sm text-muted">{t("companies.label.legalName")} *</span>
+              <input
+                id="company-legal-name"
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                value={form.legalName}
+                onChange={(e) => onChange({ legalName: e.target.value })}
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm text-muted">{t("companies.label.registrationNumber")}</span>
+              <input className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.registrationNumber} onChange={(e) => onChange({ registrationNumber: e.target.value })} />
+            </label>
+          </div>
         </section>
 
         <section id="payroll" className="rounded-md border border-border bg-surface p-5">
@@ -284,6 +379,15 @@ export function CompanyFormSections({
                   <option key={c.id} value={c.code}>{c.code} - {c.displayName}</option>
                 ))}
               </select>
+              {(() => {
+                const selected = tenantCurrencies.find((c) => c.code === form.currency);
+                if (!selected || selected.assigned) return null;
+                return (
+                  <p className="text-xs text-muted">
+                    This currency isn&apos;t in your tenant&apos;s currency list yet. It will be added automatically when you save.
+                  </p>
+                );
+              })()}
             </label>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -300,6 +404,31 @@ export function CompanyFormSections({
               <span className="text-sm text-foreground">{t("companies.label.active")}</span>
             </label>
           </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1">
+              <span className="text-sm text-muted">Current year</span>
+              <input
+                id="company-current-year"
+                type="number"
+                min={1900}
+                max={2200}
+                value={form.currentYear}
+                onChange={(e) => onChange({ currentYear: e.target.value })}
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm text-muted">Current period</span>
+              <input
+                id="company-current-period"
+                type="number"
+                min={1}
+                value={form.currentPeriod}
+                onChange={(e) => onChange({ currentPeriod: e.target.value })}
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+              />
+            </label>
+          </div>
         </section>
 
         <section id="periods" className="rounded-md border border-border bg-surface p-5">
@@ -308,39 +437,28 @@ export function CompanyFormSections({
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="block space-y-1">
               <span className="text-sm text-muted">{t("companies.label.payPeriodEndDate")} *</span>
-              <input
-                id="company-pay-period-end"
-                type="date"
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-                value={form.payPeriodEndDate}
-                onChange={(e) => onChange({ payPeriodEndDate: e.target.value })}
-              />
+              <PlatformDateInput id="company-pay-period-end" value={form.payPeriodEndDate} dateFormat={platformDateFormat} onChange={(value) => onChange({ payPeriodEndDate: value })} />
               {form.payrollFrequency === "MONTHLY" && isLastDayOfMonth(form.payPeriodEndDate) ? (
                 <p className="text-xs text-muted">{t("companies.hint.monthlyMonthEnd")}</p>
               ) : null}
               {(() => {
                 const previews = nextPayPeriodDates(form.payPeriodEndDate, form.payrollFrequency, 3);
                 if (previews.length === 0) return null;
-                return <p className="text-xs text-muted">Next: {previews.map(formatPreviewDate).join(" · ")}</p>;
+                return <p className="text-xs text-muted">Next: {previews.map((preview) => formatPreviewDate(preview, platformDateFormat)).join(" · ")}</p>;
               })()}
             </label>
             <label className="block space-y-1">
               <span className="text-sm text-muted">{t("companies.label.timesheetEndDate")} *</span>
-              <input
-                id="company-timesheet-end"
-                type="date"
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-                value={form.timesheetEndDate}
-                onChange={(e) => onChange({ timesheetEndDate: e.target.value })}
-              />
+              <PlatformDateInput id="company-timesheet-end" value={form.timesheetEndDate} dateFormat={platformDateFormat} onChange={(value) => onChange({ timesheetEndDate: value })} />
             </label>
           </div>
+          <p className="mt-3 text-xs text-muted">{t("companies.label.dateFormatInherited")}: {platformDateFormat}</p>
         </section>
 
         <section id="locale" className="rounded-md border border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-foreground">Locale & time</h2>
-          <p className="mt-1 text-sm text-muted">Controls how dates and cutoffs are interpreted and displayed.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <p className="mt-1 text-sm text-muted">Controls timezone handling. Date display follows the platform format.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-1">
             <label className="block space-y-1">
               <span className="text-sm text-muted">{t("companies.label.timezone")} *</span>
               <select className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.timezone} onChange={(e) => onChange({ timezone: e.target.value })}>
@@ -348,14 +466,6 @@ export function CompanyFormSections({
                   <option key={tz.value} value={tz.value}>{tz.label}</option>
                 ))}
               </select>
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">{t("companies.label.dateFormat")}</span>
-              <input
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-                value={form.dateFormat}
-                onChange={(e) => onChange({ dateFormat: e.target.value })}
-              />
             </label>
           </div>
         </section>
@@ -376,7 +486,7 @@ export function CompanyFormSections({
 
         <section id="address" className="rounded-md border border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-foreground">Address</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 grid-cols-1">
             <label className="block space-y-1">
               <span className="text-sm text-muted">{t("companies.label.addressLine1")}</span>
               <input className="w-full rounded border border-border bg-background px-3 py-2 text-sm" value={form.addressLine1} onChange={(e) => onChange({ addressLine1: e.target.value })} />
@@ -404,27 +514,48 @@ export function CompanyFormSections({
 
           <label className="mt-3 block space-y-1">
             <span className="text-sm text-muted">{t("companies.label.country")}</span>
-            <input
-              list={countryListId}
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              value={countryInput}
-              onChange={(e) => {
-                const value = e.target.value;
-                setCountryInput(value);
-                const matched = countryOptions.find((c) => c.label.toLowerCase() === value.trim().toLowerCase());
-                onChange({ country: matched?.isoAlpha2 ?? "" });
-              }}
-              onBlur={() => {
-                if (form.country) {
-                  setCountryInput(selectedCountryLabel);
-                }
-              }}
-            />
-            <datalist id={countryListId}>
-              {countryOptions.map((c) => (
-                <option key={c.isoAlpha2} value={c.label} />
-              ))}
-            </datalist>
+            <div ref={countryFieldRef} className="relative">
+              <input
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                placeholder="Search countries"
+                value={countryInput}
+                onFocus={() => setCountryMenuOpen(true)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCountryInput(value);
+                  setCountryMenuOpen(true);
+                  const matched = countryOptions.find((option) => option.label.toLowerCase() === value.trim().toLowerCase());
+                  onChange({ country: matched?.isoAlpha2 ?? "" });
+                }}
+                onBlur={() => {
+                  window.setTimeout(() => {
+                    setCountryMenuOpen(false);
+                    setCountryInput(form.country ? selectedCountryLabel : "");
+                  }, 100);
+                }}
+              />
+              {countryMenuOpen ? (
+                <div className={`absolute z-20 max-h-64 w-full overflow-auto rounded-md border border-border bg-surface shadow-lg ${countryMenuPlacement === "above" ? "bottom-full mb-1" : "top-full mt-1"}`}>
+                  {filteredCountryOptions.length > 0 ? (
+                    filteredCountryOptions.map((option) => (
+                      <button
+                        key={option.isoAlpha2}
+                        type="button"
+                        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-alt"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          selectCountry(option);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-muted">No countries found.</div>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </label>
         </section>
 

@@ -16,8 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class UserLocaleService {
 
-	/** M1 supported tags (normalized lowercase, hyphen). */
-	private static final Set<String> SUPPORTED = Set.of("en", "nl", "nl-sr");
+	/** Supported UI locale tags (normalized lowercase, hyphen). */
+	private static final Set<String> SUPPORTED = Set.of("en", "nl");
 
 	private final UserAccountRepository userAccountRepository;
 

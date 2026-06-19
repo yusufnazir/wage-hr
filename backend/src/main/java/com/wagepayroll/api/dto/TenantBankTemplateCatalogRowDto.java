@@ -7,6 +7,5 @@ public record TenantBankTemplateCatalogRowDto(
 		String countryCode,
 		String name,
 		String bankName,
-		String swiftBic,
-		String currencyCode) {
+		String swiftBic) {
 }
