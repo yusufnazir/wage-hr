@@ -23,8 +23,8 @@ Product-facing summary (full law + engine audit in module spec):
 |---|--------|-------------|--------------|--------|
 | 1 | Normal (Table 1) | `SR_WAGE_TAX_DEFAULT` | **1019** | **Live** |
 | 2 | Overtime | `SR_OVERTIME_MONTH` | **1020** | **Live** (from 2025-07-01) |
-| 3 | Payment at once | `SR_PAYMENTS_AT_ONCE_YEAR` | **1024** | **Gap** — seeded, not calculated |
-| 4 | Jubilee | `SR_SERVICE_YEARS_17A_MONTH` | — | **Gap** — gross **1010** only |
+| 3 | Payment at once | `SR_PAYMENTS_AT_ONCE_YEAR` | **1024** | **Live** |
+| 4 | Jubilee | `SR_SERVICE_YEARS_17A_MONTH` | **1048** | **Live** — gross **1010** |
 | 5 | Extra income (Art. 17) | `SR_WAGE_TAX_DEFAULT` (label) | **1025** | **Live** |
 | 6 | Vacation allowance | Art. 10 + Art. 17 | **1021** | **Live** |
 | 7 | Bonus / gratuities | Art. 10 + Art. 17 | **1022** | **Live** |
@@ -105,9 +105,9 @@ Each rule has:
 | Tariff / rule | Seeded | Used in payroll |
 |---------------|--------|-----------------|
 | 1 Wage tax | Yes | Statutory **1019** — progressive ladder on label loon (after belastingvrij when `apply_tax_exempt`) |
-| 2 Payments at once | Yes | **Not wired** — templates **1009** / **1024** exist; see audit §8 in module spec |
+| 2 Payments at once | Yes | **1024** on gross **1009** — `SR_PAYMENTS_AT_ONCE_YEAR` via `SurinameTenantDerivedComponentService` |
 | 3 Overtime | Yes | **1020** + **1013** AOV — `SR_OVERTIME_MONTH` from 2025-07-01 (pre-Jul history not in scope) |
-| 4 Service years (17a) | Yes | **Not wired** — template **1010** gross only |
+| 4 Service years (17a) | Yes | **1048** on gross **1010** — Art. 10 exemption + `SR_SERVICE_YEARS_17A_MONTH` |
 | 5 AOV | Yes | Statutory **1012** + derived lines on special payouts |
 | 6 Deductible 4% / max 4 800/year | Yes | Template **1036** (`SUR_AQUISITION_COSTS`) |
 | 8 Belastingvrij 108 000/year | Yes | Template **1005** + reduces wage-tax base when `apply_tax_exempt` |

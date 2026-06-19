@@ -313,7 +313,7 @@ Gebruik dit als **meerdere werknemers** in dezelfde eerdere periode gecorrigeerd
 
 1. Gebruik **handmatige overschrijving** op component `[1006]` voor die periode.
 2. Laat de doorlopende instructie ongewijzigd voor andere maanden.
-3. Bereken opnieuw; controleer in de log de art.-17-regels (`1020`–`1025`) indien van toepassing.
+3. Bereken opnieuw; controleer in de log de loonbelastingregels voor speciale uitkeringen (`1020` overuren, `1021` vakantie, `1022` bonus, `1024` eenmalige uitkering, `1025` extra inkomen, `1048` jubileum) indien van toepassing.
 
 ### 7.4 — Terugwerkende wijziging in belastingtarieven (platform)
 
@@ -341,6 +341,7 @@ Bij retro is de **berekeningslog** essentieel:
 - [ ] Juiste betaalperiode en datumbereik in de samenvatting
 - [ ] Basissalaris en vaste toelagen kloppen met de correctie
 - [ ] Belastbaar inkomen en loonbelasting (`1019`) zijn plausibel
+- [ ] Speciale loonbelasting (`1020`–`1025`, `1048`) klopt wanneer van toepassing
 - [ ] Netto loon (`1026`) komt overeen met verwachting
 - [ ] Handmatige overschrijvingen zijn bewust en gedocumenteerd in *Opmerkingen*
 

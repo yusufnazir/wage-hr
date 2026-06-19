@@ -4,6 +4,8 @@
 **Use in:** Cursor **Agent** chat (not Ask mode)  
 **Command:** Start with `/feature` (or `/payroll-retro` for payroll-only context)
 
+**Status (2026-06-18):** **P1 complete** — lump sum **1009** → **1024** and jubilee **1010** → **1048** are **Live** per [`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §6–§8. Prompts A–C below are retained for reference or partial reruns.
+
 ---
 
 ## Which prompt to use
@@ -84,6 +86,9 @@ Before coding: 3-bullet goal/scope/out-of-scope summary.
 Add unit/IT tests with numeric expectations.
 Fix **1024** platform_country_tax_rule_id FK if needed (audit §8.2).
 Update module §6 and §8.6 when complete.
+
+Before marking done: run from `backend/`:
+`mvn test -Dtest=SurinameWageTaxCalculatorTest,SurinameTenantDerivedComponentServiceTest,SurinameJubileeSupportTest,SurinamePayrollGoldenIT`
 ```
 
 ---
@@ -95,7 +100,7 @@ Update module §6 and §8.6 when complete.
 
 Implement §4.4 jubilee from @docs/modules/suriname-wage-tax-rules.md:
 
-- Gross template **1010** (`SUR_JUBILEE`)
+- Gross template **1010** (`SUR_JUBILEE`); wage tax template **1048** (`SUR_WAGE_TAX_JUBILEE`)
 - Rule `SR_SERVICE_YEARS_17A_MONTH` (`LEGACY_SERVICE_YEAR_TABLE`)
 - Extend SurinameWageTaxCalculator to support service-year table kind
 
@@ -108,6 +113,9 @@ Out of scope: lump sum (1024), benefits-in-kind, inspector approval workflow.
 Before coding: 3-bullet goal/scope/out-of-scope summary.
 Add tests for at least one tenure band (e.g. 25 years).
 Update module §6 and §8.6 when complete.
+
+Before marking done: run from `backend/`:
+`mvn test -Dtest=SurinameWageTaxCalculatorTest,SurinameTenantDerivedComponentServiceTest,SurinameJubileeSupportTest,SurinamePayrollGoldenIT`
 ```
 
 ---
@@ -143,14 +151,11 @@ Report: what is still missing, file paths, and recommended implementation order.
 
 ## Quick reference — remaining gaps (spec §8.6)
 
-| Priority | Gap |
-|----------|-----|
-| **P1** | Lump sum **1024** not calculated |
-| **P1** | Jubilee **1010** not calculated |
-| **P2** | `LEGACY_SERVICE_YEAR_TABLE` unsupported in calculator |
-| **P3** | Art. 10 anniversary exemption table |
-| **P3** | Benefits-in-kind valuations |
-| **P3** | Inspector-approval flag for Art. 17a |
-| **P3** | Template **1024** FK metadata |
+| Priority | Gap | Status |
+|----------|-----|--------|
+| ~~**P1**~~ | Lump sum **1009** → **1024** | **Done** |
+| ~~**P1**~~ | Jubilee **1010** → **1048** | **Done** |
+| **P2** | Benefits-in-kind valuations (car, housing, meals) | Open |
+| **P3** | Inspector-approval flag for Art. 17a regimes | Open |
 
-**Recommended first run:** [Prompt B](#prompt-b--lump-sum-only-1009--1024) (smallest, well-defined slice).
+For gap review only, use [Prompt E](#prompt-e--gap-review-only-no-implementation).
