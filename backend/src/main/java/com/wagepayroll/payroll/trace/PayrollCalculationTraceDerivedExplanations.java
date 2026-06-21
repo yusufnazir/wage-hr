@@ -15,12 +15,53 @@ public final class PayrollCalculationTraceDerivedExplanations {
 	}
 
 	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity) {
+		return factorForCountryRule(countryRuleKey, payrollInputQuantity, null, null);
+	}
+
+	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
+			BigDecimal listPrice) {
+		return factorForCountryRule(countryRuleKey, payrollInputQuantity, listPrice, null);
+	}
+
+	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
+			BigDecimal listPrice, BigDecimal exchangeRatePayout) {
 		if (SurinameCountryRuleKeys.CHILD_ALLOWANCE.equals(countryRuleKey)
 				|| SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE.equals(countryRuleKey)) {
 			return payrollInputQuantity != null
 					? "Children count from standing instruction (component 1008 quantity): "
 							+ PayrollCalculationTraceSupport.formatMoney(payrollInputQuantity)
 					: "Children count from standing instruction (component 1008 quantity).";
+		}
+		if (SurinameCountryRuleKeys.EXCHANGE_RATE_COMPENSATION.equals(countryRuleKey)
+				|| SurinameCountryRuleKeys.WAGE_TAX_EXCHANGE_RATE.equals(countryRuleKey)) {
+			return exchangeRatePayout != null
+					? "Exchange-rate compensation payout (component 1055 period amount): "
+							+ PayrollCalculationTraceSupport.formatMoney(exchangeRatePayout)
+					: "Exchange-rate compensation payout from period transaction amount (component 1055).";
+		}
+		if (SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT.equals(countryRuleKey)) {
+			return listPrice != null
+					? "Company car list price (period amount or standing default): "
+							+ PayrollCalculationTraceSupport.formatMoney(listPrice)
+					: "Company car list price from standing instruction or period transaction amount.";
+		}
+		if (SurinameCountryRuleKeys.FREE_UTILITIES_BENEFIT.equals(countryRuleKey)) {
+			return listPrice != null
+					? "Free utilities chargeable amount (period amount or standing default): "
+							+ PayrollCalculationTraceSupport.formatMoney(listPrice)
+					: "Free utilities chargeable amount from period transaction or standing instruction.";
+		}
+		if (SurinameCountryRuleKeys.BOARD_LODGING_BENEFIT.equals(countryRuleKey)) {
+			return quantityFactor("Board and lodging days", payrollInputQuantity);
+		}
+		if (SurinameCountryRuleKeys.BOARD_BENEFIT.equals(countryRuleKey)) {
+			return quantityFactor("Board days", payrollInputQuantity);
+		}
+		if (SurinameCountryRuleKeys.HOT_MEAL_BENEFIT.equals(countryRuleKey)) {
+			return quantityFactor("Hot meals", payrollInputQuantity);
+		}
+		if (SurinameCountryRuleKeys.BREAD_MEAL_BENEFIT.equals(countryRuleKey)) {
+			return quantityFactor("Bread meals", payrollInputQuantity);
 		}
 		return "Derived by country payroll algorithm (no quantity × rate).";
 	}
@@ -51,13 +92,36 @@ public final class PayrollCalculationTraceDerivedExplanations {
 					PayrollCalculationTraceSupport.formatBaseBreakdownFromMap(contributionsByBase,
 							SurinameCountryRuleAlgorithms.GROSS_BASE, gross));
 			case SurinameCountryRuleKeys.FREE_MEDICAL_BENEFIT -> PayrollCalculationTraceSupport.appendBreakdown(
-					"Free medical benefit valuation from LOONBELASTING base → " + formatted,
+					"Free medical benefit valuation from pre–benefit-in-kind money wage → " + formatted,
 					PayrollCalculationTraceSupport.formatBaseBreakdownFromMap(contributionsByBase,
 							SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, loonbelasting));
+			case SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT -> PayrollCalculationTraceSupport.appendBreakdown(
+					"Company car benefit valuation (2% of list price per year ÷ periods) → " + formatted,
+					PayrollCalculationTraceSupport.formatBaseBreakdownFromMap(contributionsByBase,
+							SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, loonbelasting));
+			case SurinameCountryRuleKeys.FREE_HOUSING_BENEFIT -> PayrollCalculationTraceSupport.appendBreakdown(
+					"Free housing benefit valuation (7.5% of annual money wage ÷ periods) from pre–benefit LOONBELASTING → "
+							+ formatted,
+					PayrollCalculationTraceSupport.formatBaseBreakdownFromMap(contributionsByBase,
+							SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, loonbelasting));
+			case SurinameCountryRuleKeys.BOARD_LODGING_BENEFIT ->
+				"Board and lodging benefit valuation (days × statutory cap) → " + formatted;
+			case SurinameCountryRuleKeys.BOARD_BENEFIT ->
+				"Board benefit valuation (days × statutory cap) → " + formatted;
+			case SurinameCountryRuleKeys.HOT_MEAL_BENEFIT ->
+				"Hot meal benefit valuation (meals × statutory cap) → " + formatted;
+			case SurinameCountryRuleKeys.BREAD_MEAL_BENEFIT ->
+				"Bread meal benefit valuation (meals × statutory cap) → " + formatted;
+			case SurinameCountryRuleKeys.FREE_UTILITIES_BENEFIT ->
+				"Free utilities benefit valuation (employer-entered chargeable amount) → " + formatted;
 			case SurinameCountryRuleKeys.CHILD_ALLOWANCE ->
 				"Gross child allowance = children × statutory per-child rate → " + formatted;
+			case SurinameCountryRuleKeys.EXCHANGE_RATE_COMPENSATION ->
+				"Exchange-rate compensation cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE ->
 				"Art. 10(h) child allowance excluded from wages (capped) → " + formatted;
+			case SurinameCountryRuleKeys.WAGE_TAX_EXCHANGE_RATE ->
+				"Art. 10 exchange-rate compensation excluded from wages (capped) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_VACATION_ALLOWANCE -> PayrollCalculationTraceSupport.appendBreakdown(
 					"Art. 17 wage tax on taxable vacation portion "
 							+ PayrollCalculationTraceSupport.formatMoney(special != null ? special.vacationTaxable() : null)
@@ -124,5 +188,12 @@ public final class PayrollCalculationTraceDerivedExplanations {
 						PayrollCalculationTraceSupport.formatLabelPeriodWageBreakdown(loonbelasting, special));
 			default -> "Algorithm result → " + formatted;
 		};
+	}
+
+	private static String quantityFactor(String label, BigDecimal payrollInputQuantity) {
+		return payrollInputQuantity != null
+				? label + " from period transaction quantity: "
+						+ PayrollCalculationTraceSupport.formatMoney(payrollInputQuantity)
+				: label + " from period transaction quantity.";
 	}
 }

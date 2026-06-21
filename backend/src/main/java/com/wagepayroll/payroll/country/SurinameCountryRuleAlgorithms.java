@@ -35,6 +35,20 @@ public class SurinameCountryRuleAlgorithms {
 
 	private static final BigDecimal FREE_MEDICAL_ANNUAL_CAP = new BigDecimal("200");
 
+	/** Free company car: minimum 2% of list price per year (FiscLe / SR_COMPANY_CAR_YEAR). */
+	private static final BigDecimal COMPANY_CAR_PCT = new BigDecimal("2");
+
+	/** Free housing: 7.5% of annual money wage (FiscLe / SR_FREE_HOUSING_YEAR). */
+	private static final BigDecimal FREE_HOUSING_PCT = new BigDecimal("7.5");
+
+	private static final BigDecimal BOARD_LODGING_DAY_CAP = new BigDecimal("10");
+
+	private static final BigDecimal BOARD_DAY_CAP = new BigDecimal("5");
+
+	private static final BigDecimal HOT_MEAL_UNIT_CAP = new BigDecimal("5");
+
+	private static final BigDecimal BREAD_MEAL_UNIT_CAP = new BigDecimal("1.50");
+
 	private static final MathContext MC = MathContext.DECIMAL64;
 
 	/**
@@ -82,6 +96,35 @@ public class SurinameCountryRuleAlgorithms {
 	/** Payslip line 1008 — same as {@link #periodChildAllowanceGrossAmount}. */
 	public BigDecimal periodChildAllowanceAmount(SurinameTaxRulesSnapshot snapshot, BigDecimal childrenCount) {
 		return periodChildAllowanceGrossAmount(snapshot, childrenCount);
+	}
+
+	/**
+	 * Gross exchange-rate compensation paid (component 1055): full period payout from employer-entered amount.
+	 */
+	public BigDecimal periodExchangeRateCompensationPayout(BigDecimal payout) {
+		if (payout == null || payout.signum() <= 0) {
+			return zero();
+		}
+		return payout.setScale(SCALE, ROUND);
+	}
+
+	/**
+	 * Art. 10 Wet Loonbelasting: exchange-rate compensation excluded from wages up to SRD 800/month
+	 * ({@code maxAmount} on {@code SR_EXCHANGE_RATE_COMPENSATION_MONTH}).
+	 */
+	public BigDecimal periodExchangeRateCompensationExcludedFromLoon(SurinameTaxRulesSnapshot snapshot,
+			BigDecimal payout) {
+		BigDecimal gross = periodExchangeRateCompensationPayout(payout);
+		if (gross.signum() <= 0) {
+			return zero();
+		}
+		ResolvedSurinameTaxRule rule = snapshot.rulesByCode()
+				.get(SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH);
+		BigDecimal maxAmount = monthlyCapFromThresholdRule(rule);
+		if (maxAmount == null) {
+			return gross;
+		}
+		return gross.min(maxAmount).setScale(SCALE, ROUND);
 	}
 
 	public BigDecimal periodTaxFreeAllowance(SurinameTaxRulesSnapshot snapshot, boolean applyTaxExempt,
@@ -137,37 +180,173 @@ public class SurinameCountryRuleAlgorithms {
 	 * Benefit-in-kind valuation for free medical care (not the 3% withholding ladder on tariff type 12).
 	 */
 	public BigDecimal periodFreeMedicalBenefit(BigDecimal periodTaxableWageMoney, int periodsPerYear) {
+		return periodPercentOfAnnualMoneyWage(periodTaxableWageMoney, periodsPerYear, FREE_MEDICAL_PCT,
+				FREE_MEDICAL_ANNUAL_CAP);
+	}
+
+	/**
+	 * Pre–benefit-in-kind money wage base: LOONBELASTING subtotal before derived valuation lines
+	 * (1042, 1049–1057) are applied in the tax-adjustment tier.
+	 */
+	public BigDecimal moneyWageBasePreBenefitInKind(BigDecimal loonbelastingPeriodBase) {
+		if (loonbelastingPeriodBase == null || loonbelastingPeriodBase.signum() <= 0) {
+			return zero();
+		}
+		return loonbelastingPeriodBase.setScale(SCALE, ROUND);
+	}
+
+	/**
+	 * Art. 10 company car — minimum 2% of list price per year ÷ periods ({@code SR_COMPANY_CAR_YEAR}).
+	 */
+	public BigDecimal periodCompanyCarBenefit(BigDecimal listPrice, SurinameTaxRulesSnapshot snapshot, int periodsPerYear) {
+		if (listPrice == null || listPrice.signum() <= 0) {
+			return zero();
+		}
+		BigDecimal pct = pctFromFlatRateRule(snapshot, SurinameCountryRuleKeys.RULE_COMPANY_CAR_YEAR, COMPANY_CAR_PCT);
+		int periods = periodsPerYear > 0 ? periodsPerYear : SurinameWageTaxCalculator.DEFAULT_PERIODS_PER_YEAR;
+		BigDecimal annualValuation = listPrice.multiply(pct, MC).divide(HUNDRED, SCALE + 4, ROUND);
+		return annualValuation.divide(BigDecimal.valueOf(periods), SCALE, ROUND);
+	}
+
+	/**
+	 * Art. 10 free housing — 7.5% of annual money wage ÷ periods ({@code SR_FREE_HOUSING_YEAR}).
+	 */
+	public BigDecimal periodFreeHousingBenefit(BigDecimal moneyWagePeriodBase, SurinameTaxRulesSnapshot snapshot,
+			int periodsPerYear) {
+		BigDecimal moneyWage = moneyWageBasePreBenefitInKind(moneyWagePeriodBase);
+		if (moneyWage.signum() <= 0) {
+			return zero();
+		}
+		BigDecimal pct = pctFromFlatRateRule(snapshot, SurinameCountryRuleKeys.RULE_FREE_HOUSING_YEAR, FREE_HOUSING_PCT);
+		int periods = periodsPerYear > 0 ? periodsPerYear : SurinameWageTaxCalculator.DEFAULT_PERIODS_PER_YEAR;
+		BigDecimal annualWage = moneyWage.multiply(BigDecimal.valueOf(periods));
+		BigDecimal annualValuation = annualWage.multiply(pct, MC).divide(HUNDRED, SCALE + 4, ROUND);
+		return annualValuation.divide(BigDecimal.valueOf(periods), SCALE, ROUND);
+	}
+
+	/** Art. 10 board and lodging — quantity (days) × SRD 10/day ({@code SR_BOARD_LODGING_DAY}). */
+	public BigDecimal periodBoardLodgingBenefit(BigDecimal quantity, SurinameTaxRulesSnapshot snapshot) {
+		return periodQuantityCapBenefit(quantity, snapshot, SurinameCountryRuleKeys.RULE_BOARD_LODGING_DAY,
+				BOARD_LODGING_DAY_CAP);
+	}
+
+	/** Art. 10 board only — quantity (days) × SRD 5/day ({@code SR_BOARD_DAY}). */
+	public BigDecimal periodBoardBenefit(BigDecimal quantity, SurinameTaxRulesSnapshot snapshot) {
+		return periodQuantityCapBenefit(quantity, snapshot, SurinameCountryRuleKeys.RULE_BOARD_DAY, BOARD_DAY_CAP);
+	}
+
+	/** Art. 10 hot meal — quantity (meals) × SRD 5/meal ({@code SR_HOT_MEAL_UNIT}). */
+	public BigDecimal periodHotMealBenefit(BigDecimal quantity, SurinameTaxRulesSnapshot snapshot) {
+		return periodQuantityCapBenefit(quantity, snapshot, SurinameCountryRuleKeys.RULE_HOT_MEAL_UNIT,
+				HOT_MEAL_UNIT_CAP);
+	}
+
+	/** Art. 10 bread meal — quantity (meals) × SRD 1.50/meal ({@code SR_BREAD_MEAL_UNIT}). */
+	public BigDecimal periodBreadMealBenefit(BigDecimal quantity, SurinameTaxRulesSnapshot snapshot) {
+		return periodQuantityCapBenefit(quantity, snapshot, SurinameCountryRuleKeys.RULE_BREAD_MEAL_UNIT,
+				BREAD_MEAL_UNIT_CAP);
+	}
+
+	/**
+	 * Art. 10 free utilities — chargeable utility cost entered by employer (component 1057).
+	 */
+	public BigDecimal periodFreeUtilitiesBenefit(BigDecimal chargeableAmount) {
+		if (chargeableAmount == null || chargeableAmount.signum() <= 0) {
+			return zero();
+		}
+		return chargeableAmount.setScale(SCALE, ROUND);
+	}
+
+	/**
+	 * Quantity-driven benefit valuation: {@code periodValuation = quantity × statutory unit cap}.
+	 */
+	public BigDecimal periodQuantityCapBenefit(BigDecimal quantity, SurinameTaxRulesSnapshot snapshot, String ruleCode,
+			BigDecimal defaultCap) {
+		if (quantity == null || quantity.signum() <= 0) {
+			return zero();
+		}
+		BigDecimal cap = unitCapFromRule(snapshot, ruleCode, defaultCap);
+		if (cap == null || cap.signum() <= 0) {
+			return zero();
+		}
+		return quantity.multiply(cap, MC).setScale(SCALE, ROUND);
+	}
+
+	private BigDecimal periodPercentOfAnnualMoneyWage(BigDecimal periodTaxableWageMoney, int periodsPerYear,
+			BigDecimal pct, BigDecimal annualCap) {
 		if (periodTaxableWageMoney == null || periodTaxableWageMoney.signum() <= 0) {
 			return zero();
 		}
 		int periods = periodsPerYear > 0 ? periodsPerYear : SurinameWageTaxCalculator.DEFAULT_PERIODS_PER_YEAR;
 		BigDecimal annualWage = periodTaxableWageMoney.multiply(BigDecimal.valueOf(periods));
-		BigDecimal annualBenefit = annualWage.multiply(FREE_MEDICAL_PCT, MC).divide(HUNDRED,
-				SCALE + 4, ROUND);
-		if (annualBenefit.compareTo(FREE_MEDICAL_ANNUAL_CAP) > 0) {
-			annualBenefit = FREE_MEDICAL_ANNUAL_CAP;
+		BigDecimal annualBenefit = annualWage.multiply(pct, MC).divide(HUNDRED, SCALE + 4, ROUND);
+		if (annualCap != null && annualBenefit.compareTo(annualCap) > 0) {
+			annualBenefit = annualCap;
 		}
 		return annualBenefit.divide(BigDecimal.valueOf(periods), SCALE, ROUND);
 	}
 
+	private BigDecimal unitCapFromRule(SurinameTaxRulesSnapshot snapshot, String ruleCode, BigDecimal defaultCap) {
+		if (snapshot == null || ruleCode == null) {
+			return defaultCap;
+		}
+		ResolvedSurinameTaxRule rule = snapshot.rulesByCode().get(ruleCode);
+		if (rule == null || rule.parameters() == null || rule.parameters().isMissingNode()) {
+			return defaultCap;
+		}
+		JsonNode params = rule.parameters();
+		String kind = text(params, "kind");
+		if ("UNIT_CAP".equals(kind) || "THRESHOLD_AMOUNT".equals(kind)) {
+			BigDecimal amount = decimal(params, "amount");
+			return amount != null && amount.signum() > 0 ? amount : defaultCap;
+		}
+		return defaultCap;
+	}
+
+	private BigDecimal pctFromFlatRateRule(SurinameTaxRulesSnapshot snapshot, String ruleCode, BigDecimal defaultPct) {
+		if (snapshot == null || ruleCode == null) {
+			return defaultPct;
+		}
+		ResolvedSurinameTaxRule rule = snapshot.rulesByCode().get(ruleCode);
+		if (rule == null || rule.parameters() == null || rule.parameters().isMissingNode()) {
+			return defaultPct;
+		}
+		JsonNode params = rule.parameters();
+		if (!"FLAT_RATE".equals(text(params, "kind"))) {
+			return defaultPct;
+		}
+		BigDecimal pct = decimal(params, "pct");
+		return pct != null && pct.signum() > 0 ? pct : defaultPct;
+	}
+
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear) {
-		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear, null, null);
+		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear, null, null,
+				null);
 	}
 
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount) {
 		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
-				childAllowanceChildrenCount, null);
+				childAllowanceChildrenCount, null, null);
+	}
+
+	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
+			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
+			BigDecimal deductibleWageBase) {
+		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
+				childAllowanceChildrenCount, deductibleWageBase, null);
 	}
 
 	/**
 	 * @param deductibleWageBase when non-null, forfaitaire beroepskosten (4%, max SRD 400/month) are subtracted after
 	 *                           child exclusion and belastingvrij — same basis as payslip line 1036 ({@code GROSS} base).
+	 * @param exchangeRatePayout when non-null, Art. 10 exchange-rate exclusion (1056) is subtracted after child
+	 *                           exclusion.
 	 */
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
-			BigDecimal deductibleWageBase) {
+			BigDecimal deductibleWageBase, BigDecimal exchangeRatePayout) {
 		if (loonbelastingPeriodBase == null || loonbelastingPeriodBase.signum() <= 0) {
 			return zero();
 		}
@@ -175,6 +354,10 @@ public class SurinameCountryRuleAlgorithms {
 		if (childAllowanceChildrenCount != null && childAllowanceChildrenCount.signum() > 0) {
 			taxable = taxable.subtract(
 					periodChildAllowanceExcludedFromLoon(snapshot, childAllowanceChildrenCount));
+		}
+		if (exchangeRatePayout != null && exchangeRatePayout.signum() > 0) {
+			taxable = taxable.subtract(
+					periodExchangeRateCompensationExcludedFromLoon(snapshot, exchangeRatePayout));
 		}
 		if (applyTaxExempt) {
 			taxable = taxable.subtract(periodTaxExemptApplied(snapshot, true, periodsPerYear, loonbelastingPeriodBase));
@@ -255,6 +438,24 @@ public class SurinameCountryRuleAlgorithms {
 		int periods = periodsPerYear > 0 ? periodsPerYear : SurinameWageTaxCalculator.DEFAULT_PERIODS_PER_YEAR;
 		if ("YEAR".equalsIgnoreCase(text(params, "freq"))) {
 			return amount.divide(BigDecimal.valueOf(periods), SCALE, ROUND);
+		}
+		return amount.setScale(SCALE, ROUND);
+	}
+
+	private BigDecimal monthlyCapFromThresholdRule(ResolvedSurinameTaxRule rule) {
+		if (rule == null || rule.parameters() == null || rule.parameters().isMissingNode()) {
+			return null;
+		}
+		JsonNode params = rule.parameters();
+		if (!"THRESHOLD_AMOUNT".equals(text(params, "kind"))) {
+			return null;
+		}
+		BigDecimal amount = decimal(params, "amount");
+		if (amount == null || amount.signum() <= 0) {
+			return null;
+		}
+		if ("YEAR".equalsIgnoreCase(text(params, "freq"))) {
+			return amount.divide(BigDecimal.valueOf(SurinameWageTaxCalculator.DEFAULT_PERIODS_PER_YEAR), SCALE, ROUND);
 		}
 		return amount.setScale(SCALE, ROUND);
 	}

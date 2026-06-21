@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
-
 import com.wagepayroll.domain.compensation.TenantEmployeeCompensationEntity;
 import com.wagepayroll.domain.compensation.TenantEmployeeCompensationRepository;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
@@ -26,6 +25,7 @@ import com.wagepayroll.domain.org.TenantCompanyRepository;
 import com.wagepayroll.domain.org.TenantEmployeeEntity;
 import com.wagepayroll.domain.org.TenantEmployeeRepository;
 import com.wagepayroll.domain.wagecomponent.TenantWageComponentEntity;
+import com.wagepayroll.domain.wagecomponent.TenantWageComponentTransactionEntity;
 import com.wagepayroll.domain.wagecomponent.TenantWageComponentTransactionRepository;
 import com.wagepayroll.payroll.base.PayrollBaseAccumulationResult;
 import com.wagepayroll.payroll.base.PayrollBaseAccumulator;
@@ -41,7 +41,6 @@ class SurinameTenantDerivedComponentServiceTest {
 
 	private static final UUID VACATION_AOV_COMPONENT = UUID.randomUUID();
 
-	@Mock
 	private SurinameCountryRuleAlgorithms algorithms;
 
 	@Mock
@@ -66,6 +65,7 @@ class SurinameTenantDerivedComponentServiceTest {
 	@BeforeEach
 	void setUp() {
 		wageTaxCalculator = new SurinameWageTaxCalculator();
+		algorithms = new SurinameCountryRuleAlgorithms();
 		service = new SurinameTenantDerivedComponentService(algorithms, wageTaxCalculator, new SurinameApfCalculator(),
 				new SurinameFvoCalculator(wageTaxCalculator), payrollBaseAccumulator, compensationRepository,
 				companyRepository, employeeRepository, transactionRepository);
@@ -88,7 +88,7 @@ class SurinameTenantDerivedComponentServiceTest {
 		when(employeeRepository.findByTenantIdAndCompanyIdAndIdIn(tenantId, companyId, List.of(EMPLOYEE)))
 				.thenReturn(List.of(employeeWithHireDate(EMPLOYEE, tenantId, companyId, LocalDate.of(2001, 2, 1))));
 		stubMonthlyCompensation(tenantId, companyId, new BigDecimal("6000.0000"));
-		SurinameTaxRulesSnapshot snapshot = snapshotWithJubileeRule();
+		SurinameTaxRulesSnapshot snapshot = snapshotWithPaymentsAtOnceRule();
 
 		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, UUID.randomUUID(),
 				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
@@ -119,7 +119,7 @@ class SurinameTenantDerivedComponentServiceTest {
 		when(employeeRepository.findByTenantIdAndCompanyIdAndIdIn(tenantId, companyId, List.of(EMPLOYEE)))
 				.thenReturn(List.of(employeeWithHireDate(EMPLOYEE, tenantId, companyId, LocalDate.of(2001, 2, 1))));
 		stubMonthlyCompensation(tenantId, companyId, new BigDecimal("6000.0000"));
-		SurinameTaxRulesSnapshot snapshot = snapshotWithJubileeRule();
+		SurinameTaxRulesSnapshot snapshot = snapshotWithPaymentsAtOnceRule();
 
 		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, UUID.randomUUID(),
 				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
@@ -128,7 +128,37 @@ class SurinameTenantDerivedComponentServiceTest {
 
 		assertThat(result).anySatisfy(line -> {
 			assertThat(line.tenantWageComponentCode()).isEqualTo("1048");
-			assertThat(line.evaluatedAmount()).isEqualByComparingTo("6000.0000");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("300.0000");
+		});
+	}
+
+	@Test
+	void appliesJubileePaymentAtOnceTaxOnTwentyYearTaxableRemainder() throws Exception {
+		UUID jubileeTaxComponent = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity jubileeTax = component(jubileeTaxComponent, "1048",
+				SurinameCountryRuleKeys.WAGE_TAX_JUBILEE);
+		EvaluatedComponentAmount jubileeLine = EvaluatedComponentAmount.tenant(EMPLOYEE, UUID.randomUUID(), "1010",
+				CalculationMethod.FIXED_AMOUNT.name(), new BigDecimal("12000.0000"), null);
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("18000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(employeeRepository.findByTenantIdAndCompanyIdAndIdIn(tenantId, companyId, List.of(EMPLOYEE)))
+				.thenReturn(List.of(employeeWithHireDate(EMPLOYEE, tenantId, companyId, LocalDate.of(2006, 2, 1))));
+		stubMonthlyCompensation(tenantId, companyId, new BigDecimal("6000.0000"));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithPaymentsAtOnceRule();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, UUID.randomUUID(),
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(jubileeTax), List.of(jubileeLine), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1048");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("375.0000");
 		});
 	}
 
@@ -182,6 +212,227 @@ class SurinameTenantDerivedComponentServiceTest {
 			assertThat(line.tenantWageComponentCode()).isEqualTo("1014");
 			assertThat(line.evaluatedAmount()).isEqualByComparingTo("1200.0000");
 		});
+	}
+
+	@Test
+	void appliesCompanyCarBenefitFromListPriceAcP2_1() throws Exception {
+		UUID carComponentId = UUID.randomUUID();
+		TenantWageComponentEntity carBenefit = componentWithDefaultAmount(carComponentId, "1049",
+				SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT, new BigDecimal("180000.0000"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithP2BenefitRules();
+
+		PayrollContext payroll = new PayrollContext(UUID.randomUUID(), UUID.randomUUID(), "SR", "SRD", null,
+				UUID.randomUUID(), List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(carBenefit), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1049");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("300.0000");
+		});
+	}
+
+	@Test
+	void appliesFreeHousingBenefitFromMoneyWageAcP2_2() throws Exception {
+		UUID housingComponentId = UUID.randomUUID();
+		TenantWageComponentEntity housingBenefit = component(housingComponentId, "1050",
+				SurinameCountryRuleKeys.FREE_HOUSING_BENEFIT);
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithP2BenefitRules();
+
+		PayrollContext payroll = new PayrollContext(UUID.randomUUID(), UUID.randomUUID(), "SR", "SRD", null,
+				UUID.randomUUID(), List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(housingBenefit), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1050");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("600.0000");
+		});
+	}
+
+	@Test
+	void appliesBoardLodgingBenefitFromQuantityAcP2_3() throws Exception {
+		assertQuantityBenefit("1051", SurinameCountryRuleKeys.BOARD_LODGING_BENEFIT, new BigDecimal("15"),
+				"150.0000");
+	}
+
+	@Test
+	void appliesBoardBenefitFromQuantityAcP2_3b() throws Exception {
+		assertQuantityBenefit("1052", SurinameCountryRuleKeys.BOARD_BENEFIT, new BigDecimal("20"), "100.0000");
+	}
+
+	@Test
+	void appliesHotMealBenefitFromQuantityAcP2_4() throws Exception {
+		assertQuantityBenefit("1053", SurinameCountryRuleKeys.HOT_MEAL_BENEFIT, new BigDecimal("22"), "110.0000");
+	}
+
+	@Test
+	void appliesBreadMealBenefitFromQuantityAcP2_5() throws Exception {
+		assertQuantityBenefit("1054", SurinameCountryRuleKeys.BREAD_MEAL_BENEFIT, new BigDecimal("20"), "30.0000");
+	}
+
+	@Test
+	void appliesFreeUtilitiesBenefitFromAmountAcP2_7() throws Exception {
+		UUID componentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity benefit = component(componentId, "1057",
+				SurinameCountryRuleKeys.FREE_UTILITIES_BENEFIT);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(componentId);
+		txn.setAmount(new BigDecimal("275.50"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll,
+				countryContext(payroll, new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28), Map.of())),
+				List.of(benefit), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1057");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("275.5000");
+		});
+	}
+
+	@Test
+	void appliesExchangeRateCompensationAndExclusionAcP2_6() throws Exception {
+		UUID exchangeComponentId = UUID.randomUUID();
+		UUID exchangeTaxComponentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity exchangePayout = component(exchangeComponentId, "1055",
+				SurinameCountryRuleKeys.EXCHANGE_RATE_COMPENSATION);
+		TenantWageComponentEntity exchangeExclusion = component(exchangeTaxComponentId, "1056",
+				SurinameCountryRuleKeys.WAGE_TAX_EXCHANGE_RATE);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(exchangeComponentId);
+		txn.setAmount(new BigDecimal("950.0000"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithExchangeRateRule();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(exchangePayout, exchangeExclusion), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1055");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("950.0000");
+		});
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1056");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("800.0000");
+		});
+	}
+
+	private void assertQuantityBenefit(String templateCode, String countryRuleKey, BigDecimal quantity,
+			String expectedAmount) throws Exception {
+		UUID componentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity benefit = component(componentId, templateCode, countryRuleKey);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(componentId);
+		txn.setQuantity(quantity);
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithBoardMealRules();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(benefit), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo(templateCode);
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo(expectedAmount);
+		});
+	}
+
+	private static SurinameTaxRulesSnapshot snapshotWithBoardMealRules() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		var boardLodging = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000013"),
+				SurinameCountryRuleKeys.RULE_BOARD_LODGING_DAY, "Board lodging", LocalDate.of(2024, 1, 1), null,
+				mapper.readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"UNIT_CAP\",\"amount\":10}"));
+		var board = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000014"),
+				SurinameCountryRuleKeys.RULE_BOARD_DAY, "Board", LocalDate.of(2024, 1, 1), null,
+				mapper.readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"UNIT_CAP\",\"amount\":5}"));
+		var hotMeal = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000015"),
+				SurinameCountryRuleKeys.RULE_HOT_MEAL_UNIT, "Hot meal", LocalDate.of(2024, 1, 1), null,
+				mapper.readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"UNIT_CAP\",\"amount\":5}"));
+		var breadMeal = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000016"),
+				SurinameCountryRuleKeys.RULE_BREAD_MEAL_UNIT, "Bread meal", LocalDate.of(2024, 1, 1), null,
+				mapper.readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"UNIT_CAP\",\"amount\":1.5}"));
+		return new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28),
+				Map.of(SurinameCountryRuleKeys.RULE_BOARD_LODGING_DAY, boardLodging,
+						SurinameCountryRuleKeys.RULE_BOARD_DAY, board, SurinameCountryRuleKeys.RULE_HOT_MEAL_UNIT,
+						hotMeal, SurinameCountryRuleKeys.RULE_BREAD_MEAL_UNIT, breadMeal));
+	}
+
+	private static SurinameTaxRulesSnapshot snapshotWithExchangeRateRule() throws Exception {
+		var rule = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000012"),
+				SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, "Exchange rate", LocalDate.of(2022, 1, 1),
+				null, new ObjectMapper().readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"THRESHOLD_AMOUNT\",\"amount\":800}"));
+		return new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28),
+				Map.of(SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, rule));
+	}
+
+	private static TenantWageComponentEntity componentWithDefaultAmount(UUID id, String code, String countryRuleKey,
+			BigDecimal defaultAmount) {
+		TenantWageComponentEntity c = component(id, code, countryRuleKey);
+		c.setDefaultAmount(defaultAmount);
+		return c;
+	}
+
+	private static SurinameTaxRulesSnapshot snapshotWithP2BenefitRules() throws Exception {
+		var carRule = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-00000000000e"),
+				SurinameCountryRuleKeys.RULE_COMPANY_CAR_YEAR, "Company car", LocalDate.of(2024, 1, 1), null,
+				new ObjectMapper().readTree("{\"v\":2,\"freq\":\"YEAR\",\"kind\":\"FLAT_RATE\",\"pct\":2}"));
+		var housingRule = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-00000000000f"),
+				SurinameCountryRuleKeys.RULE_FREE_HOUSING_YEAR, "Free housing", LocalDate.of(2024, 1, 1), null,
+				new ObjectMapper().readTree("{\"v\":2,\"freq\":\"YEAR\",\"kind\":\"FLAT_RATE\",\"pct\":7.5}"));
+		return new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28),
+				Map.of(SurinameCountryRuleKeys.RULE_COMPANY_CAR_YEAR, carRule,
+						SurinameCountryRuleKeys.RULE_FREE_HOUSING_YEAR, housingRule));
 	}
 
 	private static TenantWageComponentEntity component(UUID id, String code, String countryRuleKey) {

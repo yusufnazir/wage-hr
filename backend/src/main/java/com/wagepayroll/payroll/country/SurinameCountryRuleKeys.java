@@ -17,17 +17,50 @@ public final class SurinameCountryRuleKeys {
 
 	public static final String FREE_MEDICAL_BENEFIT = "SUR_FREE_MEDICAL_BENEFIT";
 
+	public static final String COMPANY_CAR_BENEFIT = "SUR_COMPANY_CAR_BENEFIT";
+
+	public static final String FREE_HOUSING_BENEFIT = "SUR_FREE_HOUSING_BENEFIT";
+
+	public static final String BOARD_LODGING_BENEFIT = "SUR_BOARD_LODGING_BENEFIT";
+
+	public static final String BOARD_BENEFIT = "SUR_BOARD_BENEFIT";
+
+	public static final String HOT_MEAL_BENEFIT = "SUR_HOT_MEAL_BENEFIT";
+
+	public static final String BREAD_MEAL_BENEFIT = "SUR_BREAD_MEAL_BENEFIT";
+
+	/** Free utilities benefit-in-kind (1057); amount from period transaction. */
+	public static final String FREE_UTILITIES_BENEFIT = "SUR_FREE_UTILITIES_BENEFIT";
+
 	/** Gross child allowance (1008); factor = number of children from standing instruction quantity. */
 	public static final String CHILD_ALLOWANCE = "SUR_CHILD_ALLOWANCE";
+
+	/** Gross exchange-rate compensation cash payout (1055); amount from period transaction. */
+	public static final String EXCHANGE_RATE_COMPENSATION = "SUR_EXCHANGE_RATE_COMPENSATION";
 
 	public static final String RULE_TAX_FREE_WAGE_TAX_YEAR = "SR_TAX_FREE_WAGE_TAX_YEAR";
 
 	/** Per-child monthly rates and caps (tariff type 11). */
 	public static final String RULE_CHILD_ALLOWANCE_MONTH = "SR_CHILD_ALLOWANCE_MONTH";
 
+	/** Art. 10 exchange-rate monthly exclusion cap (SRD 800 from 2022-01-01). */
+	public static final String RULE_EXCHANGE_RATE_COMPENSATION_MONTH = "SR_EXCHANGE_RATE_COMPENSATION_MONTH";
+
 	public static final String RULE_DEDUCTIBLE_EXPENSES_YEAR = "SR_DEDUCTIBLE_EXPENSES_YEAR";
 
 	public static final String RULE_FREE_MEDICAL_YEAR = "SR_FREE_MEDICAL_YEAR";
+
+	public static final String RULE_COMPANY_CAR_YEAR = "SR_COMPANY_CAR_YEAR";
+
+	public static final String RULE_FREE_HOUSING_YEAR = "SR_FREE_HOUSING_YEAR";
+
+	public static final String RULE_BOARD_LODGING_DAY = "SR_BOARD_LODGING_DAY";
+
+	public static final String RULE_BOARD_DAY = "SR_BOARD_DAY";
+
+	public static final String RULE_HOT_MEAL_UNIT = "SR_HOT_MEAL_UNIT";
+
+	public static final String RULE_BREAD_MEAL_UNIT = "SR_BREAD_MEAL_UNIT";
 
 	public static final String RULE_TAX_FREE_VACATION_YEAR = "SR_TAX_FREE_VACATION_YEAR";
 
@@ -100,8 +133,8 @@ public final class SurinameCountryRuleKeys {
 		return NET_WAGE.equals(countryRuleKey);
 	}
 
-	/** Gross earnings driven by standing quantity (e.g. children for 1008) — before APF/FVO. */
-	public static final Set<String> GROSS_EARNING_DERIVED_KEYS = Set.of(CHILD_ALLOWANCE);
+	/** Gross earnings driven by standing quantity or period amount (e.g. 1008, 1055) — before APF/FVO. */
+	public static final Set<String> GROSS_EARNING_DERIVED_KEYS = Set.of(CHILD_ALLOWANCE, EXCHANGE_RATE_COMPENSATION);
 
 	/** APF + FVO — evaluated before tax-adjustment lines (1004–1005). */
 	public static final Set<String> PENSION_AND_FVO_DERIVED_KEYS = Set.of(APF_EMPLOYEE, APF_EMPLOYER, FVO_EMPLOYEE,
@@ -110,8 +143,13 @@ public final class SurinameCountryRuleKeys {
 	/** Art. 10(h) exclusion amount on wage-tax child line (1023). */
 	public static final String WAGE_TAX_CHILD_ALLOWANCE = "SUR_WAGE_TAX_CHILD_ALLOWANCE";
 
+	/** Art. 10 exchange-rate exclusion amount on wage-tax line (1056). */
+	public static final String WAGE_TAX_EXCHANGE_RATE = "SUR_WAGE_TAX_EXCHANGE_RATE";
+
 	public static final Set<String> TAX_ADJUSTMENT_DERIVED_KEYS = Set.of(TAXABLE_INCOME, TAX_FREE_WAGE_TAX,
-			ACQUISITION_COSTS, FREE_MEDICAL_BENEFIT, WAGE_TAX_CHILD_ALLOWANCE);
+			ACQUISITION_COSTS, FREE_MEDICAL_BENEFIT, COMPANY_CAR_BENEFIT, FREE_HOUSING_BENEFIT, BOARD_LODGING_BENEFIT,
+			BOARD_BENEFIT, HOT_MEAL_BENEFIT, BREAD_MEAL_BENEFIT, FREE_UTILITIES_BENEFIT, WAGE_TAX_CHILD_ALLOWANCE,
+			WAGE_TAX_EXCHANGE_RATE);
 
 	public static final Set<String> SPECIAL_REMUNERATION_DERIVED_KEYS = Set.of(WAGE_TAX_VACATION_ALLOWANCE,
 			WAGE_TAX_BONUS, WAGE_TAX_EXTRA_EARNINGS, AOV_VACATION_ALLOWANCE, AOV_BONUS, AOV_EXTRA_EARNINGS,

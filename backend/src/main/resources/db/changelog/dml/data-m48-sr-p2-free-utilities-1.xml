@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- P2 Phase D: free utilities benefit-in-kind (1057) — employer-entered chargeable amount. -->
+    <changeSet id="data-m48-sr-p2-free-utilities-template-1" author="wagepayroll">
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1057"/>
+            <column name="name" value="Free utilities (valuation)"/>
+            <column name="description" value="Art. 10 benefit-in-kind — chargeable utility cost (gas, electricity, water)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"INFORMATIONAL","category":"BENEFIT","netEffect":"NO_EFFECT","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":3090,"taxableWageTax":true,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="3090"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000029"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_FREE_UTILITIES_BENEFIT"/>
+        </insert>
+    </changeSet>
+
+    <!-- Base effects: LOONBELASTING +; GROSS/NET/AOV/etc. unchanged (mirror 1049–1054). -->
+    <changeSet id="data-m48-sr-p2-free-utilities-base-effects-1" author="wagepayroll">
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000074"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000003"/>
+            <column name="effect_direction" value="INCREASE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="100"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000075"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000002"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000076"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000004"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000077"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000005"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000078"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000006"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000079"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000007"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007a"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000038"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000008"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

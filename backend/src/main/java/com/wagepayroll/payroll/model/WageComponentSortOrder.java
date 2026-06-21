@@ -28,6 +28,14 @@ public final class WageComponentSortOrder {
 			// Non-taxable earnings (3000)
 			Map.entry("1031", 3010),
 			Map.entry("1042", 3020),
+			Map.entry("1049", 3030),
+			Map.entry("1050", 3040),
+			Map.entry("1051", 3050),
+			Map.entry("1052", 3060),
+			Map.entry("1053", 3070),
+			Map.entry("1054", 3080),
+			Map.entry("1057", 3090),
+			Map.entry("1055", 1110),
 			// Tax adjustments (4000)
 			Map.entry("1004", 4010),
 			Map.entry("1005", 4020),
@@ -56,6 +64,7 @@ public final class WageComponentSortOrder {
 			Map.entry("1024", 5260),
 			Map.entry("1025", 5270),
 			Map.entry("1048", 5280),
+			Map.entry("1056", 5290),
 			// Net deductions (6000)
 			Map.entry("1003", 6010),
 			Map.entry("1029", 6030),

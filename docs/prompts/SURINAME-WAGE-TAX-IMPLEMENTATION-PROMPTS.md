@@ -4,7 +4,7 @@
 **Use in:** Cursor **Agent** chat (not Ask mode)  
 **Command:** Start with `/feature` (or `/payroll-retro` for payroll-only context)
 
-**Status (2026-06-18):** **P1 complete** — lump sum **1009** → **1024** and jubilee **1010** → **1048** are **Live** per [`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §6–§8. Prompts A–C below are retained for reference or partial reruns.
+**Status (2026-06-21):** **P1 complete** (lump sum **1009** → **1024**, jubilee **1010** → **1048**). **P2 complete** — Art. 10 benefits-in-kind **1049**–**1057** (Phases A–D) per [`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §5.1, §6, §8. Prompts A–C below are retained for reference or partial reruns.
 
 ---
 
@@ -16,7 +16,8 @@
 | **Lump sum only** (1009 → 1024) | [Prompt B](#prompt-b--lump-sum-only-1009--1024) |
 | **Jubilee only** (1010 + service-year table) | [Prompt C](#prompt-c--jubilee-only-1010) |
 | **Spec first** (expand module before code) | [Prompt D](#prompt-d--expand-spec-first-no-code-yet) |
-| **Review only** (no code) | [Prompt E](#prompt-e--gap-review-only-no-implementation) |
+| **Jubilee retarget (1048 → payment-at-once ladder)** | [Prompt F](#prompt-f--jubilee-retarget-1048) |
+| **Pay period supervisor approve** | [`pay-periods.md`](../modules/pay-periods.md) §4.3 — separate `/feature` |
 
 ---
 
@@ -154,8 +155,33 @@ Report: what is still missing, file paths, and recommended implementation order.
 | Priority | Gap | Status |
 |----------|-----|--------|
 | ~~**P1**~~ | Lump sum **1009** → **1024** | **Done** |
-| ~~**P1**~~ | Jubilee **1010** → **1048** | **Done** |
-| **P2** | Benefits-in-kind valuations (car, housing, meals) | Open |
-| **P3** | Inspector-approval flag for Art. 17a regimes | Open |
+| ~~**P1**~~ | Jubilee **1010** → **1048** | **Done** (service-year table — superseded) |
+| ~~**P2**~~ | Benefits-in-kind valuations (car, housing, meals) | **Done** |
+| ~~**P3**~~ | Product control — no tax-office approval | **Done** (§5.2) |
+| **P3b** | Jubilee **1048** uses `SR_PAYMENTS_AT_ONCE_YEAR` on taxable remainder | **Open** — [Prompt F](#prompt-f--jubilee-retarget-1048) |
 
 For gap review only, use [Prompt E](#prompt-e--gap-review-only-no-implementation).
+
+---
+
+## Prompt F — Jubilee retarget (1048)
+
+```
+/feature
+
+Retarget jubilee wage tax per @docs/modules/suriname-wage-tax-rules.md §4.4:
+
+- Keep Art. 10 anniversary exemption (SurinameJubileeSupport)
+- Tax **taxable remainder** with `computePaymentAtOnceTax` / `SR_PAYMENTS_AT_ONCE_YEAR` (same as **1024**)
+- Payslip line remains **1048**
+
+Change SurinameTenantDerivedComponentService.jubileeWageTax — use paymentsAtOnceTaxRule, not jubileeTaxRule / computeJubileeWageTax.
+
+Acceptance: module §7 rows 4 and 4b.
+
+Out of scope: Belastingdienst approval, supervisor close (pay-periods.md), changing **1024**/**1020** math.
+
+Update tests: SurinameTenantDerivedComponentServiceTest, SurinameJubileeSupportTest.
+
+Run: mvn test -Dtest=SurinameTenantDerivedComponentServiceTest,SurinameJubileeSupportTest,SurinameWageTaxCalculatorTest
+```

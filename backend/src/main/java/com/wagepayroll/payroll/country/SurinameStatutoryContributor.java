@@ -110,20 +110,25 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 			if (applyTaxes && wageTaxRule != null && wageTaxComponent != null) {
 				boolean applyTaxExempt = compensation == null || compensation.isApplyTaxExempt();
 				BigDecimal childAllowanceChildren = childAllowanceChildrenCount(state, employeeId);
+				BigDecimal exchangeRatePayout = exchangeRateCompensationPayout(state, employeeId);
 				BigDecimal labelWage = special.labelPeriodWage();
 				BigDecimal childExclusion = childAllowanceChildren != null && childAllowanceChildren.signum() > 0
 						? countryRuleAlgorithms.periodChildAllowanceExcludedFromLoon(snapshot, childAllowanceChildren)
+						: BigDecimal.ZERO;
+				BigDecimal exchangeRateExclusion = exchangeRatePayout != null && exchangeRatePayout.signum() > 0
+						? countryRuleAlgorithms.periodExchangeRateCompensationExcludedFromLoon(snapshot,
+								exchangeRatePayout)
 						: BigDecimal.ZERO;
 				BigDecimal grossBase = bases.getOrDefault(SurinameCountryRuleAlgorithms.GROSS_BASE, labelWage);
 				BigDecimal taxExemptApplied = applyTaxExempt
 						? countryRuleAlgorithms.periodTaxExemptApplied(snapshot, true, periods, labelWage)
 						: BigDecimal.ZERO;
 				BigDecimal taxableWithoutDeductible = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot,
-						applyTaxExempt, periods, childAllowanceChildren, null);
+						applyTaxExempt, periods, childAllowanceChildren, null, exchangeRatePayout);
 				BigDecimal deductibleApplied = countryRuleAlgorithms.periodDeductibleCostsApplied(taxableWithoutDeductible,
 						grossBase, snapshot, periods);
 				BigDecimal taxable = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot, applyTaxExempt,
-						periods, childAllowanceChildren, grossBase);
+						periods, childAllowanceChildren, grossBase, exchangeRatePayout);
 				BigDecimal tax = wageTaxCalculator.computePeriodTax(wageTaxRule, taxable, periods);
 				Map<String, List<PayrollBaseContribution>> contributionsByBase = state.employeeBaseContributions()
 						.getOrDefault(employeeId, Map.of());
@@ -146,6 +151,7 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 						labelWageBreakdown);
 				String wageTaxAmountExplanation = PayrollCalculationTraceSupport.appendBreakdown(wageTaxFactorExplanation
 						+ " Then: − child exclusion " + PayrollCalculationTraceSupport.formatMoney(childExclusion)
+						+ ", − exchange-rate exclusion " + PayrollCalculationTraceSupport.formatMoney(exchangeRateExclusion)
 						+ ", − belastingvrij " + PayrollCalculationTraceSupport.formatMoney(taxExemptApplied)
 						+ ", − beroepskosten (1036, 4% of gross, max 400/mo) "
 						+ PayrollCalculationTraceSupport.formatMoney(deductibleApplied) + " → taxable base "
@@ -245,6 +251,27 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				.filter(tx -> componentId.equals(tx.getTenantWageComponentId()) && tx.getQuantity() != null
 						&& tx.getQuantity().signum() > 0)
 				.map(TenantWageComponentTransactionEntity::getQuantity)
+				.findFirst()
+				.orElse(null);
+	}
+
+	private BigDecimal exchangeRateCompensationPayout(PayrollRunState state, UUID employeeId) {
+		UUID componentId = state.evaluatedComponentAmounts().stream()
+				.filter(line -> employeeId.equals(line.employeeId()) && "1055".equals(line.tenantWageComponentCode()))
+				.map(EvaluatedComponentAmount::tenantWageComponentId)
+				.findFirst()
+				.orElse(null);
+		if (componentId == null || state.context().payPeriodId() == null) {
+			return null;
+		}
+		var ctx = state.context();
+		return transactionRepository
+				.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(ctx.tenantId(), ctx.companyId(),
+						ctx.payPeriodId(), List.of(employeeId))
+				.stream()
+				.filter(tx -> componentId.equals(tx.getTenantWageComponentId()) && tx.getAmount() != null
+						&& tx.getAmount().signum() > 0)
+				.map(TenantWageComponentTransactionEntity::getAmount)
 				.findFirst()
 				.orElse(null);
 	}

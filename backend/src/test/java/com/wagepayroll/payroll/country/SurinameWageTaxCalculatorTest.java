@@ -133,6 +133,13 @@ class SurinameWageTaxCalculatorTest {
 	}
 
 	@Test
+	void computePaymentAtOnceTaxOnJubileeTaxableRemainder() throws Exception {
+		ResolvedSurinameTaxRule rule = ruleFromJson(SR_PAYMENTS_AT_ONCE_JSON, "SR_PAYMENTS_AT_ONCE_YEAR");
+		BigDecimal tax = calculator.computePaymentAtOnceTax(rule, new BigDecimal("7500.0000"));
+		assertThat(tax).isEqualByComparingTo("375.0000");
+	}
+
+	@Test
 	void computePaymentAtOnceTaxUsesBenefitLadderWithoutAnnualization() throws Exception {
 		ResolvedSurinameTaxRule rule = ruleFromJson(SR_PAYMENTS_AT_ONCE_JSON, "SR_PAYMENTS_AT_ONCE_YEAR");
 		BigDecimal tax = calculator.computePaymentAtOnceTax(rule, new BigDecimal("50000.0000"));

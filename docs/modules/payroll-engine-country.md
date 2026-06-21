@@ -98,7 +98,7 @@ Wage tax (statutory) uses `adjustTaxableBaseForWageTax` to subtract the same bel
 | Normal + belastingvrij | **1019**, **1005** | **Live** — `SurinameStatutoryContributor` |
 | Overtime | **1045**–**1047**, **1020**, **1013** | **Live** — `SR_OVERTIME_MONTH` from 2025-07-01 (pre-Jul history not in scope) |
 | Payment at once | **1009**, **1024** | **Live** — `SR_PAYMENTS_AT_ONCE_YEAR` via `SurinameTenantDerivedComponentService` |
-| Jubilee | **1010**, **1048** | **Live** — Art. 10 exemption + `SR_SERVICE_YEARS_17A_MONTH` via `SurinameTenantDerivedComponentService` |
+| Jubilee | **1010**, **1048** | **Live** — Art. 10 exemption + payment-at-once ladder (`SR_PAYMENTS_AT_ONCE_YEAR`) on taxable remainder |
 | Extra income (Art. 17) | **1011**, **1025**, **1018** | **Live** — label method on Table 1 |
 | Vacation | **1006**, **1021**, **1014** | **Live** — see below |
 | Bonus | **1007**, **1022**, **1015** | **Live** — see below |

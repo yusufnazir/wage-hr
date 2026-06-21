@@ -42,6 +42,68 @@ class SurinameCountryRuleAlgorithmsTest {
 	}
 
 	@Test
+	void periodCompanyCarBenefitAcP2_1() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_COMPANY_CAR_YEAR, """
+				{"v":2,"freq":"YEAR","kind":"FLAT_RATE","pct":2}
+				""");
+		assertThat(algorithms.periodCompanyCarBenefit(new BigDecimal("180000.0000"), snapshot, 12))
+				.isEqualByComparingTo("300.0000");
+		assertThat(algorithms.periodCompanyCarBenefit(BigDecimal.ZERO, snapshot, 12)).isEqualByComparingTo("0.0000");
+	}
+
+	@Test
+	void periodFreeHousingBenefitAcP2_2() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_FREE_HOUSING_YEAR, """
+				{"v":2,"freq":"YEAR","kind":"FLAT_RATE","pct":7.5}
+				""");
+		assertThat(algorithms.periodFreeHousingBenefit(new BigDecimal("8000.0000"), snapshot, 12))
+				.isEqualByComparingTo("600.0000");
+		assertThat(algorithms.periodFreeHousingBenefit(BigDecimal.ZERO, snapshot, 12)).isEqualByComparingTo("0.0000");
+	}
+
+	@Test
+	void periodBoardLodgingBenefitAcP2_3() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_BOARD_LODGING_DAY, """
+				{"v":2,"freq":"MONTH","kind":"UNIT_CAP","amount":10}
+				""");
+		assertThat(algorithms.periodBoardLodgingBenefit(new BigDecimal("15"), snapshot))
+				.isEqualByComparingTo("150.0000");
+		assertThat(algorithms.periodBoardLodgingBenefit(BigDecimal.ZERO, snapshot)).isEqualByComparingTo("0.0000");
+	}
+
+	@Test
+	void periodBoardBenefitAcP2_3b() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_BOARD_DAY, """
+				{"v":2,"freq":"MONTH","kind":"UNIT_CAP","amount":5}
+				""");
+		assertThat(algorithms.periodBoardBenefit(new BigDecimal("20"), snapshot)).isEqualByComparingTo("100.0000");
+	}
+
+	@Test
+	void periodHotMealBenefitAcP2_4() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_HOT_MEAL_UNIT, """
+				{"v":2,"freq":"MONTH","kind":"UNIT_CAP","amount":5}
+				""");
+		assertThat(algorithms.periodHotMealBenefit(new BigDecimal("22"), snapshot)).isEqualByComparingTo("110.0000");
+	}
+
+	@Test
+	void periodBreadMealBenefitAcP2_5() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_BREAD_MEAL_UNIT, """
+				{"v":2,"freq":"MONTH","kind":"UNIT_CAP","amount":1.5}
+				""");
+		assertThat(algorithms.periodBreadMealBenefit(new BigDecimal("20"), snapshot)).isEqualByComparingTo("30.0000");
+	}
+
+	@Test
+	void periodFreeUtilitiesBenefitAcP2_7() {
+		assertThat(algorithms.periodFreeUtilitiesBenefit(new BigDecimal("275.50")))
+				.isEqualByComparingTo("275.5000");
+		assertThat(algorithms.periodFreeUtilitiesBenefit(BigDecimal.ZERO)).isEqualByComparingTo("0.0000");
+		assertThat(algorithms.periodFreeUtilitiesBenefit(null)).isEqualByComparingTo("0.0000");
+	}
+
+	@Test
 	void periodTaxExemptAppliedCannotExceedTaxableIncome() throws Exception {
 		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_TAX_FREE_WAGE_TAX_YEAR,
 				TAX_FREE_JSON);
@@ -85,6 +147,30 @@ class SurinameCountryRuleAlgorithmsTest {
 				""");
 		assertThat(algorithms.adjustTaxableBaseForWageTax(new BigDecimal("10000.0000"), snapshot, false, 12,
 				new BigDecimal("6"))).isEqualByComparingTo("9500.0000");
+	}
+
+	@Test
+	void periodExchangeRateCompensationExcludedFromLoonAcP2_6() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
+				SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, """
+				{"v":2,"kind":"THRESHOLD_AMOUNT","freq":"MONTH","amount":800}
+				""");
+		assertThat(algorithms.periodExchangeRateCompensationPayout(new BigDecimal("950.0000")))
+				.isEqualByComparingTo("950.0000");
+		assertThat(algorithms.periodExchangeRateCompensationExcludedFromLoon(snapshot, new BigDecimal("950.0000")))
+				.isEqualByComparingTo("800.0000");
+		assertThat(algorithms.periodExchangeRateCompensationExcludedFromLoon(snapshot, new BigDecimal("600.0000")))
+				.isEqualByComparingTo("600.0000");
+	}
+
+	@Test
+	void adjustTaxableBaseSubtractsExchangeRateExclusionFromLoon() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
+				SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, """
+				{"v":2,"kind":"THRESHOLD_AMOUNT","freq":"MONTH","amount":800}
+				""");
+		assertThat(algorithms.adjustTaxableBaseForWageTax(new BigDecimal("10000.0000"), snapshot, false, 12, null, null,
+				new BigDecimal("950.0000"))).isEqualByComparingTo("9200.0000");
 	}
 
 	@Test
