@@ -286,3 +286,6 @@ databaseChangeLog:
   - include:
       file: dml/data-m52-sr-p4-commute-transport-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: dml/data-m53-sr-p4-training-1.xml
+      relativeToChangelogFile: true

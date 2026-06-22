@@ -357,6 +357,46 @@ class SurinameTenantDerivedComponentServiceTest {
 	}
 
 	@Test
+	void appliesTrainingPayoutAndFullExclusionAcP4_3() throws Exception {
+		UUID trainingComponentId = UUID.randomUUID();
+		UUID trainingTaxComponentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity trainingPayout = component(trainingComponentId, "1062",
+				SurinameCountryRuleKeys.TRAINING_PAYOUT);
+		TenantWageComponentEntity trainingExclusion = component(trainingTaxComponentId, "1063",
+				SurinameCountryRuleKeys.WAGE_TAX_TRAINING);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(trainingComponentId);
+		txn.setAmount(new BigDecimal("3500.0000"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithAovBeneficiaryRule();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(trainingPayout, trainingExclusion), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1062");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("3500.0000");
+		});
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1063");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("3500.0000");
+		});
+	}
+
+	@Test
 	void appliesCommuteTransportPayoutAndFullExclusionAcP4_2() throws Exception {
 		UUID transportComponentId = UUID.randomUUID();
 		UUID transportTaxComponentId = UUID.randomUUID();

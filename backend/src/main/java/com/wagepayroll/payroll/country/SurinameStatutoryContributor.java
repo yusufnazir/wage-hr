@@ -114,6 +114,7 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				BigDecimal pensionSchemePayout = pensionSchemePayout(state, employeeId);
 				BigDecimal costAllowancePayout = costAllowancePayout(state, employeeId);
 				BigDecimal commuteTransportPayout = commuteTransportPayout(state, employeeId);
+				BigDecimal trainingPayout = trainingPayout(state, employeeId);
 				BigDecimal labelWage = special.labelPeriodWage();
 				BigDecimal childExclusion = childAllowanceChildren != null && childAllowanceChildren.signum() > 0
 						? countryRuleAlgorithms.periodChildAllowanceExcludedFromLoon(snapshot, childAllowanceChildren)
@@ -131,18 +132,21 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				BigDecimal commuteTransportExclusion = commuteTransportPayout != null && commuteTransportPayout.signum() > 0
 						? countryRuleAlgorithms.periodCommuteTransportExcludedFromLoon(commuteTransportPayout)
 						: BigDecimal.ZERO;
+				BigDecimal trainingExclusion = trainingPayout != null && trainingPayout.signum() > 0
+						? countryRuleAlgorithms.periodTrainingExcludedFromLoon(trainingPayout)
+						: BigDecimal.ZERO;
 				BigDecimal grossBase = bases.getOrDefault(SurinameCountryRuleAlgorithms.GROSS_BASE, labelWage);
 				BigDecimal taxExemptApplied = applyTaxExempt
 						? countryRuleAlgorithms.periodTaxExemptApplied(snapshot, true, periods, labelWage)
 						: BigDecimal.ZERO;
 				BigDecimal taxableWithoutDeductible = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot,
 						applyTaxExempt, periods, childAllowanceChildren, null, exchangeRatePayout, pensionSchemePayout,
-						costAllowancePayout, commuteTransportPayout);
+						costAllowancePayout, commuteTransportPayout, trainingPayout);
 				BigDecimal deductibleApplied = countryRuleAlgorithms.periodDeductibleCostsApplied(taxableWithoutDeductible,
 						grossBase, snapshot, periods);
 				BigDecimal taxable = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot, applyTaxExempt,
 						periods, childAllowanceChildren, grossBase, exchangeRatePayout, pensionSchemePayout,
-						costAllowancePayout, commuteTransportPayout);
+						costAllowancePayout, commuteTransportPayout, trainingPayout);
 				BigDecimal tax = wageTaxCalculator.computePeriodTax(wageTaxRule, taxable, periods);
 				Map<String, List<PayrollBaseContribution>> contributionsByBase = state.employeeBaseContributions()
 						.getOrDefault(employeeId, Map.of());
@@ -172,6 +176,8 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 						+ PayrollCalculationTraceSupport.formatMoney(costAllowanceExclusion)
 						+ ", − commute transport exclusion "
 						+ PayrollCalculationTraceSupport.formatMoney(commuteTransportExclusion)
+						+ ", − training exclusion "
+						+ PayrollCalculationTraceSupport.formatMoney(trainingExclusion)
 						+ ", − belastingvrij " + PayrollCalculationTraceSupport.formatMoney(taxExemptApplied)
 						+ ", − beroepskosten (1036, 4% of gross, max 400/mo) "
 						+ PayrollCalculationTraceSupport.formatMoney(deductibleApplied) + " → taxable base "
@@ -285,6 +291,10 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 
 	private BigDecimal commuteTransportPayout(PayrollRunState state, UUID employeeId) {
 		return periodPayoutAmountForComponentCode(state, employeeId, "1060");
+	}
+
+	private BigDecimal trainingPayout(PayrollRunState state, UUID employeeId) {
+		return periodPayoutAmountForComponentCode(state, employeeId, "1062");
 	}
 
 	private BigDecimal exchangeRateCompensationPayout(PayrollRunState state, UUID employeeId) {

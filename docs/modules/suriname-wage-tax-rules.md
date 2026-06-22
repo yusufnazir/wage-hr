@@ -534,6 +534,8 @@ Quality review before closing a pay period is specified in [`pay-periods.md`](./
 | **`country_rule_key`** | `SUR_TRAINING_PAYOUT` / `SUR_WAGE_TAX_TRAINING` |
 | **Acceptance (AC-P4-3)** | Payout SRD **3 500.00** → **1062** = **3500.0000**, **1063** = **3500.0000**, label loon net change **0** |
 
+**Status:** **Live** (P4 Phase H).
+
 #### 5.3.4 Pension scheme payout — 2× AOV cap (Art. 10 k)
 
 **Status:** **Live** (P4 Phase E).
@@ -635,6 +637,8 @@ Each phase: Liquibase templates (+ rules for E) → `SurinameCountryRuleKeys` �
 | 17 | Cost allowance exclusion | — | `SUR_WAGE_TAX_COST_ALLOWANCE` (1059) | `SurinameTenantDerivedComponentService` + wage-tax base adjust | **Live** |
 | 18 | Commute transport payout | — | `SUR_COMMUTE_TRANSPORT_PAYOUT` (1060) | `SurinameTenantDerivedComponentService` | **Live** |
 | 19 | Commute transport exclusion | — | `SUR_WAGE_TAX_COMMUTE_TRANSPORT` (1061) | `SurinameTenantDerivedComponentService` + wage-tax base adjust | **Live** |
+| 20 | Training payout | — | `SUR_TRAINING_PAYOUT` (1062) | `SurinameTenantDerivedComponentService` | **Live** |
+| 21 | Training exclusion | — | `SUR_WAGE_TAX_TRAINING` (1063) | `SurinameTenantDerivedComponentService` + wage-tax base adjust | **Live** |
 
 **Data storage:** versioned `platform_country_tax_rule.parameters_json` (v2). Seeds: `data-m25-platform-country-tax-rules-sr-1.xml`, `data-m42-sr-child-allowance-tax-rules-1.xml`.  
 **Resolution:** `SurinameTaxRuleResolutionService` as-of pay-period end.  
@@ -727,6 +731,7 @@ Audit performed against seeds, templates, engine paths, and tests. **No code cha
 | Exchange 1056 | Yes (`SUR_WAGE_TAX_EXCHANGE_RATE`) | `periodExchangeRateCompensationExcludedFromLoon()` + `adjustTaxableBaseForWageTax` | **Live** |
 | Cost allowance 1059 | Yes (`SUR_WAGE_TAX_COST_ALLOWANCE`) | `periodCostAllowanceExcludedFromLoon()` + `adjustTaxableBaseForWageTax` | **Live** |
 | Commute transport 1061 | Yes (`SUR_WAGE_TAX_COMMUTE_TRANSPORT`) | `periodCommuteTransportExcludedFromLoon()` + `adjustTaxableBaseForWageTax` | **Live** |
+| Training 1063 | Yes (`SUR_WAGE_TAX_TRAINING`) | `periodTrainingExcludedFromLoon()` + `adjustTaxableBaseForWageTax` | **Live** |
 | Pension 1065 | Yes (`SUR_WAGE_TAX_PENSION_2X_AOV`) | `periodPension2xAovExcludedFromLoon()` + `adjustTaxableBaseForWageTax` | **Live** |
 
 `SurinameWageTaxCalculator` supports `MARGINAL_RATES`, `FLAT_RATE`, and `LEGACY_SERVICE_YEAR_TABLE` kinds.
@@ -757,7 +762,7 @@ Route `/app/platform-country-tax-rules` lists SR rules with structured bracket e
 | **P2** | Benefits-in-kind + exchange rate (§5.1) | Compliance | **Live** (**1049**–**1057**) |
 | ~~**P3**~~ | Product control model — no tax-office approval (§5.2) | Process | **Done** (spec) |
 | **P3b** | Jubilee **1048** → payment-at-once ladder on taxable remainder | Compliance | **Done** (engine retarget) |
-| **P4** | Art. 10 exclusions — cost allowance, transport, training, pension 2×AOV (§5.3) | Compliance | **Partial** (**1058**–**1061**, **1064**–**1065** Live; **1062**–**1063** planned) |
+| **P4** | Art. 10 exclusions — cost allowance, transport, training, pension 2×AOV (§5.3) | Compliance | **Live** (**1058**–**1065**) |
 
 **P2 v1 scope:** company car, housing, board/lodging/meals, exchange-rate exclusion, free utilities — **Live**. **P4 v1 scope:** four remaining §5 exclusion rows above. **Still out of scope:** Art. 10(f) pension withholding exclusion, Belastingdienst approval workflows, evidence document storage.
 
