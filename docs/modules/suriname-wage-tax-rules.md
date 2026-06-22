@@ -222,12 +222,12 @@ Amounts **not** counted as wages. Status in Wage Payroll as of this audit:
 
 | Exclusion | Spec / cap | Engine status |
 |-----------|------------|---------------|
-| Relevant/necessary cost allowances (evidence required) | Actual costs | **Not implemented** |
+| Relevant/necessary cost allowances (evidence required) | Actual costs | **Planned** — P4 §5.3.1 |
 | Pension scheme claims | — | **Not implemented** |
 | Surinamese Accident Regulation claims | — | **Not implemented** |
 | Cash/benefits in kind under wage claim | — | **Not implemented** |
 | Obligatory pension contributions withheld | — | Partial (APF **1043/1044** as deduction, not Art. 10 exclusion) |
-| Employer-arranged home–work transport | Full value | **Not implemented** |
+| Employer-arranged home–work transport | Full value | **Planned** — P4 §5.3.2 |
 | **Child allowance** | SRD **125**/child/month, max **500** (4 children) | **Implemented** — **1008** gross, **1023** exclusion (`SR_CHILD_ALLOWANCE_MONTH`) |
 | **Holiday allowance** | ≤ 1 month wage, max **19 500**/year | **Implemented** — **1006** + `SR_TAX_FREE_VACATION_YEAR` |
 | **Gratuities/bonus** | ≤ 1 month wage, max **19 500**/year | **Implemented** — **1007** + `SR_TAX_FREE_BONUS_YEAR` |
@@ -235,10 +235,10 @@ Amounts **not** counted as wages. Status in Wage Payroll as of this audit:
 | Periodic wage-replacement benefits | — | **Not implemented** |
 | Childbirth/illness/disability cost benefits | — | **Not implemented** |
 | Demise-related benefits | — | **Not implemented** |
-| Employer training (benefits in kind) | — | **Not implemented** |
+| Employer training (benefits in kind) | — | **Planned** — P4 §5.3.3 |
 | Employee goods damage compensation | — | **Not implemented** |
 | Anniversary benefits (jubilee exemption table §4.4) | Tenure-based fractions | **Implemented** — `SurinameJubileeSupport` |
-| Pension payment 2× AOV/year (SRD 4 500/month cap) | SRD 2 250 × 2 | **Not implemented** |
+| Pension payment 2× AOV/year (SRD 4 500/month cap) | SRD 2 250 × 2 | **Planned** — P4 §5.3.4 |
 | Exchange rate compensation | Max SRD **800**/month | **Implemented** — **1055** gross, **1056** exclusion (`SR_EXCHANGE_RATE_COMPENSATION_MONTH`) |
 | **Deductible acquisition costs** | 4%, max SRD **4 800**/year | **Implemented** — **1036** |
 | **Free medical care (valuation)** | 3% of annual money wage, max SRD **200**/year | **Implemented** — **1042** |
@@ -455,6 +455,156 @@ Quality review before closing a pay period is specified in [`pay-periods.md`](./
 
 ---
 
+### 5.3 P4 — Art. 10 exclusions (remaining §5 gaps)
+
+**Status:** Spec complete — **not yet implemented** (plan locked 2026-06-18).
+
+**Objective:** Implement the four Art. 10 exclusion categories deferred from P2 v1: cost allowances, home–work transport, employer training, and pension payments capped at 2× monthly AOV beneficiary amount.
+
+**Legal basis:**
+
+| Item | Wet Loonbelasting |
+|------|-------------------|
+| Cost allowances | Art. 10 lid 1 **e** — kostenvergoedingen (necessary work-related costs; employer attests off-system) |
+| Home–work transport | Art. 10 lid 1 **g** — employer-arranged daily commute transport |
+| Training | Art. 10 lid 3 **d** — costs of occupation-related education/study and related benefits |
+| Pension 2× AOV cap | Art. 10 lid 1 **k** — pension-scheme payouts up to twice the monthly AOV beneficiary amount (annual cap ÷ periods) |
+
+**Product control (P3):** No Belastingdienst approval workflow. Employer activates components and enters amounts; compliance attestation is off-system (same as P2).
+
+**Out of scope P4 v1:** Art. 10(f) obligatory pension **withholding** as wage exclusion (APF **1043/1044** remain deductions only); pre-2024 pension/AOV cap history (seed from **2024-01-01**); document/evidence upload for cost allowances; ministerial Art. 10 lid 3 extensions beyond training row above.
+
+#### Shared P4 conventions
+
+| Topic | v1 rule |
+|-------|---------|
+| **Pattern** | Cash or valued payout line + paired wage-tax **exclusion** display line (mirror **1055** / **1056** and **1008** / **1023**). |
+| **Payout line** | Period `amount` from standing instruction or materialized transaction. |
+| **Exclusion line** | Derived in tax-adjustment tier; subtracted in `adjustTaxableBaseForWageTax` before **1019**. |
+| **LOONBELASTING** | Payout: **INCREASE** full amount. Exclusion: informational; reduces wage-tax base only. |
+| **GROSS / NET** | Payout: **INCREASE** `GROSS`; **ADD_TO_NET** when cash paid. Exclusion lines: no base effect. |
+| **AOV / pension bases** | Payout lines v1: **INCREASE** `AOV` same as **1001** when cash (mirror **1055**). Exclusion lines: no effect. |
+| **Activation** | Standing instruction `active` and/or period transaction amount &gt; 0. |
+| **Evidence** | Not stored in product v1; remarks field on standing instruction optional. |
+
+#### 5.3.1 Cost allowances (Art. 10 e)
+
+| Field | Value |
+|-------|-------|
+| **Law** | Necessary, work-related cost reimbursements — full entered amount excluded from wage tax v1 |
+| **Templates** | **1058** payout — `SUR_COST_ALLOWANCE_PAYOUT`; **1059** exclusion — `SUR_WAGE_TAX_COST_ALLOWANCE` |
+| **`rule_code`** | None (no statutory cap; actual costs) |
+| **Gross formula** | `payout = period transaction amount` |
+| **Exclusion formula** | `excluded = payout` (100% of entered amount) |
+| **Employer input** | Period amount (SRD reimbursed). |
+| **Employee input** | None |
+| **`country_rule_key`** | `SUR_COST_ALLOWANCE_PAYOUT` / `SUR_WAGE_TAX_COST_ALLOWANCE` |
+| **Acceptance (AC-P4-1)** | Payout SRD **425.00** → **1058** = **425.0000**, **1059** = **425.0000**, label loon net change **0** |
+
+#### 5.3.2 Home–work transport (Art. 10 g)
+
+| Field | Value |
+|-------|-------|
+| **Law** | Value of employer-arranged daily commute transport — not wage |
+| **Templates** | **1060** payout — `SUR_COMMUTE_TRANSPORT_PAYOUT`; **1061** exclusion — `SUR_WAGE_TAX_COMMUTE_TRANSPORT` |
+| **`rule_code`** | None v1 (full value excluded; no statutory cap) |
+| **Gross formula** | `payout = period transaction amount` (reimbursement or valued benefit) |
+| **Exclusion formula** | `excluded = payout` |
+| **Employer input** | Period amount. |
+| **Employee input** | None |
+| **`country_rule_key`** | `SUR_COMMUTE_TRANSPORT_PAYOUT` / `SUR_WAGE_TAX_COMMUTE_TRANSPORT` |
+| **Note** | Distinct from **1049** company car (taxable benefit-in-kind valuation). Commute transport is a full exclusion, not a %-of-list-price valuation. |
+| **Acceptance (AC-P4-2)** | Payout SRD **1 200.00** → **1060** = **1200.0000**, **1061** = **1200.0000**, label loon net change **0** |
+
+#### 5.3.3 Employer training (Art. 10 lid 3 d)
+
+| Field | Value |
+|-------|-------|
+| **Law** | Costs of occupation-related education/study and related benefits |
+| **Templates** | **1062** payout — `SUR_TRAINING_PAYOUT`; **1063** exclusion — `SUR_WAGE_TAX_TRAINING` |
+| **`rule_code`** | None v1 |
+| **Gross formula** | `payout = period transaction amount` |
+| **Exclusion formula** | `excluded = payout` |
+| **Employer input** | Period amount (course fees, study costs reimbursed, or valued in-kind training). |
+| **Employee input** | None |
+| **`country_rule_key`** | `SUR_TRAINING_PAYOUT` / `SUR_WAGE_TAX_TRAINING` |
+| **Acceptance (AC-P4-3)** | Payout SRD **3 500.00** → **1062** = **3500.0000**, **1063** = **3500.0000**, label loon net change **0** |
+
+#### 5.3.4 Pension scheme payout — 2× AOV cap (Art. 10 k)
+
+| Field | Value |
+|-------|-------|
+| **Law** | Pension-scheme payouts excluded up to **2×** the monthly AOV beneficiary amount |
+| **Templates** | **1064** payout — `SUR_PENSION_SCHEME_PAYOUT`; **1065** exclusion — `SUR_WAGE_TAX_PENSION_2X_AOV` |
+| **`rule_code`** | `SR_PENSION_2X_AOV_MONTH` (references monthly AOV beneficiary amount) |
+| **Supporting rule** | `SR_AOV_BENEFICIARY_MONTH` — monthly AOV payout to beneficiaries (not the 4% premium rule `SR_AOV_PREMIUM_MONTH`) |
+| **Exclusion formula** | `excluded = min(payout, 2 × monthlyAovBeneficiary)` per pay period |
+| **Employer input** | Period pension payout amount (SRD). |
+| **Employee input** | None |
+| **`country_rule_key`** | `SUR_PENSION_SCHEME_PAYOUT` / `SUR_WAGE_TAX_PENSION_2X_AOV` |
+| **Effective dating (FiscLe)** | Seed `SR_AOV_BENEFICIARY_MONTH` + derived cap: |
+
+| Effective from | Monthly AOV beneficiary (SRD) | Monthly exclusion cap (2×) |
+|----------------|------------------------------|----------------------------|
+| 2024-01-01 | 1 750 | 3 500 |
+| 2025-03-01 | 2 250 | 4 500 |
+
+Pre-2024 AOV beneficiary tiers **out of scope** (same policy as pre-2022 exchange rate).
+
+| **Acceptance (AC-P4-4)** | Payout SRD **5 000**, cap SRD **4 500** (Mar 2025+) → **1064** = **5000.0000**, **1065** = **4500.0000**, taxable remainder **500.0000** on label loon |
+| **Acceptance (AC-P4-4b)** | Payout SRD **3 000**, cap SRD **4 500** → **1065** = **3000.0000** (full exclusion) |
+
+#### 5.3.5 Template summary (new codes)
+
+| Code | Name | Type | `country_rule_key` | `rule_code` |
+|------|------|------|-------------------|-------------|
+| **1058** | Cost allowance (payout) | Cash earning | `SUR_COST_ALLOWANCE_PAYOUT` | — |
+| **1059** | Wage tax cost allowance exclusion | Derived informational | `SUR_WAGE_TAX_COST_ALLOWANCE` | — |
+| **1060** | Home–work transport (payout) | Cash earning | `SUR_COMMUTE_TRANSPORT_PAYOUT` | — |
+| **1061** | Wage tax commute transport exclusion | Derived informational | `SUR_WAGE_TAX_COMMUTE_TRANSPORT` | — |
+| **1062** | Training / study (payout) | Cash earning | `SUR_TRAINING_PAYOUT` | — |
+| **1063** | Wage tax training exclusion | Derived informational | `SUR_WAGE_TAX_TRAINING` | — |
+| **1064** | Pension scheme payout | Cash earning | `SUR_PENSION_SCHEME_PAYOUT` | — |
+| **1065** | Wage tax pension 2× AOV exclusion | Derived informational | `SUR_WAGE_TAX_PENSION_2X_AOV` | `SR_PENSION_2X_AOV_MONTH` |
+
+**Reference pattern:** **1055** / **1056** (capped cash + exclusion); **1008** / **1023** (gross + exclusion).
+
+#### 5.3.6 Edge cases (v1)
+
+| Case | Behavior |
+|------|----------|
+| Payout zero / missing | No derived exclusion; no base effect |
+| Full-exclusion rows (1058–1063) | Exclusion = payout; label loon unchanged |
+| Pension payout ≤ cap | **1065** = payout |
+| Pension payout &gt; cap | **1065** = cap; remainder taxable via **1019** |
+| Belastingvrij employee | Exclusions still apply before belastingvrij cap |
+| Component inactive | Omitted from run |
+
+#### 5.3.7 UX (v1)
+
+| Actor | Action |
+|-------|--------|
+| Tenant payroll admin | Add **1058**–**1065** from SR catalog; set standing instructions. |
+| Payroll clerk | Enter period amounts per reimbursement/payout. |
+| Payslip | Show payout + exclusion pairs (like **1055** / **1056**). |
+
+#### 5.3.8 Proposed schema extension (requires PII review)
+
+**None required v1** — amounts on existing `tenant_wage_component_transaction.amount`. Optional future: `tenant_payroll_cost_allowance_evidence` document link (out of scope).
+
+#### 5.3.9 Implementation order (recommended)
+
+| Phase | Deliver | Rationale |
+|-------|---------|-----------|
+| **E** | **1064** / **1065** pension + `SR_AOV_BENEFICIARY_MONTH` + `SR_PENSION_2X_AOV_MONTH` | Only capped row; compliance-critical; dated AOV amounts |
+| **F** | **1058** / **1059** cost allowance | Simplest full-exclusion pair; validates engine extension |
+| **G** | **1060** / **1061** commute transport | Same pattern as F |
+| **H** | **1062** / **1063** training | Same pattern as F |
+
+Each phase: Liquibase templates (+ rules for E) → `SurinameCountryRuleKeys` → algorithms → `adjustTaxableBaseForWageTax` wiring → unit test per AC-P4-* → update §6/§8 to **Live**.
+
+---
+
 ## 6. Engine mapping
 
 | # | Regime | `rule_code` | `country_rule_key` (tax line) | Java handler | Status |
@@ -501,6 +651,11 @@ Quality review before closing a pay period is specified in [`pay-periods.md`](./
 | 14 | Free utilities SRD 275.50 (AC-P2-7) | **1057** = **275.5000** |
 | 15 | Bread meals 20 (AC-P2-5) | **1054** = SRD **30.0000** |
 | 16 | P2 slice: car + housing on golden employee | **1019** increases vs baseline; no double-count with **1042** medical |
+| 17 | Cost allowance SRD 425 (AC-P4-1) | **1058** = **425.0000**; **1059** = **425.0000**; label loon unchanged |
+| 18 | Commute transport SRD 1 200 (AC-P4-2) | **1060** = **1200.0000**; **1061** = **1200.0000** |
+| 19 | Training SRD 3 500 (AC-P4-3) | **1062** = **3500.0000**; **1063** = **3500.0000** |
+| 20 | Pension SRD 5 000, cap 4 500 (AC-P4-4) | **1064** = **5000.0000**; **1065** = **4500.0000**; label +**500.0000** |
+| 21 | Pension SRD 3 000 under cap (AC-P4-4b) | **1065** = **3000.0000** |
 
 ---
 
@@ -587,8 +742,9 @@ Route `/app/platform-country-tax-rules` lists SR rules with structured bracket e
 | **P2** | Benefits-in-kind + exchange rate (§5.1) | Compliance | **Live** (**1049**–**1057**) |
 | ~~**P3**~~ | Product control model — no tax-office approval (§5.2) | Process | **Done** (spec) |
 | **P3b** | Jubilee **1048** → payment-at-once ladder on taxable remainder | Compliance | **Done** (engine retarget) |
+| **P4** | Art. 10 exclusions — cost allowance, transport, training, pension 2×AOV (§5.3) | Compliance | **Planned** (**1058**–**1065**) |
 
-**P2 v1 scope (moves from gap → planned):** company car, housing, board/lodging/meals, exchange-rate exclusion, free utilities. **Still out of scope:** transport, pension 2×AOV, training, evidence-required allowances, Belastingdienst approval workflows.
+**P2 v1 scope:** company car, housing, board/lodging/meals, exchange-rate exclusion, free utilities — **Live**. **P4 v1 scope:** four remaining §5 exclusion rows above. **Still out of scope:** Art. 10(f) pension withholding exclusion, Belastingdienst approval workflows, evidence document storage.
 
 #### 8.6.1 P2 implementation order (recommended)
 
@@ -600,6 +756,15 @@ Route `/app/platform-country-tax-rules` lists SR rules with structured bracket e
 | **D** | **1057** free utilities | Simplest — passthrough amount; no new rule kind required | **Done** |
 
 Each phase: Liquibase templates + rules → `SurinameCountryRuleKeys` → algorithms → derived service → unit test per AC-P2-* row → update §6/§8 status to **Live**.
+
+#### 8.6.2 P4 implementation order (recommended)
+
+| Phase | Deliver | Rationale |
+|-------|---------|-----------|
+| **E** | **1064** / **1065** + AOV beneficiary rules | Capped exclusion; dated FiscLe amounts |
+| **F** | **1058** / **1059** cost allowance | Full-exclusion pair; engine pattern proof |
+| **G** | **1060** / **1061** commute transport | Same as F |
+| **H** | **1062** / **1063** training | Same as F |
 
 ---
 
