@@ -30,6 +30,13 @@ public final class PayrollCalculationTraceDerivedExplanations {
 
 	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
 			BigDecimal listPrice, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout) {
+		return factorForCountryRule(countryRuleKey, payrollInputQuantity, listPrice, exchangeRatePayout,
+				pensionSchemePayout, null);
+	}
+
+	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
+			BigDecimal listPrice, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout,
+			BigDecimal costAllowancePayout) {
 		if (SurinameCountryRuleKeys.CHILD_ALLOWANCE.equals(countryRuleKey)
 				|| SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE.equals(countryRuleKey)) {
 			return payrollInputQuantity != null
@@ -50,6 +57,13 @@ public final class PayrollCalculationTraceDerivedExplanations {
 					? "Pension scheme payout (component 1064 period amount): "
 							+ PayrollCalculationTraceSupport.formatMoney(pensionSchemePayout)
 					: "Pension scheme payout from period transaction amount (component 1064).";
+		}
+		if (SurinameCountryRuleKeys.COST_ALLOWANCE_PAYOUT.equals(countryRuleKey)
+				|| SurinameCountryRuleKeys.WAGE_TAX_COST_ALLOWANCE.equals(countryRuleKey)) {
+			return costAllowancePayout != null
+					? "Cost allowance payout (component 1058 period amount): "
+							+ PayrollCalculationTraceSupport.formatMoney(costAllowancePayout)
+					: "Cost allowance payout from period transaction amount (component 1058).";
 		}
 		if (SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT.equals(countryRuleKey)) {
 			return listPrice != null
@@ -136,6 +150,10 @@ public final class PayrollCalculationTraceDerivedExplanations {
 				"Art. 10 exchange-rate compensation excluded from wages (capped) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_PENSION_2X_AOV ->
 				"Art. 10(k) pension payout excluded from wages (2× AOV cap) → " + formatted;
+			case SurinameCountryRuleKeys.WAGE_TAX_COST_ALLOWANCE ->
+				"Art. 10(e) cost allowance excluded from wages (full amount) → " + formatted;
+			case SurinameCountryRuleKeys.COST_ALLOWANCE_PAYOUT ->
+				"Cost allowance cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT ->
 				"Pension scheme cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_VACATION_ALLOWANCE -> PayrollCalculationTraceSupport.appendBreakdown(

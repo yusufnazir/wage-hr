@@ -164,6 +164,22 @@ class SurinameCountryRuleAlgorithmsTest {
 	}
 
 	@Test
+	void periodCostAllowanceExcludedFromLoonAcP4_1() {
+		assertThat(algorithms.periodCostAllowancePayout(new BigDecimal("425.0000")))
+				.isEqualByComparingTo("425.0000");
+		assertThat(algorithms.periodCostAllowanceExcludedFromLoon(new BigDecimal("425.0000")))
+				.isEqualByComparingTo("425.0000");
+	}
+
+	@Test
+	void adjustTaxableBaseSubtractsCostAllowanceExclusionFromLoon() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_TAX_FREE_WAGE_TAX_YEAR,
+				TAX_FREE_JSON);
+		assertThat(algorithms.adjustTaxableBaseForWageTax(new BigDecimal("10000.0000"), snapshot, false, 12, null, null,
+				null, null, new BigDecimal("425.0000"))).isEqualByComparingTo("9575.0000");
+	}
+
+	@Test
 	void periodPension2xAovExcludedFromLoonAcP4_4() throws Exception {
 		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
 				SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, """

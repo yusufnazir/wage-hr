@@ -165,6 +165,16 @@ public class SurinameCountryRuleAlgorithms {
 		return monthlyAov.multiply(BigDecimal.valueOf(2), MC).setScale(SCALE, ROUND);
 	}
 
+	/** Gross cost allowance paid (component 1058): full period payout from employer-entered amount. */
+	public BigDecimal periodCostAllowancePayout(BigDecimal payout) {
+		return periodPensionSchemePayout(payout);
+	}
+
+	/** Art. 10(e): full entered cost allowance amount excluded from wages (no statutory cap v1). */
+	public BigDecimal periodCostAllowanceExcludedFromLoon(BigDecimal payout) {
+		return periodCostAllowancePayout(payout);
+	}
+
 	public BigDecimal periodTaxFreeAllowance(SurinameTaxRulesSnapshot snapshot, boolean applyTaxExempt,
 			int periodsPerYear) {
 		if (!applyTaxExempt || snapshot == null) {
@@ -360,27 +370,34 @@ public class SurinameCountryRuleAlgorithms {
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear) {
 		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear, null, null,
-				null, null);
+				null, null, null);
 	}
 
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount) {
 		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
-				childAllowanceChildrenCount, null, null, null);
+				childAllowanceChildrenCount, null, null, null, null);
 	}
 
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
 			BigDecimal deductibleWageBase) {
 		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
-				childAllowanceChildrenCount, deductibleWageBase, null, null);
+				childAllowanceChildrenCount, deductibleWageBase, null, null, null);
 	}
 
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
 			BigDecimal deductibleWageBase, BigDecimal exchangeRatePayout) {
 		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
-				childAllowanceChildrenCount, deductibleWageBase, exchangeRatePayout, null);
+				childAllowanceChildrenCount, deductibleWageBase, exchangeRatePayout, null, null);
+	}
+
+	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
+			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
+			BigDecimal deductibleWageBase, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout) {
+		return adjustTaxableBaseForWageTax(loonbelastingPeriodBase, snapshot, applyTaxExempt, periodsPerYear,
+				childAllowanceChildrenCount, deductibleWageBase, exchangeRatePayout, pensionSchemePayout, null);
 	}
 
 	/**
@@ -390,10 +407,13 @@ public class SurinameCountryRuleAlgorithms {
 	 *                           exclusion.
 	 * @param pensionSchemePayout when non-null, Art. 10(k) pension exclusion (1065) is subtracted after exchange
 	 *                            exclusion.
+	 * @param costAllowancePayout when non-null, Art. 10(e) cost allowance exclusion (1059) is subtracted after pension
+	 *                            exclusion.
 	 */
 	public BigDecimal adjustTaxableBaseForWageTax(BigDecimal loonbelastingPeriodBase, SurinameTaxRulesSnapshot snapshot,
 			boolean applyTaxExempt, int periodsPerYear, BigDecimal childAllowanceChildrenCount,
-			BigDecimal deductibleWageBase, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout) {
+			BigDecimal deductibleWageBase, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout,
+			BigDecimal costAllowancePayout) {
 		if (loonbelastingPeriodBase == null || loonbelastingPeriodBase.signum() <= 0) {
 			return zero();
 		}
@@ -408,6 +428,9 @@ public class SurinameCountryRuleAlgorithms {
 		}
 		if (pensionSchemePayout != null && pensionSchemePayout.signum() > 0) {
 			taxable = taxable.subtract(periodPension2xAovExcludedFromLoon(snapshot, pensionSchemePayout));
+		}
+		if (costAllowancePayout != null && costAllowancePayout.signum() > 0) {
+			taxable = taxable.subtract(periodCostAllowanceExcludedFromLoon(costAllowancePayout));
 		}
 		if (applyTaxExempt) {
 			taxable = taxable.subtract(periodTaxExemptApplied(snapshot, true, periodsPerYear, loonbelastingPeriodBase));
