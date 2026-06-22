@@ -8,7 +8,7 @@
     <!-- P4 Phase E: pension scheme payout (1064) + wage-tax 2× AOV exclusion (1065). -->
     <changeSet id="data-m50-sr-p4-aov-beneficiary-tax-rules-1" author="wagepayroll">
         <insert tableName="platform_country_tax_rule">
-            <column name="id" value="52000000-0000-0000-0000-000000000013"/>
+            <column name="id" value="52000000-0000-0000-0000-000000000017"/>
             <column name="country_code" value="SR"/>
             <column name="rule_code" value="SR_AOV_BENEFICIARY_MONTH"/>
             <column name="name" value="Suriname AOV beneficiary monthly amount (2024–Feb 2025)"/>
@@ -20,7 +20,7 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_country_tax_rule">
-            <column name="id" value="52000000-0000-0000-0000-000000000014"/>
+            <column name="id" value="52000000-0000-0000-0000-000000000018"/>
             <column name="country_code" value="SR"/>
             <column name="rule_code" value="SR_AOV_BENEFICIARY_MONTH"/>
             <column name="name" value="Suriname AOV beneficiary monthly amount (from Mar 2025)"/>
@@ -35,7 +35,7 @@
 
     <changeSet id="data-m50-sr-p4-pension-templates-1" author="wagepayroll">
         <insert tableName="platform_wage_component_template">
-            <column name="id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="country_code" value="SR"/>
             <column name="template_code" value="1064"/>
             <column name="name" value="Pension scheme payout"/>
@@ -57,7 +57,7 @@
             <column name="country_rule_key" value="SUR_PENSION_SCHEME_PAYOUT"/>
         </insert>
         <insert tableName="platform_wage_component_template">
-            <column name="id" value="51000000-0000-0000-0000-000000000035"/>
+            <column name="id" value="51000000-0000-0000-0000-00000000003f"/>
             <column name="country_code" value="SR"/>
             <column name="template_code" value="1065"/>
             <column name="name" value="Wage tax pension 2× AOV exclusion"/>
@@ -77,15 +77,15 @@
             <column name="apply_in_payroll" valueBoolean="true"/>
             <column name="recurrence" value="RECURRENT"/>
             <column name="country_rule_key" value="SUR_WAGE_TAX_PENSION_2X_AOV"/>
-            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000014"/>
+            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000018"/>
         </insert>
     </changeSet>
 
     <changeSet id="data-m50-sr-p4-pension-base-effects-1" author="wagepayroll">
         <!-- 1064: cash earning — GROSS + LOONBELASTING + AOV increase (mirror 1055) -->
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000060"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000090"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000001"/>
             <column name="effect_direction" value="INCREASE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -96,8 +96,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000061"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000091"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000003"/>
             <column name="effect_direction" value="INCREASE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -108,8 +108,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000062"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000092"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000004"/>
             <column name="effect_direction" value="INCREASE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -120,8 +120,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000063"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000093"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000002"/>
             <column name="effect_direction" value="IGNORE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -132,8 +132,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000064"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000094"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000005"/>
             <column name="effect_direction" value="IGNORE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -144,8 +144,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000065"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000095"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000006"/>
             <column name="effect_direction" value="IGNORE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -156,8 +156,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000066"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000096"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000007"/>
             <column name="effect_direction" value="IGNORE"/>
             <column name="effect_calculation_type" value="FULL"/>
@@ -168,8 +168,8 @@
             <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="platform_wage_component_template_base_effect">
-            <column name="id" value="54001000-0000-0000-0000-000000000067"/>
-            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-000000000034"/>
+            <column name="id" value="54001000-0000-0000-0000-000000000097"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003e"/>
             <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000008"/>
             <column name="effect_direction" value="IGNORE"/>
             <column name="effect_calculation_type" value="FULL"/>

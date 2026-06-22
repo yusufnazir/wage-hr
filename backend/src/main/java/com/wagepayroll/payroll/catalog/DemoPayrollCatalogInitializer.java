@@ -14,6 +14,7 @@ import com.wagepayroll.wagecomponent.WageComponentProcessingOrderService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Order(100)
+@ConditionalOnProperty(name = "wagepayroll.demo.auto-initialize-catalog", havingValue = "true", matchIfMissing = true)
 public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(DemoPayrollCatalogInitializer.class);
@@ -40,6 +42,8 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 	private final TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService;
 	private final DemoVariablePayStandingSeeder variablePayStandingSeeder;
 	private final DemoP2BenefitStandingSeeder p2BenefitStandingSeeder;
+	private final DemoP4ExclusionStandingSeeder p4ExclusionStandingSeeder;
+	private final DemoSurinameArt10CatalogProvisioner art10CatalogProvisioner;
 	private final WageComponentProcessingOrderService processingOrderService;
 
 	public DemoPayrollCatalogInitializer(TenantCompanyRepository companyRepository,
@@ -48,6 +52,8 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 			TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService,
 			DemoVariablePayStandingSeeder variablePayStandingSeeder,
 			DemoP2BenefitStandingSeeder p2BenefitStandingSeeder,
+			DemoP4ExclusionStandingSeeder p4ExclusionStandingSeeder,
+			DemoSurinameArt10CatalogProvisioner art10CatalogProvisioner,
 			WageComponentProcessingOrderService processingOrderService) {
 		this.companyRepository = companyRepository;
 		this.employeeRepository = employeeRepository;
@@ -56,6 +62,8 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 		this.payrollStandingProvisionService = payrollStandingProvisionService;
 		this.variablePayStandingSeeder = variablePayStandingSeeder;
 		this.p2BenefitStandingSeeder = p2BenefitStandingSeeder;
+		this.p4ExclusionStandingSeeder = p4ExclusionStandingSeeder;
+		this.art10CatalogProvisioner = art10CatalogProvisioner;
 		this.processingOrderService = processingOrderService;
 	}
 
@@ -72,6 +80,11 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 		log.info("Provisioning demo company catalogs for {}", DEMO_COMPANY_ID);
 		bankTemplateCopyService.copyForCompany(c.getTenantId(), c.getId(), c.getPayrollCountry());
 		provisioningService.provisionForCompany(c.getTenantId(), c.getId(), c.getPayrollCountry());
+		int art10Provisioned = art10CatalogProvisioner.provisionForCompany(c.getTenantId(), c.getId(),
+				c.getPayrollCountry());
+		if (art10Provisioned > 0) {
+			log.info("Provisioned {} Art. 10 P2/P4 wage component template(s) on demo company", art10Provisioned);
+		}
 		int templatesAligned = processingOrderService.realignPlatformTemplatesForCountry(c.getPayrollCountry());
 		int componentsAligned = processingOrderService.realignTenantCompany(DEMO_TENANT_ID, DEMO_COMPANY_ID);
 		if (templatesAligned > 0 || componentsAligned > 0) {
@@ -98,6 +111,12 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 		int p2BenefitsSeeded = p2BenefitStandingSeeder.seedAndreP2Benefits(DEMO_TENANT_ID, DEMO_COMPANY_ID, employees);
 		if (p2BenefitsSeeded > 0) {
 			log.info("Seeded {} demo P2 Art. 10 benefit standing row(s) for Andre (1049–1054, 1057)", p2BenefitsSeeded);
+		}
+		int p4ExclusionsSeeded = p4ExclusionStandingSeeder.seedAndreP4Exclusions(DEMO_TENANT_ID, DEMO_COMPANY_ID,
+				employees);
+		if (p4ExclusionsSeeded > 0) {
+			log.info("Seeded {} demo P4 Art. 10 exclusion payout standing row(s) for Andre (1058, 1060, 1062, 1064)",
+					p4ExclusionsSeeded);
 		}
 	}
 }

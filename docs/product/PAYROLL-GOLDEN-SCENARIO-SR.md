@@ -1,7 +1,7 @@
 # Golden payroll scenario — Suriname (demo tenant)
 
 **Status:** Approved for engine regression (Phase 1–2); compliance bracket sign-off still pending  
-**Version:** 0.2  
+**Version:** 0.3  
 **Roadmap:** Phase 0 deliverable; regression anchor for Phases 2–5  
 **Related:** [`PAYROLL-ENGINE-ROADMAP.md`](./PAYROLL-ENGINE-ROADMAP.md), [`../modules/payroll-engine-country.md`](../modules/payroll-engine-country.md)
 
@@ -59,6 +59,19 @@ Single **end-to-end** reference case: known tenant data in → expected calculat
 | `1057` | 275.50 | 275.5000 |
 
 See [`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §5.1 AC-P2-*.
+
+### P4 Art. 10 exclusions (Andre demo seed)
+
+`DemoP4ExclusionStandingSeeder` (app startup) adds payout standing inputs for Andre only:
+
+| Code | Standing input | Expected derived amount |
+|------|----------------|-------------------------|
+| `1058` | 425.00 | **1058** = **425.0000**, **1059** = **425.0000** |
+| `1060` | 1 200.00 | **1060** = **1200.0000**, **1061** = **1200.0000** |
+| `1062` | 3 500.00 | **1062** = **3500.0000**, **1063** = **3500.0000** |
+| `1064` | 3 000.00 | **1064** = **3000.0000**, **1065** = **3000.0000** (full exclusion under cap) |
+
+P4 pairs are **label-loon neutral** per AC-P4-* (unit-tested in `SurinameTenantDerivedComponentServiceTest`). `SurinamePayrollGoldenIT.feb2026AndrePreviewIncludesP4ExclusionPairs` asserts payout/exclusion line amounts for the demo seed inputs.
 
 ### Tax rule in force (`SR_WAGE_TAX_DEFAULT`)
 
@@ -193,3 +206,4 @@ Content-Type: application/json
 |---------|------|--------|
 | 0.1 | 2026-05-17 | Initial provisional scenario from demo seed |
 | 0.2 | 2026-05-17 | Policy A annualization approved; Phase 2 expected amounts |
+| 0.3 | 2026-06-18 | P4 demo seed + `SurinamePayrollGoldenIT` P2/P4 derived-line regression |

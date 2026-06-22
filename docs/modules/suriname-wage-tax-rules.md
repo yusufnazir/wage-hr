@@ -745,7 +745,8 @@ Audit performed against seeds, templates, engine paths, and tests. **No code cha
 | Overtime rule effective dating | `SurinameCountryRuleProviderIT` | Rule present from 2025-07-01; absent before (by design) |
 | Special remuneration splits | `SurinameSpecialRemunerationSupportTest` | Exempt caps, overtime sum |
 | Free medical / P2 benefits | `SurinameCountryRuleAlgorithmsTest`, `SurinameTenantDerivedComponentServiceTest` | **1042**; **1049**/**1050** (AC-P2-1/2); **1051**–**1054** (AC-P2-3/3b/4/5); **1055**/**1056** (AC-P2-6); **1057** (AC-P2-7) |
-| End-to-end payroll | `SurinamePayrollGoldenIT` | 1020, 1021, 1023, 1025, 1005; **not** 1024, 1010 |
+| End-to-end payroll | `SurinamePayrollGoldenIT` | Baseline Feb 2026 Andre; **`feb2026AndrePreviewIncludesP2DerivedLines`**; **`feb2026AndrePreviewIncludesP4ExclusionPairs`** |
+| Statutory contributor | `SurinameStatutoryContributorTest` | Belastingvrij example (658); wage-tax / AOV opt-outs; P4 **1058** / **1062** exclusions reduce wage tax; pension **1064** 2×AOV cap; vacation **1006** AOV base; golden AOV 258.5; empty when tax snapshot missing |
 | Lump sum / jubilee | `SurinameWageTaxCalculatorTest`, `SurinameTenantDerivedComponentServiceTest`, `SurinameJubileeSupportTest` | **1024** ladder; **1048** jubilee (25-year + 20-year payment-at-once remainder) |
 | Payment-at-once ladder | `SurinameWageTaxCalculatorTest` | SRD 50 000 → SRD 3 300 |
 
