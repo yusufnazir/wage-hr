@@ -147,13 +147,18 @@ public class SurinameTenantDerivedComponentService {
 				.map(TenantWageComponentEntity::getId)
 				.findFirst()
 				.orElse(null);
+		UUID commuteTransportPayoutComponentId = derivedComponents.stream()
+				.filter(c -> SurinameCountryRuleKeys.COMMUTE_TRANSPORT_PAYOUT.equals(c.getCountryRuleKey()))
+				.map(TenantWageComponentEntity::getId)
+				.findFirst()
+				.orElse(null);
 
 		applyTier(context, derivedComponents, byKey, workingBases, compensationByEmployee, referenceMonthWageByEmployee,
 				snapshot, periods, calendarYear, wageTaxRule, aovRule, overtimeTaxRule, paymentsAtOnceTaxRule,
 				jubileeTaxRule, apfRule, fvoRule, SurinameCountryRuleKeys.GROSS_EARNING_DERIVED_KEYS, null,
 				quantityByEmployeeAndComponent, amountByEmployeeAndComponent, childAllowanceComponentId,
 				exchangeRateCompensationComponentId, pensionSchemePayoutComponentId, costAllowancePayoutComponentId,
-				serviceYearsByEmployee, state);
+				commuteTransportPayoutComponentId, serviceYearsByEmployee, state);
 
 		workingBases = reaccumulateBases(context, byKey);
 
@@ -161,7 +166,8 @@ public class SurinameTenantDerivedComponentService {
 				snapshot, periods, calendarYear, wageTaxRule, aovRule, overtimeTaxRule, paymentsAtOnceTaxRule,
 				jubileeTaxRule, apfRule, fvoRule, SurinameCountryRuleKeys.PENSION_AND_FVO_DERIVED_KEYS, null,
 				quantityByEmployeeAndComponent, amountByEmployeeAndComponent, childAllowanceComponentId,
-				exchangeRateCompensationComponentId, pensionSchemePayoutComponentId, costAllowancePayoutComponentId, serviceYearsByEmployee, state);
+				exchangeRateCompensationComponentId, pensionSchemePayoutComponentId, costAllowancePayoutComponentId,
+				commuteTransportPayoutComponentId, serviceYearsByEmployee, state);
 
 		workingBases = reaccumulateBases(context, byKey);
 		Map<UUID, SurinameSpecialRemunerationSupport.Amounts> specialByEmployee = SurinameSpecialRemunerationSupport
@@ -173,14 +179,14 @@ public class SurinameTenantDerivedComponentService {
 				jubileeTaxRule, apfRule, fvoRule, SurinameCountryRuleKeys.TAX_ADJUSTMENT_DERIVED_KEYS, specialByEmployee,
 				quantityByEmployeeAndComponent, amountByEmployeeAndComponent, childAllowanceComponentId,
 				exchangeRateCompensationComponentId, pensionSchemePayoutComponentId, costAllowancePayoutComponentId,
-				serviceYearsByEmployee, state);
+				commuteTransportPayoutComponentId, serviceYearsByEmployee, state);
 
 		applyTier(context, derivedComponents, byKey, workingBases, compensationByEmployee, referenceMonthWageByEmployee,
 				snapshot, periods, calendarYear, wageTaxRule, aovRule, overtimeTaxRule, paymentsAtOnceTaxRule,
 				jubileeTaxRule, apfRule, fvoRule, SurinameCountryRuleKeys.SPECIAL_REMUNERATION_DERIVED_KEYS,
 				specialByEmployee, quantityByEmployeeAndComponent, amountByEmployeeAndComponent, childAllowanceComponentId,
 				exchangeRateCompensationComponentId, pensionSchemePayoutComponentId, costAllowancePayoutComponentId,
-				serviceYearsByEmployee, state);
+				commuteTransportPayoutComponentId, serviceYearsByEmployee, state);
 
 		return List.copyOf(byKey.values());
 	}
@@ -196,7 +202,8 @@ public class SurinameTenantDerivedComponentService {
 			Map<UUID, Map<UUID, BigDecimal>> quantityByEmployeeAndComponent,
 			Map<UUID, Map<UUID, BigDecimal>> amountByEmployeeAndComponent, UUID childAllowanceComponentId,
 			UUID exchangeRateCompensationComponentId, UUID pensionSchemePayoutComponentId,
-			UUID costAllowancePayoutComponentId, Map<UUID, Integer> serviceYearsByEmployee, PayrollRunState state) {
+			UUID costAllowancePayoutComponentId, UUID commuteTransportPayoutComponentId,
+			Map<UUID, Integer> serviceYearsByEmployee, PayrollRunState state) {
 		List<TenantWageComponentEntity> tierComponents = derivedComponents.stream()
 				.filter(c -> tierKeys.contains(c.getCountryRuleKey())).toList();
 		if (tierComponents.isEmpty()) {
@@ -235,16 +242,18 @@ public class SurinameTenantDerivedComponentService {
 						pensionSchemePayoutComponentId);
 				BigDecimal costAllowancePayout = resolvePeriodPayoutAmount(amountsForEmployee,
 						costAllowancePayoutComponentId);
+				BigDecimal commuteTransportPayout = resolvePeriodPayoutAmount(amountsForEmployee,
+						commuteTransportPayoutComponentId);
 				BigDecimal amount = resolveAmount(comp.getCountryRuleKey(), loonbelasting, gross, snapshot,
 						applyTaxExempt, applyTaxes, applyAov, periods, special, wageTaxRule, aovRule,
 						overtimeTaxRule, paymentsAtOnceTaxRule, jubileeTaxRule, apfRule, fvoRule, calendarYear,
 						childrenCount, referenceMonthWageByEmployee.get(employeeId), listPrice, exchangeRatePayout,
-						pensionSchemePayout, costAllowancePayout);
+						pensionSchemePayout, costAllowancePayout, commuteTransportPayout);
 				if (state != null) {
 					state.calculationTrace().addTenantComponent("DERIVED", employeeId, comp, childrenCount, listPrice,
 							PayrollCalculationTraceDerivedExplanations.factorForCountryRule(comp.getCountryRuleKey(),
 									childrenCount, listPrice, exchangeRatePayout, pensionSchemePayout,
-									costAllowancePayout),
+									costAllowancePayout, commuteTransportPayout),
 							amount,
 							PayrollCalculationTraceDerivedExplanations.amountForCountryRule(comp.getCountryRuleKey(),
 									loonbelasting, gross, special, childrenCount, amount, contributionsByBase),
@@ -333,7 +342,8 @@ public class SurinameTenantDerivedComponentService {
 			ResolvedSurinameTaxRule paymentsAtOnceTaxRule, ResolvedSurinameTaxRule jubileeTaxRule,
 			ResolvedSurinameTaxRule apfRule, ResolvedSurinameTaxRule fvoRule, int calendarYear,
 			BigDecimal payrollInputQuantity, BigDecimal referenceMonthWage, BigDecimal listPrice,
-			BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout, BigDecimal costAllowancePayout) {
+			BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout, BigDecimal costAllowancePayout,
+			BigDecimal commuteTransportPayout) {
 		return switch (countryRuleKey) {
 			case SurinameCountryRuleKeys.CHILD_ALLOWANCE ->
 				algorithms.periodChildAllowanceGrossAmount(snapshot, payrollInputQuantity);
@@ -343,6 +353,8 @@ public class SurinameTenantDerivedComponentService {
 				algorithms.periodPensionSchemePayout(pensionSchemePayout);
 			case SurinameCountryRuleKeys.COST_ALLOWANCE_PAYOUT ->
 				algorithms.periodCostAllowancePayout(costAllowancePayout);
+			case SurinameCountryRuleKeys.COMMUTE_TRANSPORT_PAYOUT ->
+				algorithms.periodCommuteTransportPayout(commuteTransportPayout);
 			case SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE ->
 				algorithms.periodChildAllowanceExcludedFromLoon(snapshot, payrollInputQuantity);
 			case SurinameCountryRuleKeys.WAGE_TAX_EXCHANGE_RATE ->
@@ -351,6 +363,8 @@ public class SurinameTenantDerivedComponentService {
 				algorithms.periodPension2xAovExcludedFromLoon(snapshot, pensionSchemePayout);
 			case SurinameCountryRuleKeys.WAGE_TAX_COST_ALLOWANCE ->
 				algorithms.periodCostAllowanceExcludedFromLoon(costAllowancePayout);
+			case SurinameCountryRuleKeys.WAGE_TAX_COMMUTE_TRANSPORT ->
+				algorithms.periodCommuteTransportExcludedFromLoon(commuteTransportPayout);
 			case SurinameCountryRuleKeys.TAXABLE_INCOME -> algorithms.taxableIncomeAmount(loonbelasting);
 			case SurinameCountryRuleKeys.TAX_FREE_WAGE_TAX -> algorithms.periodTaxExemptApplied(snapshot, applyTaxExempt,
 					periods, loonbelasting);

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- P4 Phase G: home–work commute transport payout (1060) + wage-tax exclusion (1061). -->
+    <changeSet id="data-m52-sr-p4-commute-transport-templates-1" author="wagepayroll">
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1060"/>
+            <column name="name" value="Home–work transport (payout)"/>
+            <column name="description" value="Art. 10(g) employer-arranged daily commute transport (employer-entered period amount)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"EARNING","category":"ALLOWANCE","netEffect":"ADD_TO_NET","calculationMethod":"FIXED_AMOUNT","phase":"GROSS","processingOrder":1140,"taxableWageTax":true,"taxableSocialSecurity":true,"taxablePension":true,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="1140"/>
+            <column name="phase_hint" value="GROSS"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000004"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="duplicable" valueBoolean="true"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_COMMUTE_TRANSPORT_PAYOUT"/>
+        </insert>
+        <insert tableName="platform_wage_component_template">
+            <column name="id" value="51000000-0000-0000-0000-00000000003b"/>
+            <column name="country_code" value="SR"/>
+            <column name="template_code" value="1061"/>
+            <column name="name" value="Wage tax commute transport exclusion"/>
+            <column name="description" value="Art. 10(g) commute transport excluded from wages (full entered amount)."/>
+            <column name="definition_defaults_json"
+                    value='{"componentType":"DEDUCTION","category":"TAX","netEffect":"SUBTRACT_FROM_NET","calculationMethod":"PERCENTAGE","percentageBase":"GROSS_TAXABLE","phase":"TAX","processingOrder":5320,"taxableWageTax":false,"taxableSocialSecurity":false,"taxablePension":false,"taxableVacationReserve":false,"roundingStrategy":"HALF_UP"}'/>
+            <column name="processing_order_hint" valueNumeric="5320"/>
+            <column name="phase_hint" value="TAX"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+            <column name="debit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000022"/>
+            <column name="credit_platform_ledger_template_id" value="53100000-0000-0000-0000-000000000019"/>
+            <column name="duplicable" valueBoolean="false"/>
+            <column name="print_on_payslip" valueBoolean="true"/>
+            <column name="auxiliary" valueBoolean="false"/>
+            <column name="apply_in_payroll" valueBoolean="true"/>
+            <column name="recurrence" value="RECURRENT"/>
+            <column name="country_rule_key" value="SUR_WAGE_TAX_COMMUTE_TRANSPORT"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="data-m52-sr-p4-commute-transport-base-effects-1" author="wagepayroll">
+        <!-- 1060: cash earning — GROSS + LOONBELASTING + AOV increase (mirror 1058) -->
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007b"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000001"/>
+            <column name="effect_direction" value="INCREASE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="100"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007c"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000003"/>
+            <column name="effect_direction" value="INCREASE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="100"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007d"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000004"/>
+            <column name="effect_direction" value="INCREASE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="100"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007e"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000002"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-00000000007f"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000005"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000080"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000006"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000081"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000007"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="platform_wage_component_template_base_effect">
+            <column name="id" value="54001000-0000-0000-0000-000000000082"/>
+            <column name="platform_wage_component_template_id" value="51000000-0000-0000-0000-00000000003a"/>
+            <column name="platform_payroll_base_id" value="52001000-0000-0000-0000-000000000008"/>
+            <column name="effect_direction" value="IGNORE"/>
+            <column name="effect_calculation_type" value="FULL"/>
+            <column name="effect_value" valueNumeric="0"/>
+            <column name="priority" valueNumeric="0"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

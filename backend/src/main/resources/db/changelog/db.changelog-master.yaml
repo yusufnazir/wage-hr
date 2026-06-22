@@ -283,3 +283,6 @@ databaseChangeLog:
   - include:
       file: dml/data-m51-sr-p4-cost-allowance-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: dml/data-m52-sr-p4-commute-transport-1.xml
+      relativeToChangelogFile: true

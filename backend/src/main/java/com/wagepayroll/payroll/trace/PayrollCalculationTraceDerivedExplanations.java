@@ -37,6 +37,13 @@ public final class PayrollCalculationTraceDerivedExplanations {
 	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
 			BigDecimal listPrice, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout,
 			BigDecimal costAllowancePayout) {
+		return factorForCountryRule(countryRuleKey, payrollInputQuantity, listPrice, exchangeRatePayout,
+				pensionSchemePayout, costAllowancePayout, null);
+	}
+
+	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
+			BigDecimal listPrice, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout,
+			BigDecimal costAllowancePayout, BigDecimal commuteTransportPayout) {
 		if (SurinameCountryRuleKeys.CHILD_ALLOWANCE.equals(countryRuleKey)
 				|| SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE.equals(countryRuleKey)) {
 			return payrollInputQuantity != null
@@ -64,6 +71,13 @@ public final class PayrollCalculationTraceDerivedExplanations {
 					? "Cost allowance payout (component 1058 period amount): "
 							+ PayrollCalculationTraceSupport.formatMoney(costAllowancePayout)
 					: "Cost allowance payout from period transaction amount (component 1058).";
+		}
+		if (SurinameCountryRuleKeys.COMMUTE_TRANSPORT_PAYOUT.equals(countryRuleKey)
+				|| SurinameCountryRuleKeys.WAGE_TAX_COMMUTE_TRANSPORT.equals(countryRuleKey)) {
+			return commuteTransportPayout != null
+					? "Commute transport payout (component 1060 period amount): "
+							+ PayrollCalculationTraceSupport.formatMoney(commuteTransportPayout)
+					: "Commute transport payout from period transaction amount (component 1060).";
 		}
 		if (SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT.equals(countryRuleKey)) {
 			return listPrice != null
@@ -152,8 +166,12 @@ public final class PayrollCalculationTraceDerivedExplanations {
 				"Art. 10(k) pension payout excluded from wages (2× AOV cap) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_COST_ALLOWANCE ->
 				"Art. 10(e) cost allowance excluded from wages (full amount) → " + formatted;
+			case SurinameCountryRuleKeys.WAGE_TAX_COMMUTE_TRANSPORT ->
+				"Art. 10(g) commute transport excluded from wages (full amount) → " + formatted;
 			case SurinameCountryRuleKeys.COST_ALLOWANCE_PAYOUT ->
 				"Cost allowance cash payout (full period amount) → " + formatted;
+			case SurinameCountryRuleKeys.COMMUTE_TRANSPORT_PAYOUT ->
+				"Commute transport cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT ->
 				"Pension scheme cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_VACATION_ALLOWANCE -> PayrollCalculationTraceSupport.appendBreakdown(

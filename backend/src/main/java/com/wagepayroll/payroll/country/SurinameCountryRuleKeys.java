@@ -44,6 +44,9 @@ public final class SurinameCountryRuleKeys {
 	/** Gross cost allowance payout (1058); amount from period transaction. */
 	public static final String COST_ALLOWANCE_PAYOUT = "SUR_COST_ALLOWANCE_PAYOUT";
 
+	/** Gross home–work commute transport payout (1060); amount from period transaction. */
+	public static final String COMMUTE_TRANSPORT_PAYOUT = "SUR_COMMUTE_TRANSPORT_PAYOUT";
+
 	public static final String RULE_TAX_FREE_WAGE_TAX_YEAR = "SR_TAX_FREE_WAGE_TAX_YEAR";
 
 	/** Per-child monthly rates and caps (tariff type 11). */
@@ -147,7 +150,7 @@ public final class SurinameCountryRuleKeys {
 
 	/** Gross earnings driven by standing quantity or period amount (e.g. 1008, 1055, 1064) — before APF/FVO. */
 	public static final Set<String> GROSS_EARNING_DERIVED_KEYS = Set.of(CHILD_ALLOWANCE, EXCHANGE_RATE_COMPENSATION,
-			PENSION_SCHEME_PAYOUT, COST_ALLOWANCE_PAYOUT);
+			PENSION_SCHEME_PAYOUT, COST_ALLOWANCE_PAYOUT, COMMUTE_TRANSPORT_PAYOUT);
 
 	/** APF + FVO — evaluated before tax-adjustment lines (1004–1005). */
 	public static final Set<String> PENSION_AND_FVO_DERIVED_KEYS = Set.of(APF_EMPLOYEE, APF_EMPLOYER, FVO_EMPLOYEE,
@@ -165,10 +168,13 @@ public final class SurinameCountryRuleKeys {
 	/** Art. 10(e) cost allowance exclusion amount on wage-tax line (1059). */
 	public static final String WAGE_TAX_COST_ALLOWANCE = "SUR_WAGE_TAX_COST_ALLOWANCE";
 
+	/** Art. 10(g) commute transport exclusion amount on wage-tax line (1061). */
+	public static final String WAGE_TAX_COMMUTE_TRANSPORT = "SUR_WAGE_TAX_COMMUTE_TRANSPORT";
+
 	public static final Set<String> TAX_ADJUSTMENT_DERIVED_KEYS = Set.of(TAXABLE_INCOME, TAX_FREE_WAGE_TAX,
 			ACQUISITION_COSTS, FREE_MEDICAL_BENEFIT, COMPANY_CAR_BENEFIT, FREE_HOUSING_BENEFIT, BOARD_LODGING_BENEFIT,
 			BOARD_BENEFIT, HOT_MEAL_BENEFIT, BREAD_MEAL_BENEFIT, FREE_UTILITIES_BENEFIT, WAGE_TAX_CHILD_ALLOWANCE,
-			WAGE_TAX_EXCHANGE_RATE, WAGE_TAX_PENSION_2X_AOV, WAGE_TAX_COST_ALLOWANCE);
+			WAGE_TAX_EXCHANGE_RATE, WAGE_TAX_PENSION_2X_AOV, WAGE_TAX_COST_ALLOWANCE, WAGE_TAX_COMMUTE_TRANSPORT);
 
 	public static final Set<String> SPECIAL_REMUNERATION_DERIVED_KEYS = Set.of(WAGE_TAX_VACATION_ALLOWANCE,
 			WAGE_TAX_BONUS, WAGE_TAX_EXTRA_EARNINGS, AOV_VACATION_ALLOWANCE, AOV_BONUS, AOV_EXTRA_EARNINGS,

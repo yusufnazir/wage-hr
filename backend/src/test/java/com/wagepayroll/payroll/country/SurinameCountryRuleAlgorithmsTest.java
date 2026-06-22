@@ -164,6 +164,22 @@ class SurinameCountryRuleAlgorithmsTest {
 	}
 
 	@Test
+	void periodCommuteTransportExcludedFromLoonAcP4_2() {
+		assertThat(algorithms.periodCommuteTransportPayout(new BigDecimal("1200.0000")))
+				.isEqualByComparingTo("1200.0000");
+		assertThat(algorithms.periodCommuteTransportExcludedFromLoon(new BigDecimal("1200.0000")))
+				.isEqualByComparingTo("1200.0000");
+	}
+
+	@Test
+	void adjustTaxableBaseSubtractsCommuteTransportExclusionFromLoon() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(SurinameCountryRuleKeys.RULE_TAX_FREE_WAGE_TAX_YEAR,
+				TAX_FREE_JSON);
+		assertThat(algorithms.adjustTaxableBaseForWageTax(new BigDecimal("10000.0000"), snapshot, false, 12, null, null,
+				null, null, null, new BigDecimal("1200.0000"))).isEqualByComparingTo("8800.0000");
+	}
+
+	@Test
 	void periodCostAllowanceExcludedFromLoonAcP4_1() {
 		assertThat(algorithms.periodCostAllowancePayout(new BigDecimal("425.0000")))
 				.isEqualByComparingTo("425.0000");
