@@ -39,6 +39,7 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 	private final DefaultPayrollCatalogProvisioningService provisioningService;
 	private final TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService;
 	private final DemoVariablePayStandingSeeder variablePayStandingSeeder;
+	private final DemoP2BenefitStandingSeeder p2BenefitStandingSeeder;
 	private final WageComponentProcessingOrderService processingOrderService;
 
 	public DemoPayrollCatalogInitializer(TenantCompanyRepository companyRepository,
@@ -46,6 +47,7 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 			DefaultPayrollCatalogProvisioningService provisioningService,
 			TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService,
 			DemoVariablePayStandingSeeder variablePayStandingSeeder,
+			DemoP2BenefitStandingSeeder p2BenefitStandingSeeder,
 			WageComponentProcessingOrderService processingOrderService) {
 		this.companyRepository = companyRepository;
 		this.employeeRepository = employeeRepository;
@@ -53,6 +55,7 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 		this.provisioningService = provisioningService;
 		this.payrollStandingProvisionService = payrollStandingProvisionService;
 		this.variablePayStandingSeeder = variablePayStandingSeeder;
+		this.p2BenefitStandingSeeder = p2BenefitStandingSeeder;
 		this.processingOrderService = processingOrderService;
 	}
 
@@ -91,6 +94,10 @@ public class DemoPayrollCatalogInitializer implements ApplicationRunner {
 			log.info(
 					"Seeded {} demo payroll-input standing row(s) (vacation, bonus, child allowance, lump sum, extra earnings, overtime)",
 					variablePaySeeded);
+		}
+		int p2BenefitsSeeded = p2BenefitStandingSeeder.seedAndreP2Benefits(DEMO_TENANT_ID, DEMO_COMPANY_ID, employees);
+		if (p2BenefitsSeeded > 0) {
+			log.info("Seeded {} demo P2 Art. 10 benefit standing row(s) for Andre (1049–1054, 1057)", p2BenefitsSeeded);
 		}
 	}
 }

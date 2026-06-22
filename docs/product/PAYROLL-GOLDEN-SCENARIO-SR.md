@@ -44,6 +44,22 @@ Single **end-to-end** reference case: known tenant data in → expected calculat
 
 **Assumption for golden run:** Period transactions materialized so component `1001` evaluates to **18 500.00** for February 2026 (no overtime, no manual overrides). If materialize uses compensation rate instead of default, document actual engine input in Phase 1 IT setup.
 
+### P2 Art. 10 benefits (Andre demo seed)
+
+`DemoP2BenefitStandingSeeder` (app startup) adds standing inputs for Andre only:
+
+| Code | Standing input | Expected derived amount (with wage SRD 6 000/mo) |
+|------|----------------|---------------------------------------------------|
+| `1049` | List price 180 000 | 300.0000 |
+| `1050` | Active | 450.0000 |
+| `1051` | 15 days | 150.0000 |
+| `1052` | 20 days | 100.0000 |
+| `1053` | 22 meals | 110.0000 |
+| `1054` | 20 meals | 30.0000 |
+| `1057` | 275.50 | 275.5000 |
+
+See [`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §5.1 AC-P2-*.
+
 ### Tax rule in force (`SR_WAGE_TAX_DEFAULT`)
 
 From `data-m25-platform-country-tax-rules-sr-1.xml` (effective `2024-01-01`):

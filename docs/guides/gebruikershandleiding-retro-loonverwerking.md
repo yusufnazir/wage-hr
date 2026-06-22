@@ -59,6 +59,7 @@ Minimaal nodig, afhankelijk van wat u doet:
 |------------|----------------|
 | Betaalperioden bekijken | `PAY_PERIOD_VIEW` |
 | Betaalperiode-status wijzigen (bijv. Open) | `PAY_PERIOD_MANAGE` |
+| Supervisor-goedkeuring vóór sluiten | `PAY_PERIOD_SUPERVISOR_APPROVE` |
 | Loonruns aanmaken / definitief maken | `PAY_PERIOD_RUN_MANAGE` |
 | Doorlopende instructies beheren | `EMPLOYEE_PAYROLL_STANDING_MANAGE` |
 | Bedragen berekenen (preview) | `PAY_PERIOD_VIEW` |
@@ -118,7 +119,12 @@ Vraag uw beheerder om de juiste rol als een stap niet beschikbaar is.
 └────────────────────────────┬────────────────────────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 6. Resultaten controleren; bedrijfskalender terug naar actueel  │
+│ 6. (Optioneel) Periode sluiten: supervisor-goedkeuring,       │
+│    daarna status Gesloten                                       │
+└────────────────────────────┬────────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 7. Resultaten controleren; bedrijfskalender terug naar actueel  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -251,7 +257,22 @@ Als de preview klopt en de periode definitief verwerkt moet worden:
 
 ---
 
-### Stap 5.7 — Bedrijfskalender terugzetten
+### Stap 5.7 — Betaalperiode sluiten (optioneel)
+
+Als de gecorrigeerde periode na de retro-run **definitief afgesloten** moet worden:
+
+1. Ga naar **Betaalperioden** en open de betreffende periode.
+2. Controleer dat er een **definitieve FINAL-loonrun** is (zelfde vereiste als bij normale maandverwerking).
+3. Laat een supervisor **Supervisor goedkeuren** uitvoeren (vereist `PAY_PERIOD_SUPERVISOR_APPROVE`).
+4. Wijzig daarna de status naar **Gesloten** (`PAY_PERIOD_MANAGE`).
+
+Zonder supervisor-goedkeuring weigert het systeem het sluiten met de melding dat supervisor-goedkeuring ontbreekt.
+
+Spec: [`pay-periods.md`](../modules/pay-periods.md) §4.3
+
+---
+
+### Stap 5.8 — Bedrijfskalender terugzetten
 
 Na de retro-verwerking:
 
@@ -368,7 +389,7 @@ Ja, mits u de status wijzigt naar **Open** en u de rechten heeft. Zonder Open-st
 
 ### Wordt de bedrijfskalender automatisch verder gezet na een retro-run?
 
-Bij een **normale** definitieve loonrun op de actieve periode kan de kalender **automatisch doorschuiven** naar de volgende periode. Na een **retro** op een eerdere periode: controleer altijd of de kalender nog klopt en zet deze zo nodig handmatig terug (§5.7).
+Bij een **normale** definitieve loonrun op de actieve periode kan de kalender **automatisch doorschuiven** naar de volgende periode. Na een **retro** op een eerdere periode: controleer altijd of de kalender nog klopt en zet deze zo nodig handmatig terug (§5.8).
 
 ### Verlies ik historische gegevens bij een retro?
 
@@ -387,6 +408,7 @@ Eerdere resultaatregels en runs blijven in principe bestaan. Een nieuwe run voeg
 |----------|-------------------|-----------|
 | “Geen betaalperiode gevonden” | Kalender niet ingevuld of perioden niet gegenereerd | Bedrijf kalender invullen; *Betaalperioden regenereren* |
 | “Periode is gesloten” | Status `CLOSED` | Status wijzigen naar `OPEN` |
+| “Supervisor-goedkeuring vereist” | Sluiten zonder supervisor-goedkeuring | Eerst **Supervisor goedkeuren** op de betaalperiode (`PAY_PERIOD_SUPERVISOR_APPROVE`), daarna status **Gesloten** |
 | Bedrag verandert niet na aanpassing instructie | Handmatige overschrijving op transactie | Overschrijving wissen of transactie handmatig bijwerken |
 | Verkeerd bedrag ondanks juiste instructie | Oude transactie niet ververst | Opnieuw *Periodetransacties genereren* |
 | Geen knop *Bedragen berekenen* | Ontbrekend recht | `PAY_PERIOD_VIEW` / standing manage vragen |
