@@ -3,6 +3,7 @@ package com.wagepayroll.api;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 class TenantPayPeriodFinalizeApiIT {
 
 	private static final String ADMIN_USER_ID = "30000000-0000-0000-0000-000000000001";
+	private static final String VIEWER_USER_ID = "30000000-0000-0000-0000-000000000002";
 	private static final String DEMO_HOST = "demo.lvh.me";
 	private static final String ANDRE = "5fa00000-0000-4000-8000-000000000006";
 	private static final String FEB_2026_PERIOD = "5fa00000-0000-4000-8000-00000000000c";
@@ -69,6 +71,71 @@ class TenantPayPeriodFinalizeApiIT {
 						.content("{\"employeeIds\":[\"" + ANDRE + "\"]}")
 						.with(user(ADMIN_USER_ID)).with(csrf()))
 				.andExpect(status().isConflict());
+	}
+
+	private String createFinalRunAndFinalize() throws Exception {
+		MvcResult run = mockMvc.perform(post("/api/v1/pay-period-runs")
+						.header("Host", DEMO_HOST)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"payPeriodId\":\"" + FEB_2026_PERIOD + "\",\"runType\":\"FINAL\"}")
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isCreated())
+				.andReturn();
+		String runId = JsonPath.read(run.getResponse().getContentAsString(), "$.data.item.id");
+		mockMvc.perform(post("/api/v1/pay-periods/{periodId}/runs/{runId}/finalize", FEB_2026_PERIOD, runId)
+						.header("Host", DEMO_HOST)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"employeeIds\":[\"" + ANDRE + "\"],\"materializeInputs\":false}")
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isOk());
+		return runId;
+	}
+
+	@Test
+	void closeWithoutSupervisorApprovalReturnsConflict() throws Exception {
+		createFinalRunAndFinalize();
+		mockMvc.perform(patch("/api/v1/pay-periods/{id}/status", FEB_2026_PERIOD)
+						.header("Host", DEMO_HOST)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"status\":\"CLOSED\"}")
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.detail").value("SUPERVISOR_APPROVAL_REQUIRED"));
+	}
+
+	@Test
+	void supervisorApproveWithoutFinalRunReturnsConflict() throws Exception {
+		mockMvc.perform(post("/api/v1/pay-periods/{id}/supervisor-approve", FEB_2026_PERIOD)
+						.header("Host", DEMO_HOST)
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.detail").value("FINAL_RUN_REQUIRED"));
+	}
+
+	@Test
+	void supervisorApproveForbiddenWithoutPrivilege() throws Exception {
+		mockMvc.perform(post("/api/v1/pay-periods/{id}/supervisor-approve", FEB_2026_PERIOD)
+						.header("Host", DEMO_HOST)
+						.with(user(VIEWER_USER_ID)).with(csrf()))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void supervisorApproveThenCloseSucceeds() throws Exception {
+		createFinalRunAndFinalize();
+		mockMvc.perform(post("/api/v1/pay-periods/{id}/supervisor-approve", FEB_2026_PERIOD)
+						.header("Host", DEMO_HOST)
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.item.supervisorApprovedAt").isNotEmpty())
+				.andExpect(jsonPath("$.data.item.supervisorApprovedByUserId").value(ADMIN_USER_ID));
+		mockMvc.perform(patch("/api/v1/pay-periods/{id}/status", FEB_2026_PERIOD)
+						.header("Host", DEMO_HOST)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"status\":\"CLOSED\"}")
+						.with(user(ADMIN_USER_ID)).with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.item.status").value("CLOSED"));
 	}
 
 	@Test

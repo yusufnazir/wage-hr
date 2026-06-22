@@ -465,7 +465,8 @@
             <column name="apply_in_payroll" valueBoolean="true"/>
             <column name="recurrence" value="RECURRENT"/>
             <column name="country_rule_key" value="SUR_WAGE_TAX_LUMP_SUM"/>
-            <column name="platform_country_tax_rule_id" value="52000000-0000-0000-0000-000000000002"/>
+            <!-- FK set by data-m43 after SR_PAYMENTS_AT_ONCE_YEAR rule exists (m25) -->
+            <column name="platform_country_tax_rule_id" valueComputed="NULL"/>
         </insert>
         <insert tableName="platform_wage_component_template">
             <column name="id" value="51000000-0000-0000-0000-000000000019"/>

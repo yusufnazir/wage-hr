@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m49-priv-pay-period-supervisor-approve-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataUpsertPrivilege">
+            <param name="id" value="20000000-0000-0000-0000-000000000041"/>
+            <param name="code" value="PAY_PERIOD_SUPERVISOR_APPROVE"/>
+            <param name="description" value="Supervisor sign-off before closing a pay period"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m49-grant-rp-demo-admin-pay-period-supervisor-approve-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRolePrivilege">
+            <param name="tenantId" value="10000000-0000-0000-0000-000000000001"/>
+            <param name="roleId" value="40000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeId" value="20000000-0000-0000-0000-000000000041"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m49-rtp-admin-pay-period-supervisor-approve-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="PAY_PERIOD_SUPERVISOR_APPROVE"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

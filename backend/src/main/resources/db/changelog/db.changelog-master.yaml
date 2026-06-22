@@ -227,18 +227,6 @@ databaseChangeLog:
       file: dml/data-m44-sr-jubilee-wage-tax-template-1.xml
       relativeToChangelogFile: true
   - include:
-      file: dml/data-m45-sr-p2-company-car-housing-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m46-sr-p2-exchange-rate-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m47-sr-p2-board-meals-1.xml
-      relativeToChangelogFile: true
-  - include:
-      file: dml/data-m48-sr-p2-free-utilities-1.xml
-      relativeToChangelogFile: true
-  - include:
       file: dml/data-m30-demo-default-catalog-provision-1.xml
       relativeToChangelogFile: true
   - include:
@@ -249,6 +237,18 @@ databaseChangeLog:
       relativeToChangelogFile: true
   - include:
       file: dml/data-m34-migrate-wage-component-base-effects-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m45-sr-p2-company-car-housing-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m46-sr-p2-exchange-rate-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m47-sr-p2-board-meals-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m48-sr-p2-free-utilities-1.xml
       relativeToChangelogFile: true
   - include:
       file: ddl/schema-m35-component-dependencies.xml
@@ -270,4 +270,10 @@ databaseChangeLog:
       relativeToChangelogFile: true
   - include:
       file: dml/data-m39-suriname-template-country-algorithms-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/alter-table-tenant-pay-period-supervisor-approval.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m49-pay-period-supervisor-approval-1.xml
       relativeToChangelogFile: true

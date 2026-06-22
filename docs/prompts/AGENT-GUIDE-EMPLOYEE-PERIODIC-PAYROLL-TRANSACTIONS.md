@@ -42,11 +42,11 @@ Use this as **domain context** when writing acceptance criteria and data needs. 
 **Themes the product must respect over time**
 
 - **Broad definition of wages**; many items are **excluded**, **capped**, or **valued** specifically (child allowances, holiday/bonus caps by **calendar year**, pension-related amounts, exchange-rate compensation caps, anniversary exemptions, benefits in kind such as company car / housing / meals, etc.).
-- **Different withholding treatments** for **normal monthly wages**, **lump-sum benefits**, and **overtime**, with **effective dates** (e.g. overtime bracket changes **2025-07-01** per the summary). Some lump-sum regimes require **Inspector approval** — treat as **configuration + evidence / workflow** in the spec, not as silently automatic.
+- **Different withholding treatments** for **normal monthly wages**, **lump-sum benefits**, and **overtime**, with **effective dates** (e.g. overtime bracket changes **2025-07-01** per the summary). Payroll operators **activate or deactivate** standing instructions and period transactions; the engine applies the matching tax when gross amounts are present ([`suriname-wage-tax-rules.md`](../modules/suriname-wage-tax-rules.md) §5.2). **Supervisor sign-off** before closing a pay period is separate ([`pay-periods.md`](../modules/pay-periods.md) §4.3).
 - **Deductible costs** (e.g. 4% of wages with an annual cap; cap stepped up from 2024 in the summary) affect how **taxable net wage** is framed. Decide in the module doc whether v1 stores this on the **employee**, derives it in the **engine only**, or attaches it to **inputs**.
 - **Employer obligations** (e.g. filing/payment timing) may be **out of scope** for v1; if so, state explicitly under Scope / non-goals.
 
-**Employee master data gap (today):** [`payroll-org-structure.md`](../modules/payroll-org-structure.md) defines `tenant_employee` without dependents, tax credits, or inspector approvals. Periodic payroll features may **depend on new employee fields** or **separate entities** — call that out in **Open Questions** and **Data Model**.
+**Employee master data gap (today):** [`payroll-org-structure.md`](../modules/payroll-org-structure.md) defines `tenant_employee` without dependents or tax credits. Periodic payroll features may **depend on new employee fields** or **separate entities** — call that out in **Open Questions** and **Data Model**.
 
 ---
 
@@ -115,7 +115,7 @@ When drafting [`../modules/employee-periodic-payroll-transactions.md`](../module
 | **7. Business rules** | Effective dating; overlap of two standing instructions for same component; proration for mid-period hires; currency (company currency only?). |
 | **8. Edge cases** | Backdated changes; deleted employee; component deactivated; concurrent runs; duplicate materialization. |
 | **9. UX** | List/filter by employee and period; warnings when caps may apply (informational). |
-| **10. Open questions** | Inspector approval storage; dependents on employee vs elsewhere; overtime source. |
+| **10. Open questions** | Dependents on employee vs elsewhere; overtime source; supervisor role assignment per tenant. |
 | **11. Acceptance criteria** | Testable API/UI rules; engine integration level for v1. |
 
 ---
@@ -132,7 +132,7 @@ When drafting [`../modules/employee-periodic-payroll-transactions.md`](../module
 ## 9. Explicit non-goals (unless the human expands scope)
 
 - Replacing the full **wage tax engine** or encoding every historical bracket in v1 UI.
-- Full **Inspector approval** workflow and document vault.
+- Full **Belastingdienst / tax-office approval** workflow and document vault (product uses operator active/inactive + supervisor period close instead).
 - **Multi-employer** annual income tax reconciliation for employees with multiple jobs.
 - **Legal filing** automation and calendar (may be a later milestone).
 

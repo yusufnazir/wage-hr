@@ -8,7 +8,7 @@
     <!-- Jubilee wage tax line 1048 (SUR_WAGE_TAX_JUBILEE) → SR_SERVICE_YEARS_17A_MONTH. -->
     <changeSet id="data-m44-sr-jubilee-wage-tax-template-1" author="wagepayroll">
         <insert tableName="platform_wage_component_template">
-            <column name="id" value="51000000-0000-0000-0000-00000000001c"/>
+            <column name="id" value="51000000-0000-0000-0000-000000000039"/>
             <column name="country_code" value="SR"/>
             <column name="template_code" value="1048"/>
             <column name="name" value="Wage tax jubilee"/>

@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,12 +17,16 @@ import com.wagepayroll.api.dto.TenantPayPeriodRunCreateRequest;
 import com.wagepayroll.api.dto.TenantPayPeriodRunItemDto;
 import com.wagepayroll.api.dto.TenantPayPeriodStatusPatchRequest;
 import com.wagepayroll.api.dto.TenantPayPeriodUpsertRequest;
+import com.wagepayroll.audit.AuditActionCodes;
+import com.wagepayroll.audit.AuditResourceTypes;
+import com.wagepayroll.audit.AuditService;
 import com.wagepayroll.domain.org.TenantCompanyEntity;
 import com.wagepayroll.domain.org.TenantCompanyRepository;
 import com.wagepayroll.domain.org.TenantPayPeriodEntity;
 import com.wagepayroll.domain.org.TenantPayPeriodRepository;
 import com.wagepayroll.domain.org.TenantPayPeriodRunEntity;
 import com.wagepayroll.domain.org.TenantPayPeriodRunRepository;
+import com.wagepayroll.domain.wagecomponent.TenantPayrollResultLineRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -43,13 +48,19 @@ public class TenantPayPeriodService {
 	private final TenantPayPeriodRepository payPeriodRepository;
 	private final TenantPayPeriodRunRepository runRepository;
 	private final TenantCompanyRepository companyRepository;
+	private final TenantPayrollResultLineRepository resultLineRepository;
+	private final AuditService auditService;
 
 	public TenantPayPeriodService(TenantPayPeriodRepository payPeriodRepository,
 			TenantPayPeriodRunRepository runRepository,
-			TenantCompanyRepository companyRepository) {
+			TenantCompanyRepository companyRepository,
+			TenantPayrollResultLineRepository resultLineRepository,
+			AuditService auditService) {
 		this.payPeriodRepository = payPeriodRepository;
 		this.runRepository = runRepository;
 		this.companyRepository = companyRepository;
+		this.resultLineRepository = resultLineRepository;
+		this.auditService = auditService;
 	}
 
 	@Transactional(readOnly = true)
@@ -131,9 +142,58 @@ public class TenantPayPeriodService {
 			throw badRequest("status is required");
 		}
 		TenantPayPeriodEntity entity = requirePayPeriod(tenantId, id);
-		entity.setStatus(normalizeStatus(request.status()));
+		String newStatus = normalizeStatus(request.status());
+		if ("CLOSED".equals(newStatus)) {
+			requireSupervisorApproved(entity);
+			requireFinalizedFinalRun(tenantId, id);
+		}
+		entity.setStatus(newStatus);
 		entity.setUpdatedAt(Instant.now());
-		return toDto(saveWithConflict(entity));
+		TenantPayPeriodEntity saved = saveWithConflict(entity);
+		if ("CLOSED".equals(newStatus)) {
+			advanceCompanyCalendarAfterPeriodClosed(tenantId, saved.getId());
+		}
+		return toDto(saved);
+	}
+
+	@Transactional
+	public TenantPayPeriodItemDto supervisorApprove(UUID tenantId, UUID id, UUID actorUserId, String correlationId) {
+		TenantPayPeriodEntity entity = requirePayPeriod(tenantId, id);
+		if ("CLOSED".equals(entity.getStatus())) {
+			throw conflict("PAY_PERIOD_ALREADY_CLOSED");
+		}
+		requireFinalizedFinalRun(tenantId, id);
+		if (entity.getSupervisorApprovedAt() == null) {
+			entity.setSupervisorApprovedAt(Instant.now());
+			entity.setSupervisorApprovedByUserId(actorUserId);
+			entity.setUpdatedAt(Instant.now());
+			entity = saveWithConflict(entity);
+			auditService.append(tenantId, actorUserId, AuditActionCodes.PAY_PERIOD_SUPERVISOR_APPROVED,
+					AuditResourceTypes.TENANT_PAY_PERIOD, id.toString(), correlationId, Map.of());
+		}
+		return toDto(entity);
+	}
+
+	private void requireSupervisorApproved(TenantPayPeriodEntity entity) {
+		if (entity.getSupervisorApprovedAt() == null) {
+			throw conflict("SUPERVISOR_APPROVAL_REQUIRED");
+		}
+	}
+
+	private void requireFinalizedFinalRun(UUID tenantId, UUID payPeriodId) {
+		if (!hasFinalizedFinalRun(tenantId, payPeriodId)) {
+			throw conflict("FINAL_RUN_REQUIRED");
+		}
+	}
+
+	private boolean hasFinalizedFinalRun(UUID tenantId, UUID payPeriodId) {
+		for (TenantPayPeriodRunEntity run : runRepository.findByTenantIdAndPayPeriodIdAndRunType(tenantId, payPeriodId,
+				"FINAL")) {
+			if (resultLineRepository.existsByTenantIdAndPayPeriodRunId(tenantId, run.getId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Transactional(readOnly = true)
@@ -285,6 +345,8 @@ public class TenantPayPeriodService {
 				e.getStartDate() != null ? e.getStartDate().toString() : null,
 				e.getEndDate() != null ? e.getEndDate().toString() : null,
 				e.getStatus(),
+				e.getSupervisorApprovedAt(),
+				e.getSupervisorApprovedByUserId(),
 				e.getCreatedAt(),
 				e.getUpdatedAt());
 	}
@@ -309,25 +371,20 @@ public class TenantPayPeriodService {
 	}
 
 	/**
-	 * After a successful FINAL payroll run: close the pay period and advance the company calendar when the
-	 * finalized period matches {@code currentYear}/{@code currentPeriod}.
+	 * After a pay period is closed following supervisor approval: advance the company calendar when the
+	 * closed period matches {@code currentYear}/{@code currentPeriod}.
 	 */
 	@Transactional
-	public CompanyCalendarAdvanceResultDto advanceCompanyCalendarAfterFinalize(UUID tenantId, UUID payPeriodId,
-			String runType) {
-		if (runType == null || !"FINAL".equalsIgnoreCase(runType.trim())) {
+	public CompanyCalendarAdvanceResultDto advanceCompanyCalendarAfterPeriodClosed(UUID tenantId, UUID payPeriodId) {
+		TenantPayPeriodEntity period = requirePayPeriod(tenantId, payPeriodId);
+		if (!"CLOSED".equals(period.getStatus())) {
 			return new CompanyCalendarAdvanceResultDto(false, null, null, null, null, null);
 		}
-		TenantPayPeriodEntity period = requirePayPeriod(tenantId, payPeriodId);
 		TenantCompanyEntity company = companyRepository.findByIdAndTenantId(period.getCompanyId(), tenantId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
 
 		Integer prevYear = company.getCurrentYear();
 		Integer prevPeriod = company.getCurrentPeriod();
-
-		period.setStatus("CLOSED");
-		period.setUpdatedAt(Instant.now());
-		payPeriodRepository.save(period);
 
 		if (prevYear == null || prevPeriod == null || !matchesCompanyPeriod(company, period)) {
 			return new CompanyCalendarAdvanceResultDto(false, prevYear, prevPeriod, company.getCurrentYear(),
@@ -354,6 +411,16 @@ public class TenantPayPeriodService {
 
 		return new CompanyCalendarAdvanceResultDto(true, prevYear, prevPeriod, nextYear, nextPeriod,
 				nextEnd != null ? nextEnd.toString() : null);
+	}
+
+	/**
+	 * @deprecated Finalize no longer closes the period; use {@link #advanceCompanyCalendarAfterPeriodClosed} on close.
+	 */
+	@Deprecated
+	@Transactional
+	public CompanyCalendarAdvanceResultDto advanceCompanyCalendarAfterFinalize(UUID tenantId, UUID payPeriodId,
+			String runType) {
+		return new CompanyCalendarAdvanceResultDto(false, null, null, null, null, null);
 	}
 
 	private boolean matchesCompanyPeriod(TenantCompanyEntity company, TenantPayPeriodEntity period) {

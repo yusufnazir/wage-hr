@@ -13,6 +13,7 @@ import {
   fetchTenantPayPeriods,
   generateTenantCompanyPayPeriods,
   patchTenantPayPeriodStatus,
+  supervisorApproveTenantPayPeriod,
   type TenantCompanyItem,
   type TenantPayPeriodItem,
   type TenantPayPeriodRunItem,
@@ -105,6 +106,7 @@ export default function PayPeriodsPage() {
 
   const canManage = me.privileges.includes("PAY_PERIOD_MANAGE");
   const canManageRuns = me.privileges.includes("PAY_PERIOD_RUN_MANAGE");
+  const canSupervisorApprove = me.privileges.includes("PAY_PERIOD_SUPERVISOR_APPROVE");
 
   // ── list state ──
   const [load, setLoad] = useState<LoadState>("loading");
@@ -137,6 +139,9 @@ export default function PayPeriodsPage() {
   const [runType, setRunType] = useState("INTERIM");
   const [runFormBusy, setRunFormBusy] = useState(false);
   const [runFormErr, setRunFormErr] = useState<string | null>(null);
+  const [supervisorBusyId, setSupervisorBusyId] = useState<string | null>(null);
+
+  const expandedItem = expandedId ? items.find((i) => i.id === expandedId) ?? null : null;
 
   const reload = useCallback(
     async (p = 0, companyId = selectedCompanyId, year = selectedYear, status = selectedStatus) => {
@@ -190,10 +195,25 @@ export default function PayPeriodsPage() {
     try {
       await patchTenantPayPeriodStatus(item.id, newStatus);
       await reload(page);
-    } catch {
-      showToast(t("payPeriods.msg.saveFailed"));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t("payPeriods.msg.saveFailed");
+      showToast(msg.includes("SUPERVISOR_APPROVAL") ? t("payPeriods.msg.supervisorRequired") : msg);
     } finally {
       setStatusBusyId(null);
+    }
+  }
+
+  async function handleSupervisorApprove(payPeriodId: string) {
+    setSupervisorBusyId(payPeriodId);
+    try {
+      await supervisorApproveTenantPayPeriod(payPeriodId);
+      showToast(t("payPeriods.msg.supervisorApproved"));
+      await reload(page);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t("payPeriods.msg.supervisorApproveFailed");
+      showToast(msg.includes("FINAL_RUN_REQUIRED") ? t("payPeriods.msg.finalRunRequired") : msg);
+    } finally {
+      setSupervisorBusyId(null);
     }
   }
 
@@ -409,7 +429,13 @@ export default function PayPeriodsPage() {
                                 onChange={(e) => void patchStatus(item, e.target.value)}
                               >
                                 {STATUSES.map((s) => (
-                                  <option key={s} value={s}>{t(`payPeriods.status.${s.toLowerCase()}`)}</option>
+                                  <option
+                                    key={s}
+                                    value={s}
+                                    disabled={s === "CLOSED" && !item.supervisorApprovedAt}
+                                  >
+                                    {t(`payPeriods.status.${s.toLowerCase()}`)}
+                                  </option>
                                 ))}
                               </select>
                             )}
@@ -420,16 +446,32 @@ export default function PayPeriodsPage() {
                         <tr key={`${item.id}-runs`}>
                           <td colSpan={7} className="bg-surface-alt px-6 py-3">
                             <div className="space-y-3">
-                              <div className="flex items-center justify-between">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
                                 <span className="text-sm font-medium text-foreground">{t("payPeriodRuns.title")}</span>
-                                {canManageRuns && !runFormOpen && (
-                                  <button
-                                    onClick={() => { setRunFormOpen(true); setRunFormErr(null); }}
-                                    className="rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
-                                  >
-                                    {t("payPeriodRuns.action.newRun")}
-                                  </button>
-                                )}
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {canSupervisorApprove && expandedItem && expandedItem.status !== "CLOSED" && (
+                                    expandedItem.supervisorApprovedAt ? (
+                                      <span className="text-xs text-success">{t("payPeriods.supervisor.approved")}</span>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => void handleSupervisorApprove(expandedItem.id)}
+                                        disabled={supervisorBusyId === expandedItem.id}
+                                        className="rounded border border-border px-2 py-1 text-xs hover:bg-surface-alt disabled:opacity-40"
+                                      >
+                                        {t("payPeriods.action.supervisorApprove")}
+                                      </button>
+                                    )
+                                  )}
+                                  {canManageRuns && !runFormOpen && (
+                                    <button
+                                      onClick={() => { setRunFormOpen(true); setRunFormErr(null); }}
+                                      className="rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                                    >
+                                      {t("payPeriodRuns.action.newRun")}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
 
                               {runFormOpen && canManageRuns && (

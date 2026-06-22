@@ -67,6 +67,8 @@ public final class AuditResourceTypes {
 
 	public static final String TENANT_COMPONENT_ITEM = "TENANT_COMPONENT_ITEM";
 
+	public static final String TENANT_PAY_PERIOD = "TENANT_PAY_PERIOD";
+
 	public static final String TENANT_PAY_PERIOD_RUN = "TENANT_PAY_PERIOD_RUN";
 
 	private AuditResourceTypes() {

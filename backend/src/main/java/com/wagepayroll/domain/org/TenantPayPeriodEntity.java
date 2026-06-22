@@ -33,6 +33,13 @@ public class TenantPayPeriodEntity extends TenantScopedEntity {
 	@Column(name = "status", nullable = false, length = 20)
 	private String status;
 
+	@JdbcTypeCode(SqlTypes.VARCHAR)
+	@Column(name = "supervisor_approved_by_user_id", length = 36)
+	private UUID supervisorApprovedByUserId;
+
+	@Column(name = "supervisor_approved_at")
+	private Instant supervisorApprovedAt;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -77,6 +84,22 @@ public class TenantPayPeriodEntity extends TenantScopedEntity {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public UUID getSupervisorApprovedByUserId() {
+		return supervisorApprovedByUserId;
+	}
+
+	public void setSupervisorApprovedByUserId(UUID supervisorApprovedByUserId) {
+		this.supervisorApprovedByUserId = supervisorApprovedByUserId;
+	}
+
+	public Instant getSupervisorApprovedAt() {
+		return supervisorApprovedAt;
+	}
+
+	public void setSupervisorApprovedAt(Instant supervisorApprovedAt) {
+		this.supervisorApprovedAt = supervisorApprovedAt;
 	}
 
 	public Instant getCreatedAt() {

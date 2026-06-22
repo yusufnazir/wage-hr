@@ -24,6 +24,7 @@ Full-stack verification (backend + web frontend) for pay periods + runs:
 - `GET /api/v1/pay-periods/{id}/runs` — list runs (`PAY_PERIOD_RUN_VIEW`)
 - `POST /api/v1/pay-period-runs` — create run (`PAY_PERIOD_RUN_MANAGE`)
 - `POST /api/v1/companies/{companyId}/pay-periods/generate` — generate (`PAY_PERIOD_MANAGE`)
+- `POST /api/v1/pay-periods/{id}/supervisor-approve` — supervisor sign-off (`PAY_PERIOD_SUPERVISOR_APPROVE`)
 
 ### Automated tests
 - `TenantPayPeriodsIT` covers:
@@ -31,6 +32,11 @@ Full-stack verification (backend + web frontend) for pay periods + runs:
   - Viewer can list but cannot mutate
   - Create pay period + patch status + create run + list runs
   - Generate endpoint returns created count
+- `TenantPayPeriodFinalizeApiIT` covers supervisor approval (AC-PP-S1 … S4):
+  - Close without approval → **409** `SUPERVISOR_APPROVAL_REQUIRED`
+  - Approve without finalized FINAL run → **409** `FINAL_RUN_REQUIRED`
+  - Approve without privilege → **403**
+  - Approve then close → **200**
 
 ## Phase 2 — Web Frontend
 

@@ -4247,6 +4247,8 @@ export type TenantPayPeriodItem = {
   startDate: string;
   endDate: string;
   status: string;
+  supervisorApprovedAt: string | null;
+  supervisorApprovedByUserId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -4482,6 +4484,18 @@ export async function patchTenantPayPeriodStatus(id: string, status: string): Pr
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;
+  return body.data.item;
+}
+
+export async function supervisorApproveTenantPayPeriod(id: string): Promise<TenantPayPeriodItem> {
+  const r = await fetchBff(bffUrl(`/api/v1/pay-periods/${encodeURIComponent(id)}/supervisor-approve`), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
   });
   if (!r.ok) throw new Error(await readFailureMessage(r));
   const body = (await r.json()) as ApiEnvelope<{ item: TenantPayPeriodItem }>;

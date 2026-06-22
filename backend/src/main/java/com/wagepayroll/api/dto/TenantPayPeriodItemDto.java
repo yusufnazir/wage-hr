@@ -10,6 +10,8 @@ public record TenantPayPeriodItemDto(
 		String startDate,
 		String endDate,
 		String status,
+		Instant supervisorApprovedAt,
+		UUID supervisorApprovedByUserId,
 		Instant createdAt,
 		Instant updatedAt) {
 }

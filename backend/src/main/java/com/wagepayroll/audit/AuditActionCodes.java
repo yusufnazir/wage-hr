@@ -183,6 +183,8 @@ public final class AuditActionCodes {
 	/** Tenant admin finalized a pay period run (persisted payroll result lines). */
 	public static final String TENANT_PAYROLL_RUN_FINALIZED = "TENANT_PAYROLL_RUN_FINALIZED";
 
+	public static final String PAY_PERIOD_SUPERVISOR_APPROVED = "PAY_PERIOD_SUPERVISOR_APPROVED";
+
 	public static final String TENANT_PAYROLL_BALANCE_UPDATED = "TENANT_PAYROLL_BALANCE_UPDATED";
 
 	public static final String TENANT_PAYROLL_LEDGER_POSTED = "TENANT_PAYROLL_LEDGER_POSTED";

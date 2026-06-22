@@ -110,6 +110,17 @@ public class TenantPayPeriodController {
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.pay_period.status.updated"));
 	}
 
+	@PostMapping("/pay-periods/{id}/supervisor-approve")
+	@RequiresPrivilege("PAY_PERIOD_SUPERVISOR_APPROVE")
+	public ResponseEntity<ApiResponse<Object>> supervisorApprove(@PathVariable("id") UUID id,
+			HttpServletRequest httpRequest) {
+		UUID tenantId = TenantContext.requireTenantId();
+		UUID actor = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+		TenantPayPeriodItemDto item = service.supervisorApprove(tenantId, id, actor,
+				RequestIdFilter.currentRequestId(httpRequest));
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.pay_period.supervisor_approved"));
+	}
+
 	@GetMapping("/pay-periods/{id}/runs")
 	@RequiresPrivilege("PAY_PERIOD_RUN_VIEW")
 	public ResponseEntity<ApiResponse<Object>> listRuns(@PathVariable("id") UUID id,
