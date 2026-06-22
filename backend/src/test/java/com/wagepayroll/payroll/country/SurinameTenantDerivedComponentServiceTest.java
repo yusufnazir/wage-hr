@@ -356,6 +356,82 @@ class SurinameTenantDerivedComponentServiceTest {
 		});
 	}
 
+	@Test
+	void appliesPensionSchemePayoutAnd2xAovExclusionAcP4_4() throws Exception {
+		UUID pensionComponentId = UUID.randomUUID();
+		UUID pensionTaxComponentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity pensionPayout = component(pensionComponentId, "1064",
+				SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT);
+		TenantWageComponentEntity pensionExclusion = component(pensionTaxComponentId, "1065",
+				SurinameCountryRuleKeys.WAGE_TAX_PENSION_2X_AOV);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(pensionComponentId);
+		txn.setAmount(new BigDecimal("5000.0000"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithAovBeneficiaryRule();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(pensionPayout, pensionExclusion), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1064");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("5000.0000");
+		});
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1065");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("4500.0000");
+		});
+	}
+
+	@Test
+	void appliesPension2xAovFullExclusionAcP4_4b() throws Exception {
+		UUID pensionComponentId = UUID.randomUUID();
+		UUID pensionTaxComponentId = UUID.randomUUID();
+		UUID payPeriodId = UUID.randomUUID();
+		UUID tenantId = UUID.randomUUID();
+		UUID companyId = UUID.randomUUID();
+		TenantWageComponentEntity pensionPayout = component(pensionComponentId, "1064",
+				SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT);
+		TenantWageComponentEntity pensionExclusion = component(pensionTaxComponentId, "1065",
+				SurinameCountryRuleKeys.WAGE_TAX_PENSION_2X_AOV);
+		TenantWageComponentTransactionEntity txn = new TenantWageComponentTransactionEntity();
+		txn.setEmployeeId(EMPLOYEE);
+		txn.setTenantWageComponentId(pensionComponentId);
+		txn.setAmount(new BigDecimal("3000.0000"));
+		Map<UUID, Map<String, BigDecimal>> bases = Map.of(EMPLOYEE,
+				Map.of(SurinameCountryRuleAlgorithms.LOONBELASTING_BASE, new BigDecimal("8000.0000"),
+						SurinameCountryRuleAlgorithms.GROSS_BASE, new BigDecimal("8000.0000")));
+		when(payrollBaseAccumulator.accumulateForEmployees(any(), anyList())).thenReturn(bases);
+		when(payrollBaseAccumulator.accumulateDetailed(any(), anyList()))
+				.thenReturn(PayrollBaseAccumulationResult.of(bases, Map.of()));
+		when(transactionRepository.findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(tenantId, companyId,
+				payPeriodId, List.of(EMPLOYEE))).thenReturn(List.of(txn));
+		SurinameTaxRulesSnapshot snapshot = snapshotWithAovBeneficiaryRule();
+
+		PayrollContext payroll = new PayrollContext(tenantId, companyId, "SR", "SRD", null, payPeriodId,
+				List.of(EMPLOYEE), LocalDate.of(2026, 2, 28));
+		List<EvaluatedComponentAmount> result = service.applyDerivedLines(payroll, countryContext(payroll, snapshot),
+				List.of(pensionPayout, pensionExclusion), List.of(), bases, null);
+
+		assertThat(result).anySatisfy(line -> {
+			assertThat(line.tenantWageComponentCode()).isEqualTo("1065");
+			assertThat(line.evaluatedAmount()).isEqualByComparingTo("3000.0000");
+		});
+	}
+
 	private void assertQuantityBenefit(String templateCode, String countryRuleKey, BigDecimal quantity,
 			String expectedAmount) throws Exception {
 		UUID componentId = UUID.randomUUID();
@@ -414,6 +490,14 @@ class SurinameTenantDerivedComponentServiceTest {
 				null, new ObjectMapper().readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"THRESHOLD_AMOUNT\",\"amount\":800}"));
 		return new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28),
 				Map.of(SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, rule));
+	}
+
+	private static SurinameTaxRulesSnapshot snapshotWithAovBeneficiaryRule() throws Exception {
+		var rule = new ResolvedSurinameTaxRule(UUID.fromString("52000000-0000-0000-0000-000000000014"),
+				SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, "AOV beneficiary", LocalDate.of(2025, 3, 1), null,
+				new ObjectMapper().readTree("{\"v\":2,\"freq\":\"MONTH\",\"kind\":\"THRESHOLD_AMOUNT\",\"amount\":2250}"));
+		return new SurinameTaxRulesSnapshot(LocalDate.of(2026, 2, 28),
+				Map.of(SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, rule));
 	}
 
 	private static TenantWageComponentEntity componentWithDefaultAmount(UUID id, String code, String countryRuleKey,

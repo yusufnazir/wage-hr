@@ -277,3 +277,6 @@ databaseChangeLog:
   - include:
       file: dml/data-m49-pay-period-supervisor-approval-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: dml/data-m50-sr-p4-pension-2x-aov-1.xml
+      relativeToChangelogFile: true

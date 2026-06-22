@@ -238,7 +238,7 @@ Amounts **not** counted as wages. Status in Wage Payroll as of this audit:
 | Employer training (benefits in kind) | — | **Planned** — P4 §5.3.3 |
 | Employee goods damage compensation | — | **Not implemented** |
 | Anniversary benefits (jubilee exemption table §4.4) | Tenure-based fractions | **Implemented** — `SurinameJubileeSupport` |
-| Pension payment 2× AOV/year (SRD 4 500/month cap) | SRD 2 250 × 2 | **Planned** — P4 §5.3.4 |
+| Pension payment 2× AOV/year (SRD 4 500/month cap) | SRD 2 250 × 2 | **Implemented** — **1064** / **1065** (`SR_AOV_BENEFICIARY_MONTH`) |
 | Exchange rate compensation | Max SRD **800**/month | **Implemented** — **1055** gross, **1056** exclusion (`SR_EXCHANGE_RATE_COMPENSATION_MONTH`) |
 | **Deductible acquisition costs** | 4%, max SRD **4 800**/year | **Implemented** — **1036** |
 | **Free medical care (valuation)** | 3% of annual money wage, max SRD **200**/year | **Implemented** — **1042** |
@@ -532,6 +532,8 @@ Quality review before closing a pay period is specified in [`pay-periods.md`](./
 
 #### 5.3.4 Pension scheme payout — 2× AOV cap (Art. 10 k)
 
+**Status:** **Live** (P4 Phase E).
+
 | Field | Value |
 |-------|-------|
 | **Law** | Pension-scheme payouts excluded up to **2×** the monthly AOV beneficiary amount |
@@ -596,7 +598,7 @@ Pre-2024 AOV beneficiary tiers **out of scope** (same policy as pre-2022 exchang
 
 | Phase | Deliver | Rationale |
 |-------|---------|-----------|
-| **E** | **1064** / **1065** pension + `SR_AOV_BENEFICIARY_MONTH` + `SR_PENSION_2X_AOV_MONTH` | Only capped row; compliance-critical; dated AOV amounts |
+| **E** | **1064** / **1065** pension + `SR_AOV_BENEFICIARY_MONTH` + `SR_PENSION_2X_AOV_MONTH` | **Done** |
 | **F** | **1058** / **1059** cost allowance | Simplest full-exclusion pair; validates engine extension |
 | **G** | **1060** / **1061** commute transport | Same pattern as F |
 | **H** | **1062** / **1063** training | Same pattern as F |
@@ -623,6 +625,8 @@ Each phase: Liquibase templates (+ rules for E) → `SurinameCountryRuleKeys` �
 | 11 | Board / lodging / meals | `SR_BOARD_LODGING_DAY`, `SR_BOARD_DAY`, `SR_HOT_MEAL_UNIT`, `SR_BREAD_MEAL_UNIT` | **1051**–**1054** | `SurinameTenantDerivedComponentService` | **Live** |
 | 12 | Exchange rate exclusion | `SR_EXCHANGE_RATE_COMPENSATION_MONTH` | **1055** / **1056** | `SurinameTenantDerivedComponentService` + wage-tax base adjust | **Live** |
 | 13 | Free utilities | — (actual amount) | `SUR_FREE_UTILITIES_BENEFIT` (1057) | `SurinameTenantDerivedComponentService` | **Live** |
+| 14 | Pension scheme payout | — | `SUR_PENSION_SCHEME_PAYOUT` (1064) | `SurinameTenantDerivedComponentService` | **Live** |
+| 15 | Pension 2× AOV exclusion | `SR_AOV_BENEFICIARY_MONTH` | `SUR_WAGE_TAX_PENSION_2X_AOV` (1065) | `SurinameTenantDerivedComponentService` + wage-tax base adjust | **Live** |
 
 **Data storage:** versioned `platform_country_tax_rule.parameters_json` (v2). Seeds: `data-m25-platform-country-tax-rules-sr-1.xml`, `data-m42-sr-child-allowance-tax-rules-1.xml`.  
 **Resolution:** `SurinameTaxRuleResolutionService` as-of pay-period end.  
@@ -742,7 +746,7 @@ Route `/app/platform-country-tax-rules` lists SR rules with structured bracket e
 | **P2** | Benefits-in-kind + exchange rate (§5.1) | Compliance | **Live** (**1049**–**1057**) |
 | ~~**P3**~~ | Product control model — no tax-office approval (§5.2) | Process | **Done** (spec) |
 | **P3b** | Jubilee **1048** → payment-at-once ladder on taxable remainder | Compliance | **Done** (engine retarget) |
-| **P4** | Art. 10 exclusions — cost allowance, transport, training, pension 2×AOV (§5.3) | Compliance | **Planned** (**1058**–**1065**) |
+| **P4** | Art. 10 exclusions — cost allowance, transport, training, pension 2×AOV (§5.3) | Compliance | **Partial** (**1064**–**1065** Live; **1058**–**1063** planned) |
 
 **P2 v1 scope:** company car, housing, board/lodging/meals, exchange-rate exclusion, free utilities — **Live**. **P4 v1 scope:** four remaining §5 exclusion rows above. **Still out of scope:** Art. 10(f) pension withholding exclusion, Belastingdienst approval workflows, evidence document storage.
 
@@ -761,7 +765,7 @@ Each phase: Liquibase templates + rules → `SurinameCountryRuleKeys` → algori
 
 | Phase | Deliver | Rationale |
 |-------|---------|-----------|
-| **E** | **1064** / **1065** + AOV beneficiary rules | Capped exclusion; dated FiscLe amounts |
+| **E** | **1064** / **1065** + AOV beneficiary rules | Capped exclusion; dated FiscLe amounts | **Done** |
 | **F** | **1058** / **1059** cost allowance | Full-exclusion pair; engine pattern proof |
 | **G** | **1060** / **1061** commute transport | Same as F |
 | **H** | **1062** / **1063** training | Same as F |

@@ -111,6 +111,7 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				boolean applyTaxExempt = compensation == null || compensation.isApplyTaxExempt();
 				BigDecimal childAllowanceChildren = childAllowanceChildrenCount(state, employeeId);
 				BigDecimal exchangeRatePayout = exchangeRateCompensationPayout(state, employeeId);
+				BigDecimal pensionSchemePayout = pensionSchemePayout(state, employeeId);
 				BigDecimal labelWage = special.labelPeriodWage();
 				BigDecimal childExclusion = childAllowanceChildren != null && childAllowanceChildren.signum() > 0
 						? countryRuleAlgorithms.periodChildAllowanceExcludedFromLoon(snapshot, childAllowanceChildren)
@@ -119,16 +120,19 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 						? countryRuleAlgorithms.periodExchangeRateCompensationExcludedFromLoon(snapshot,
 								exchangeRatePayout)
 						: BigDecimal.ZERO;
+				BigDecimal pensionExclusion = pensionSchemePayout != null && pensionSchemePayout.signum() > 0
+						? countryRuleAlgorithms.periodPension2xAovExcludedFromLoon(snapshot, pensionSchemePayout)
+						: BigDecimal.ZERO;
 				BigDecimal grossBase = bases.getOrDefault(SurinameCountryRuleAlgorithms.GROSS_BASE, labelWage);
 				BigDecimal taxExemptApplied = applyTaxExempt
 						? countryRuleAlgorithms.periodTaxExemptApplied(snapshot, true, periods, labelWage)
 						: BigDecimal.ZERO;
 				BigDecimal taxableWithoutDeductible = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot,
-						applyTaxExempt, periods, childAllowanceChildren, null, exchangeRatePayout);
+						applyTaxExempt, periods, childAllowanceChildren, null, exchangeRatePayout, pensionSchemePayout);
 				BigDecimal deductibleApplied = countryRuleAlgorithms.periodDeductibleCostsApplied(taxableWithoutDeductible,
 						grossBase, snapshot, periods);
 				BigDecimal taxable = countryRuleAlgorithms.adjustTaxableBaseForWageTax(labelWage, snapshot, applyTaxExempt,
-						periods, childAllowanceChildren, grossBase, exchangeRatePayout);
+						periods, childAllowanceChildren, grossBase, exchangeRatePayout, pensionSchemePayout);
 				BigDecimal tax = wageTaxCalculator.computePeriodTax(wageTaxRule, taxable, periods);
 				Map<String, List<PayrollBaseContribution>> contributionsByBase = state.employeeBaseContributions()
 						.getOrDefault(employeeId, Map.of());
@@ -152,6 +156,8 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				String wageTaxAmountExplanation = PayrollCalculationTraceSupport.appendBreakdown(wageTaxFactorExplanation
 						+ " Then: − child exclusion " + PayrollCalculationTraceSupport.formatMoney(childExclusion)
 						+ ", − exchange-rate exclusion " + PayrollCalculationTraceSupport.formatMoney(exchangeRateExclusion)
+						+ ", − pension 2× AOV exclusion "
+						+ PayrollCalculationTraceSupport.formatMoney(pensionExclusion)
 						+ ", − belastingvrij " + PayrollCalculationTraceSupport.formatMoney(taxExemptApplied)
 						+ ", − beroepskosten (1036, 4% of gross, max 400/mo) "
 						+ PayrollCalculationTraceSupport.formatMoney(deductibleApplied) + " → taxable base "
@@ -255,9 +261,17 @@ public class SurinameStatutoryContributor implements CountryStatutoryContributor
 				.orElse(null);
 	}
 
+	private BigDecimal pensionSchemePayout(PayrollRunState state, UUID employeeId) {
+		return periodPayoutAmountForComponentCode(state, employeeId, "1064");
+	}
+
 	private BigDecimal exchangeRateCompensationPayout(PayrollRunState state, UUID employeeId) {
+		return periodPayoutAmountForComponentCode(state, employeeId, "1055");
+	}
+
+	private BigDecimal periodPayoutAmountForComponentCode(PayrollRunState state, UUID employeeId, String componentCode) {
 		UUID componentId = state.evaluatedComponentAmounts().stream()
-				.filter(line -> employeeId.equals(line.employeeId()) && "1055".equals(line.tenantWageComponentCode()))
+				.filter(line -> employeeId.equals(line.employeeId()) && componentCode.equals(line.tenantWageComponentCode()))
 				.map(EvaluatedComponentAmount::tenantWageComponentId)
 				.findFirst()
 				.orElse(null);

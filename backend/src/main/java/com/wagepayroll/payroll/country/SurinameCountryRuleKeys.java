@@ -38,6 +38,9 @@ public final class SurinameCountryRuleKeys {
 	/** Gross exchange-rate compensation cash payout (1055); amount from period transaction. */
 	public static final String EXCHANGE_RATE_COMPENSATION = "SUR_EXCHANGE_RATE_COMPENSATION";
 
+	/** Gross pension-scheme payout (1064); amount from period transaction. */
+	public static final String PENSION_SCHEME_PAYOUT = "SUR_PENSION_SCHEME_PAYOUT";
+
 	public static final String RULE_TAX_FREE_WAGE_TAX_YEAR = "SR_TAX_FREE_WAGE_TAX_YEAR";
 
 	/** Per-child monthly rates and caps (tariff type 11). */
@@ -45,6 +48,12 @@ public final class SurinameCountryRuleKeys {
 
 	/** Art. 10 exchange-rate monthly exclusion cap (SRD 800 from 2022-01-01). */
 	public static final String RULE_EXCHANGE_RATE_COMPENSATION_MONTH = "SR_EXCHANGE_RATE_COMPENSATION_MONTH";
+
+	/** Monthly AOV beneficiary payout amount (FiscLe); pension exclusion cap = 2×. */
+	public static final String RULE_AOV_BENEFICIARY_MONTH = "SR_AOV_BENEFICIARY_MONTH";
+
+	/** Art. 10(k) pension payout monthly exclusion cap (2× {@link #RULE_AOV_BENEFICIARY_MONTH}). */
+	public static final String RULE_PENSION_2X_AOV_MONTH = "SR_PENSION_2X_AOV_MONTH";
 
 	public static final String RULE_DEDUCTIBLE_EXPENSES_YEAR = "SR_DEDUCTIBLE_EXPENSES_YEAR";
 
@@ -133,8 +142,9 @@ public final class SurinameCountryRuleKeys {
 		return NET_WAGE.equals(countryRuleKey);
 	}
 
-	/** Gross earnings driven by standing quantity or period amount (e.g. 1008, 1055) — before APF/FVO. */
-	public static final Set<String> GROSS_EARNING_DERIVED_KEYS = Set.of(CHILD_ALLOWANCE, EXCHANGE_RATE_COMPENSATION);
+	/** Gross earnings driven by standing quantity or period amount (e.g. 1008, 1055, 1064) — before APF/FVO. */
+	public static final Set<String> GROSS_EARNING_DERIVED_KEYS = Set.of(CHILD_ALLOWANCE, EXCHANGE_RATE_COMPENSATION,
+			PENSION_SCHEME_PAYOUT);
 
 	/** APF + FVO — evaluated before tax-adjustment lines (1004–1005). */
 	public static final Set<String> PENSION_AND_FVO_DERIVED_KEYS = Set.of(APF_EMPLOYEE, APF_EMPLOYER, FVO_EMPLOYEE,
@@ -146,10 +156,13 @@ public final class SurinameCountryRuleKeys {
 	/** Art. 10 exchange-rate exclusion amount on wage-tax line (1056). */
 	public static final String WAGE_TAX_EXCHANGE_RATE = "SUR_WAGE_TAX_EXCHANGE_RATE";
 
+	/** Art. 10(k) pension payout exclusion amount on wage-tax line (1065). */
+	public static final String WAGE_TAX_PENSION_2X_AOV = "SUR_WAGE_TAX_PENSION_2X_AOV";
+
 	public static final Set<String> TAX_ADJUSTMENT_DERIVED_KEYS = Set.of(TAXABLE_INCOME, TAX_FREE_WAGE_TAX,
 			ACQUISITION_COSTS, FREE_MEDICAL_BENEFIT, COMPANY_CAR_BENEFIT, FREE_HOUSING_BENEFIT, BOARD_LODGING_BENEFIT,
 			BOARD_BENEFIT, HOT_MEAL_BENEFIT, BREAD_MEAL_BENEFIT, FREE_UTILITIES_BENEFIT, WAGE_TAX_CHILD_ALLOWANCE,
-			WAGE_TAX_EXCHANGE_RATE);
+			WAGE_TAX_EXCHANGE_RATE, WAGE_TAX_PENSION_2X_AOV);
 
 	public static final Set<String> SPECIAL_REMUNERATION_DERIVED_KEYS = Set.of(WAGE_TAX_VACATION_ALLOWANCE,
 			WAGE_TAX_BONUS, WAGE_TAX_EXTRA_EARNINGS, AOV_VACATION_ALLOWANCE, AOV_BONUS, AOV_EXTRA_EARNINGS,

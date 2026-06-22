@@ -36,6 +36,7 @@ public final class WageComponentSortOrder {
 			Map.entry("1054", 3080),
 			Map.entry("1057", 3090),
 			Map.entry("1055", 1110),
+			Map.entry("1064", 1120),
 			// Tax adjustments (4000)
 			Map.entry("1004", 4010),
 			Map.entry("1005", 4020),
@@ -65,6 +66,7 @@ public final class WageComponentSortOrder {
 			Map.entry("1025", 5270),
 			Map.entry("1048", 5280),
 			Map.entry("1056", 5290),
+			Map.entry("1065", 5300),
 			// Net deductions (6000)
 			Map.entry("1003", 6010),
 			Map.entry("1029", 6030),

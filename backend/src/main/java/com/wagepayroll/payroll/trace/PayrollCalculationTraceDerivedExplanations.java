@@ -25,6 +25,11 @@ public final class PayrollCalculationTraceDerivedExplanations {
 
 	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
 			BigDecimal listPrice, BigDecimal exchangeRatePayout) {
+		return factorForCountryRule(countryRuleKey, payrollInputQuantity, listPrice, exchangeRatePayout, null);
+	}
+
+	public static String factorForCountryRule(String countryRuleKey, BigDecimal payrollInputQuantity,
+			BigDecimal listPrice, BigDecimal exchangeRatePayout, BigDecimal pensionSchemePayout) {
 		if (SurinameCountryRuleKeys.CHILD_ALLOWANCE.equals(countryRuleKey)
 				|| SurinameCountryRuleKeys.WAGE_TAX_CHILD_ALLOWANCE.equals(countryRuleKey)) {
 			return payrollInputQuantity != null
@@ -38,6 +43,13 @@ public final class PayrollCalculationTraceDerivedExplanations {
 					? "Exchange-rate compensation payout (component 1055 period amount): "
 							+ PayrollCalculationTraceSupport.formatMoney(exchangeRatePayout)
 					: "Exchange-rate compensation payout from period transaction amount (component 1055).";
+		}
+		if (SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT.equals(countryRuleKey)
+				|| SurinameCountryRuleKeys.WAGE_TAX_PENSION_2X_AOV.equals(countryRuleKey)) {
+			return pensionSchemePayout != null
+					? "Pension scheme payout (component 1064 period amount): "
+							+ PayrollCalculationTraceSupport.formatMoney(pensionSchemePayout)
+					: "Pension scheme payout from period transaction amount (component 1064).";
 		}
 		if (SurinameCountryRuleKeys.COMPANY_CAR_BENEFIT.equals(countryRuleKey)) {
 			return listPrice != null
@@ -122,6 +134,10 @@ public final class PayrollCalculationTraceDerivedExplanations {
 				"Art. 10(h) child allowance excluded from wages (capped) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_EXCHANGE_RATE ->
 				"Art. 10 exchange-rate compensation excluded from wages (capped) → " + formatted;
+			case SurinameCountryRuleKeys.WAGE_TAX_PENSION_2X_AOV ->
+				"Art. 10(k) pension payout excluded from wages (2× AOV cap) → " + formatted;
+			case SurinameCountryRuleKeys.PENSION_SCHEME_PAYOUT ->
+				"Pension scheme cash payout (full period amount) → " + formatted;
 			case SurinameCountryRuleKeys.WAGE_TAX_VACATION_ALLOWANCE -> PayrollCalculationTraceSupport.appendBreakdown(
 					"Art. 17 wage tax on taxable vacation portion "
 							+ PayrollCalculationTraceSupport.formatMoney(special != null ? special.vacationTaxable() : null)

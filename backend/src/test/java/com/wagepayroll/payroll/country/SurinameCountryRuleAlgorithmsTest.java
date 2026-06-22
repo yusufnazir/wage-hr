@@ -164,6 +164,38 @@ class SurinameCountryRuleAlgorithmsTest {
 	}
 
 	@Test
+	void periodPension2xAovExcludedFromLoonAcP4_4() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
+				SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, """
+				{"v":2,"kind":"THRESHOLD_AMOUNT","freq":"MONTH","amount":2250}
+				""", LocalDate.of(2026, 2, 28));
+		assertThat(algorithms.periodPensionSchemePayout(new BigDecimal("5000.0000")))
+				.isEqualByComparingTo("5000.0000");
+		assertThat(algorithms.periodPension2xAovExcludedFromLoon(snapshot, new BigDecimal("5000.0000")))
+				.isEqualByComparingTo("4500.0000");
+	}
+
+	@Test
+	void periodPension2xAovExcludedFromLoonFullExclusionAcP4_4b() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
+				SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, """
+				{"v":2,"kind":"THRESHOLD_AMOUNT","freq":"MONTH","amount":2250}
+				""", LocalDate.of(2026, 2, 28));
+		assertThat(algorithms.periodPension2xAovExcludedFromLoon(snapshot, new BigDecimal("3000.0000")))
+				.isEqualByComparingTo("3000.0000");
+	}
+
+	@Test
+	void adjustTaxableBaseSubtractsPension2xAovExclusionFromLoon() throws Exception {
+		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
+				SurinameCountryRuleKeys.RULE_AOV_BENEFICIARY_MONTH, """
+				{"v":2,"kind":"THRESHOLD_AMOUNT","freq":"MONTH","amount":2250}
+				""");
+		assertThat(algorithms.adjustTaxableBaseForWageTax(new BigDecimal("10000.0000"), snapshot, false, 12, null, null,
+				null, new BigDecimal("5000.0000"))).isEqualByComparingTo("5500.0000");
+	}
+
+	@Test
 	void adjustTaxableBaseSubtractsExchangeRateExclusionFromLoon() throws Exception {
 		SurinameTaxRulesSnapshot snapshot = snapshotWithRule(
 				SurinameCountryRuleKeys.RULE_EXCHANGE_RATE_COMPENSATION_MONTH, """
