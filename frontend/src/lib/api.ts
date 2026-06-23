@@ -2567,6 +2567,41 @@ export async function fetchCountries(args?: {
   };
 }
 
+/** Load every active country page (backend max `size` is 100; ISO catalog is ~250 rows). */
+export async function fetchAllCountries(args?: {
+  search?: string;
+  payrollEnabled?: boolean | null;
+  locale?: string;
+}): Promise<CountriesResult> {
+  let page = 0;
+  const items: PlatformCountryRow[] = [];
+  let totalElements = 0;
+  let totalPages = 1;
+
+  while (true) {
+    const r = await fetchCountries({ ...args, page, size: 100 });
+    if (!r.ok) {
+      return r;
+    }
+    items.push(...r.items);
+    totalElements = r.totalElements;
+    totalPages = r.totalPages;
+    page += 1;
+    if (page >= totalPages) {
+      break;
+    }
+  }
+
+  return {
+    ok: true,
+    items,
+    totalElements,
+    page: 0,
+    size: items.length,
+    totalPages: 1,
+  };
+}
+
 export type TenantCurrencyItem = {
   id: string;
   code: string;
@@ -3725,13 +3760,13 @@ export async function patchTenantEmployeeGroupActive(id: string, active: boolean
 export type TenantEmployeeItem = {
   id: string;
   companyId: string;
-  departmentId: string;
-  jobId: string;
-  employeeGroupId: string;
+  departmentId: string | null;
+  jobId: string | null;
+  employeeGroupId: string | null;
   firstName: string;
   lastName: string;
   dateOfBirth: string | null;
-  hireDate: string;
+  hireDate: string | null;
   email: string | null;
   phone: string | null;
   status: string;
@@ -3806,13 +3841,13 @@ export async function fetchTenantEmployee(id: string): Promise<{ ok: true; item:
 
 export type TenantEmployeeUpsertPayload = {
   companyId: string;
-  departmentId: string;
-  jobId: string;
-  employeeGroupId: string;
+  departmentId?: string | null;
+  jobId?: string | null;
+  employeeGroupId?: string | null;
   firstName: string;
   lastName: string;
   dateOfBirth?: string | null;
-  hireDate: string;
+  hireDate?: string | null;
   email?: string | null;
   phone?: string | null;
   status: string;
@@ -3853,6 +3888,30 @@ export async function putTenantEmployee(id: string, payload: TenantEmployeeUpser
   if (!r.ok) throw new Error(await readFailureMessage(r));
   const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
   return body.data.item;
+}
+
+export async function completeTenantEmployeeOnboarding(
+  id: string,
+  employee: TenantEmployeeUpsertPayload,
+  targetStatus: string,
+): Promise<TenantEmployeeItem> {
+  const r = await fetchBff(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}/complete-onboarding`), {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ employee, targetStatus }),
+  });
+  if (!r.ok) throw new Error(await readFailureMessage(r));
+  const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;
+  return body.data.item;
+}
+
+export async function deleteTenantEmployee(id: string): Promise<void> {
+  const r = await fetchBff(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  if (r.status !== 204) throw new Error(await readFailureMessage(r));
 }
 
 export async function patchTenantEmployeeStatus(id: string, status: string): Promise<TenantEmployeeItem> {

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        data-m12 seeded PAYMENT_LOCATION_* privileges and granted them to the demo tenant only.
+        New self-service tenants copy role_template_privilege at registration — add ADMIN template
+        grants and backfill existing tenant Admin roles (e.g. registered owners).
+    -->
+
+    <changeSet id="data-m54-rtp-admin-payment-location-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="PAYMENT_LOCATION_VIEW"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m54-rtp-admin-payment-location-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="PAYMENT_LOCATION_MANAGE"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m54-backfill-admin-payment-location-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataPropagateRoleTemplatePrivilegeToTenantRoles">
+            <param name="roleTemplateCode" value="ADMIN"/>
+            <param name="privilegeCode" value="PAYMENT_LOCATION_VIEW"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m54-backfill-admin-payment-location-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataPropagateRoleTemplatePrivilegeToTenantRoles">
+            <param name="roleTemplateCode" value="ADMIN"/>
+            <param name="privilegeCode" value="PAYMENT_LOCATION_MANAGE"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

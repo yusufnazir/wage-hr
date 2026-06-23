@@ -13,4 +13,6 @@ public interface TenantEmployeeCompensationRepository
 	Optional<TenantEmployeeCompensationEntity> findByEmployeeIdAndTenantId(UUID employeeId, UUID tenantId);
 
 	List<TenantEmployeeCompensationEntity> findByTenantIdAndEmployeeIdIn(UUID tenantId, Collection<UUID> employeeIds);
+
+	void deleteByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

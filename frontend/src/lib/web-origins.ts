@@ -92,6 +92,55 @@ export function authLoginUrl(): string {
   return `${getAuthWebOrigin()}/login`;
 }
 
+/** Query values for {@link authLoginUrlWithReason} when tenant app bootstrap fails. */
+export const AUTH_GATE_REASONS = [
+  "session_expired",
+  "forbidden",
+  "tenant_not_found",
+  "server_error",
+  "load_failed",
+] as const;
+
+export type AuthGateReason = (typeof AUTH_GATE_REASONS)[number];
+
+export function isAuthGateReason(value: string): value is AuthGateReason {
+  return (AUTH_GATE_REASONS as readonly string[]).includes(value);
+}
+
+/** Reasons that should keep the login form visible even when a global session cookie exists. */
+export function shouldBlockLoginAutoRedirect(reason: string | null): boolean {
+  return (
+    reason === "forbidden" ||
+    reason === "tenant_not_found" ||
+    reason === "server_error" ||
+    reason === "load_failed"
+  );
+}
+
+export function meBootstrapFailureReason(httpStatus: number): AuthGateReason {
+  if (httpStatus === 401) {
+    return "session_expired";
+  }
+  if (httpStatus === 403) {
+    return "forbidden";
+  }
+  if (httpStatus === 404) {
+    return "tenant_not_found";
+  }
+  if (httpStatus >= 500) {
+    return "server_error";
+  }
+  return "load_failed";
+}
+
+/** Auth-host login URL with bootstrap failure reason and optional post-login return target. */
+export function authLoginUrlWithReason(reason: AuthGateReason, returnTo?: string | null): string {
+  const base = returnTo ? authLoginUrlWithReturnTo(returnTo) : authLoginUrl();
+  const u = new URL(base);
+  u.searchParams.set("reason", reason);
+  return u.toString();
+}
+
 /** Login URL on the auth host with optional post-login target (must pass backend {@code redirect-check}). */
 export function authLoginUrlWithReturnTo(absoluteReturnUrl: string): string {
   const ultimate = unwrapLoginReturnToChain(absoluteReturnUrl) ?? absoluteReturnUrl;

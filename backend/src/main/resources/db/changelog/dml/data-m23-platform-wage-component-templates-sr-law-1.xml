@@ -7,6 +7,8 @@
 
     <!-- SR statutory / payslip component templates aligned with legacy 740-* set; ledger IDs from data-m15-platform-ledger-legacy-suriname.xml -->
     <changeSet id="data-m23-platform-wage-component-templates-sr-law-1" author="wagepayroll">
+        <!-- Accept checksum from before lump-sum FK was deferred to data-m43 (m25 ordering). -->
+        <validCheckSum>9:20f0261e11b009bfd4d9b07ae7012be2</validCheckSum>
         <comment>Suriname platform wage component templates for core law payslip lines. template_code values 1004–1027 (numeric).</comment>
 
         <insert tableName="platform_wage_component_template">

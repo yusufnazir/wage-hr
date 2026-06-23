@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="schema-m57-tenant-employee-draft-nullable-1" author="wagepayroll">
+        <comment>Draft employees may omit department, job, and hire date until onboarding is completed.</comment>
+        <dropForeignKeyConstraint baseTableName="tenant_employee" constraintName="fk_tenant_employee_department"/>
+        <dropForeignKeyConstraint baseTableName="tenant_employee" constraintName="fk_tenant_employee_job"/>
+        <dropNotNullConstraint tableName="tenant_employee" columnName="department_id" columnDataType="VARCHAR(36)"/>
+        <dropNotNullConstraint tableName="tenant_employee" columnName="job_id" columnDataType="VARCHAR(36)"/>
+        <dropNotNullConstraint tableName="tenant_employee" columnName="hire_date" columnDataType="DATE"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_department"
+                                 baseTableName="tenant_employee" baseColumnNames="department_id,company_id,tenant_id"
+                                 referencedTableName="tenant_department" referencedColumnNames="id,company_id,tenant_id"/>
+        <addForeignKeyConstraint constraintName="fk_tenant_employee_job"
+                                 baseTableName="tenant_employee" baseColumnNames="job_id,company_id,tenant_id"
+                                 referencedTableName="tenant_job" referencedColumnNames="id,company_id,tenant_id"/>
+    </changeSet>
+
+</databaseChangeLog>

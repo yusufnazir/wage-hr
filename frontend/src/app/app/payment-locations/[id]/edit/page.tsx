@@ -26,6 +26,8 @@ export default function TenantPaymentLocationEditPage() {
   const t = useCallback((key: string) => navLabel(me.locale, key), [me.locale]);
 
   const canManage = me.privileges.includes("PAYMENT_LOCATION_MANAGE");
+  const canOpenCurrencies =
+    me.privileges.includes("TENANT_CURRENCY_EDIT") || me.privileges.includes("TENANT_CURRENCY_VIEW");
 
   const [original, setOriginal] = useState<TenantPaymentLocationRow | null>(null);
   const [currencies, setCurrencies] = useState<TenantCurrencyItem[]>([]);
@@ -147,33 +149,48 @@ export default function TenantPaymentLocationEditPage() {
           </p>
         </div>
 
-        <label className="block space-y-1">
-          <span className="text-sm text-muted">{t("paymentLocations.label.currency")}</span>
-          {currencies.length > 0 ? (
-            <select
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              required
-              disabled={!canManage}
-            >
-              <option value="">— Select currency —</option>
-              {currencies.map((c) => (
-                <option key={c.id} value={c.code}>{c.code} — {c.displayName}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              maxLength={3}
-              required
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-              disabled={!canManage}
-            />
-          )}
-        </label>
+        <div className="space-y-1">
+          <label className="block space-y-1">
+            <span className="text-sm text-muted">{t("paymentLocations.label.currency")}</span>
+            {currencies.length > 0 ? (
+              <select
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                required
+                disabled={!canManage}
+              >
+                <option value="">— Select currency —</option>
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.code}>{c.code} — {c.displayName}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                maxLength={3}
+                required
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                disabled={!canManage}
+              />
+            )}
+          </label>
+          <p className="text-xs text-muted">
+            {t("paymentLocations.hint.moreCurrencies")}{" "}
+            {canOpenCurrencies ? (
+              <>
+                {t("paymentLocations.hint.enableMoreCurrencies")}{" "}
+                <Link href="/app/tenant-currencies" className="font-medium text-primary underline-offset-4 hover:underline">
+                  {t("paymentLocations.action.openCurrencies")}
+                </Link>
+              </>
+            ) : (
+              t("paymentLocations.hint.enableMoreCurrencies")
+            )}
+          </p>
+        </div>
 
         {!isCash ? (
           <>

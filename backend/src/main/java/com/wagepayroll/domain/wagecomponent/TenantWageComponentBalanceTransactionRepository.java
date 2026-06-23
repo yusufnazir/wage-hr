@@ -10,4 +10,6 @@ public interface TenantWageComponentBalanceTransactionRepository
 	boolean existsByTenantIdAndBalanceIdAndPayPeriodRunId(UUID tenantId, UUID balanceId, UUID payPeriodRunId);
 
 	long countByTenantIdAndPayPeriodRunId(UUID tenantId, UUID payPeriodRunId);
+
+	void deleteByTenantIdAndBalanceId(UUID tenantId, UUID balanceId);
 }

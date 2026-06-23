@@ -24,20 +24,21 @@ import {
   type PublicSurfacePayload,
   type TenantSummary,
 } from "@/lib/api";
-import { brandFaviconSrc, brandLogoWordmarkSmallSrc } from "@/lib/brand-assets";
+import { brandFaviconSrc } from "@/lib/brand-assets";
 import {
-  authLoginUrl,
-  authLoginUrlWithReturnTo,
+  authLoginUrlWithReason,
   getAdminWebOrigin,
   isAdminWorkspaceHostname,
+  meBootstrapFailureReason,
   sessionExpiredReturnTo,
+  type AuthGateReason,
 } from "@/lib/web-origins";
 
 import { ToastContainer } from "@/components/ui/Toast";
 
 const SIDEBAR_COLLAPSED_KEY = "wp_app_sidebar_collapsed";
 
-type GatePhase = "loading" | "unauthenticated" | "tenant_not_found" | "error" | "ready";
+type GatePhase = "loading" | "redirecting" | "ready";
 
 function sortNavigation(items: NavigationItem[], parentLabelKey?: string): NavigationItem[] {
   const workspaceOrder: Record<string, number> = {
@@ -110,33 +111,6 @@ function sortNavigation(items: NavigationItem[], parentLabelKey?: string): Navig
   });
 }
 
-function GateChrome({ children, title, productName }: { children: ReactNode; title: string; productName: string }) {
-  return (
-    <div data-layout="app" className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/80 bg-surface/95 px-4 py-3 shadow-sm backdrop-blur-md dark:bg-surface/90 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground">
-          <Image
-            src={brandLogoWordmarkSmallSrc}
-            alt={productName}
-            width={160}
-            height={36}
-            className="h-7 w-auto max-w-[9rem] object-contain object-left"
-          />
-        </Link>
-        <ThemeToggle />
-      </header>
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:px-6">
-        <div className="w-full max-w-md space-y-4">
-          <h1 className="text-lg font-semibold text-foreground" data-testid="auth-gate-heading">
-            {title}
-          </h1>
-          {children}
-        </div>
-      </main>
-    </div>
-  );
-}
-
 export function TenantAppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -150,7 +124,6 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
   const [hasCompany, setHasCompany] = useState<boolean | null>(null);
   const [hasCompanyLoadError, setHasCompanyLoadError] = useState<number | null>(null);
   const [primaryCompanyId, setPrimaryCompanyId] = useState<string | null>(null);
-  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -172,9 +145,18 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const redirectToLogin = useCallback((reason: AuthGateReason) => {
+    setMe(null);
+    setPhase("redirecting");
+    if (typeof window === "undefined") {
+      return;
+    }
+    const returnTo = sessionExpiredReturnTo(window.location);
+    window.location.replace(authLoginUrlWithReason(reason, returnTo));
+  }, []);
+
   const loadShell = useCallback(async () => {
     setPhase("loading");
-    setErrorDetail(null);
     try {
       const [psRes, initialMeResult] = await Promise.all([fetchPublicSurface(), fetchMe()]);
       let meResult = initialMeResult;
@@ -191,60 +173,13 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
         setPublicSurface(psRes.surface);
       }
       if (!meResult.ok) {
-        if (meResult.status === 401 || meResult.status === 403) {
-          setMe(null);
-          if (typeof window !== "undefined") {
-            // Avoid redirect loops when the session is valid but access is still forbidden.
-            const loopGuardKey = "wp_forbidden_redirected";
-            const alreadyRedirected = (() => {
-              try {
-                return window.sessionStorage.getItem(loopGuardKey) === "1";
-              } catch {
-                return false;
-              }
-            })();
-            if (alreadyRedirected) {
-              setPhase("error");
-              setErrorDetail(`HTTP ${meResult.status}`);
-              return;
-            }
-            try {
-              window.sessionStorage.setItem(loopGuardKey, "1");
-            } catch {
-              /* ignore */
-            }
-            const returnTo = sessionExpiredReturnTo(window.location);
-            if (returnTo) {
-              window.location.replace(authLoginUrlWithReturnTo(returnTo));
-            } else {
-              window.location.replace(authLoginUrl());
-            }
-            return;
-          }
-          setPhase("unauthenticated");
-          return;
-        }
-        if (meResult.status === 404) {
-          setMe(null);
-          setPhase("tenant_not_found");
-          return;
-        }
-        setMe(null);
-        setPhase("error");
-        setErrorDetail(`HTTP ${meResult.status}`);
+        redirectToLogin(meBootstrapFailureReason(meResult.status));
         return;
       }
       setMe(meResult.me);
       setHasCompany(null);
       setHasCompanyLoadError(null);
       setPrimaryCompanyId(null);
-      if (typeof window !== "undefined") {
-        try {
-          window.sessionStorage.removeItem("wp_forbidden_redirected");
-        } catch {
-          /* ignore */
-        }
-      }
       const [nav, tenantList, companiesProbe] = await Promise.all([
         fetchNavigation(),
         fetchMeTenants(),
@@ -281,12 +216,10 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
         }
       }
       setPhase("ready");
-    } catch (e) {
-      setMe(null);
-      setPhase("error");
-      setErrorDetail(e instanceof Error ? e.message : "Network error");
+    } catch {
+      redirectToLogin("load_failed");
     }
-  }, []);
+  }, [redirectToLogin]);
 
   useEffect(() => {
     void loadShell();
@@ -327,14 +260,6 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
       router.replace(`/app?returnTo=${encodeURIComponent(current)}`);
     }
   }, [hasCompany, pathname, phase, router]);
-
-  useEffect(() => {
-    if (phase !== "unauthenticated" || typeof window === "undefined") {
-      return;
-    }
-    const returnTo = sessionExpiredReturnTo(window.location);
-    window.location.replace(returnTo ? authLoginUrlWithReturnTo(returnTo) : authLoginUrl());
-  }, [phase, pathname]);
 
   useEffect(() => {
     if (phase !== "ready" || !me?.platformSuperadmin) {
@@ -459,49 +384,11 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const gateProductName = publicSurface?.applicationName ?? "Wage Payroll";
-
-  if (phase === "unauthenticated") {
+  if (phase === "redirecting") {
     return (
       <div data-layout="app" className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <p className="text-sm text-muted">Redirecting to sign in…</p>
       </div>
-    );
-  }
-
-  if (phase === "tenant_not_found") {
-    return (
-      <GateChrome title="Unknown tenant" productName={gateProductName}>
-        <p className="text-sm text-muted">
-          Unknown tenant for this host (404 from backend). Check the subdomain matches a tenant handle in the database.
-        </p>
-      </GateChrome>
-    );
-  }
-
-  if (phase === "error") {
-    return (
-      <GateChrome title="Could not load" productName={gateProductName}>
-        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-          <p className="text-sm text-muted">
-            {errorDetail?.startsWith("HTTP") ? (
-              <>Request failed ({errorDetail}).</>
-            ) : (
-              <>
-                Could not load your session ({errorDetail ?? "network"}). Is the Spring API running and{" "}
-                <code className="rounded bg-background px-1">API_BASE_URL</code> set for the Next server?
-              </>
-            )}
-          </p>
-          <a
-            href={authLoginUrl()}
-            className="mt-4 inline-flex w-fit items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm hover:opacity-90"
-            data-testid="sign-in-link"
-          >
-            Sign in
-          </a>
-        </div>
-      </GateChrome>
     );
   }
 
@@ -580,7 +467,7 @@ export function TenantAppShell({ children }: { children: ReactNode }) {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground">No company yet</p>
-                    <p className="text-xs text-muted">Create a company to unlock payroll setup, pay periods, bank templates, and payment locations.</p>
+                    <p className="text-xs text-muted">Create a company to unlock payroll setup, pay periods, banks, and payment locations.</p>
                   </div>
                   {me.privileges.includes("COMPANY_MANAGE") ? (
                     <Link

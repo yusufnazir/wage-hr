@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { FilterChip } from "@/components/ui/FilterChip";
 import { showToast } from "@/components/ui/Toast";
 import {
+  deleteTenantEmployee,
   fetchTenantCompanies,
   fetchTenantDepartments,
   fetchTenantEmployees,
@@ -72,6 +73,7 @@ export default function EmployeesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ item: TenantEmployeeItem } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ item: TenantEmployeeItem } | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
 
   // Filters
@@ -182,6 +184,28 @@ export default function EmployeesPage() {
     } finally {
       setConfirmBusy(false);
       setConfirm(null);
+    }
+  }
+
+  function requestDelete(item: TenantEmployeeItem) {
+    setDeleteConfirm({ item });
+  }
+
+  async function confirmDelete() {
+    if (!deleteConfirm) return;
+    const { item } = deleteConfirm;
+    setConfirmBusy(true);
+    try {
+      await deleteTenantEmployee(item.id);
+      showToast(`"${item.firstName} ${item.lastName}" deleted.`);
+      await reloadList(page);
+      await reloadStats();
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : t("employees.msg.deleteFailed");
+      showToast(msg, "error");
+    } finally {
+      setConfirmBusy(false);
+      setDeleteConfirm(null);
     }
   }
 
@@ -388,11 +412,12 @@ export default function EmployeesPage() {
                 key={item.id}
                 item={item}
                 companyName={companies.find((c) => c.id === item.companyId)?.name}
-                deptName={deptName(item.departmentId)}
-                jobTitle={jobTitle(item.jobId)}
+                deptName={deptName(item.departmentId ?? "")}
+                jobTitle={jobTitle(item.jobId ?? "")}
                 canManage={canManage}
                 busy={busyId === item.id}
                 onToggleActive={() => void toggleActive(item)}
+                onDelete={() => requestDelete(item)}
               />
             ))}
           </div>
@@ -407,6 +432,22 @@ export default function EmployeesPage() {
         busy={confirmBusy}
         onConfirm={() => void confirmDeactivate()}
         onCancel={() => setConfirm(null)}
+      />
+
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        title={deleteConfirm?.item.status === "DRAFT" ? t("employees.delete.titleDraft") : t("employees.delete.title")}
+        description={
+          deleteConfirm
+            ? deleteConfirm.item.status === "DRAFT"
+              ? t("employees.delete.descriptionDraft").replace("{name}", `${deleteConfirm.item.firstName} ${deleteConfirm.item.lastName}`)
+              : t("employees.delete.description").replace("{name}", `${deleteConfirm.item.firstName} ${deleteConfirm.item.lastName}`)
+            : ""
+        }
+        confirmLabel={t("employees.action.delete")}
+        busy={confirmBusy}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteConfirm(null)}
       />
     </div>
   );
@@ -517,6 +558,7 @@ function EmployeeCard({
   canManage,
   busy,
   onToggleActive,
+  onDelete,
 }: {
   item: TenantEmployeeItem;
   companyName?: string;
@@ -525,13 +567,18 @@ function EmployeeCard({
   canManage: boolean;
   busy: boolean;
   onToggleActive: () => void;
+  onDelete: () => void;
 }) {
   const initials = initialsFor(item.firstName, item.lastName);
   const gradient = gradientFor(item.id);
+  const isDraft = item.status === "DRAFT";
+  const profileHref = isDraft
+    ? `/app/employees/new?draft=${encodeURIComponent(item.id)}`
+    : `/app/employees/${item.id}/edit`;
 
-  const borderColor = item.active ? "#16a34a" : "var(--color-destructive, #dc2626)";
-  const bg = item.active ? undefined : "rgba(239, 68, 68, 0.04)";
-  const nameColor = item.active ? undefined : "var(--color-destructive, #dc2626)";
+  const borderColor = isDraft ? "#d97706" : item.active ? "#16a34a" : "var(--color-destructive, #dc2626)";
+  const bg = isDraft ? "rgba(217, 119, 6, 0.06)" : item.active ? undefined : "rgba(239, 68, 68, 0.04)";
+  const nameColor = isDraft ? undefined : item.active ? undefined : "var(--color-destructive, #dc2626)";
 
   return (
     <div
@@ -548,13 +595,16 @@ function EmployeeCard({
         </div>
         <div className="min-w-0 flex-1">
           <Link
-            href={`/app/employees/${item.id}/edit`}
+            href={profileHref}
             className="block truncate text-base font-semibold leading-tight hover:underline"
             style={{ color: nameColor }}
             title={`${item.firstName} ${item.lastName}`}
           >
             {item.firstName} {item.lastName}
           </Link>
+          {isDraft ? (
+            <p className="mt-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">Draft — finish onboarding</p>
+          ) : null}
           {jobTitle ? <p className="truncate text-xs text-muted">{jobTitle}</p> : null}
           <div className="mt-1 flex items-center gap-1.5">
             <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-muted" />
@@ -565,16 +615,26 @@ function EmployeeCard({
       </div>
       {canManage ? (
         <div className="mt-3 flex items-center justify-end gap-3 text-xs">
-          <Link href={`/app/employees/${item.id}/edit`} className="font-medium text-primary underline-offset-4 hover:underline">
-            Edit
+          <Link href={profileHref} className="font-medium text-primary underline-offset-4 hover:underline">
+            {isDraft ? "Continue setup" : "Edit"}
           </Link>
+          {!isDraft ? (
+            <button
+              type="button"
+              onClick={onToggleActive}
+              disabled={busy}
+              className="font-medium text-muted underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50"
+            >
+              {item.active ? "Deactivate" : "Activate"}
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={onToggleActive}
+            onClick={onDelete}
             disabled={busy}
-            className="font-medium text-muted underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50"
+            className="font-medium text-destructive underline-offset-4 hover:underline disabled:opacity-50"
           >
-            {item.active ? "Deactivate" : "Activate"}
+            Delete
           </button>
         </div>
       ) : null}

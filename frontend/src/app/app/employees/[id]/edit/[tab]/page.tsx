@@ -7,11 +7,13 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import { EmployeePaymentPanel } from "@/components/employee/EmployeePaymentPanel";
 import { EmployeePayrollInputsPanel } from "@/components/employee/EmployeePayrollInputsPanel";
 import { useTenantAppSession } from "@/components/shell/TenantAppSessionContext";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EntityDocumentsTab } from "@/components/ui/EntityDocumentsTab";
 import { PlatformDateInput } from "@/components/ui/PlatformDateInput";
 import { showToast } from "@/components/ui/Toast";
 import {
-  fetchCountries,
+  deleteTenantEmployee,
+  fetchAllCountries,
   fetchTenantCompanies,
   fetchTenantCurrencies,
   fetchTenantDepartments,
@@ -130,6 +132,8 @@ export default function EmployeeEditPage() {
   const [compInitialized, setCompInitialized] = useState(false);
   const [compBusy, setCompBusy] = useState(false);
   const [compError, setCompError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const canManage = me.privileges.includes("EMPLOYEE_MANAGE");
   const canViewPayrollInputs = me.privileges.includes("EMPLOYEE_PAYROLL_STANDING_VIEW");
@@ -155,7 +159,7 @@ export default function EmployeeEditPage() {
         fetchTenantJobs({ size: 200 }),
         fetchTenantEmployeeGroups({ size: 200 }),
         fetchTenantEmployee(id),
-        fetchCountries({ size: 300, locale: me.locale }),
+        fetchAllCountries({ locale: me.locale }),
         fetchTenantCurrencies(),
         fetchTenantWorkTimes({ size: 200, active: true }),
         fetchTenantEmployeeCompensation(id),
@@ -167,6 +171,10 @@ export default function EmployeeEditPage() {
       }
       if (!er.ok) {
         setLoad(er.status === 403 ? "forbidden" : er.status === 404 ? "notFound" : "error");
+        return;
+      }
+      if (er.item.status === "DRAFT") {
+        router.replace(`/app/employees/new?draft=${encodeURIComponent(id)}`);
         return;
       }
 
@@ -196,7 +204,7 @@ export default function EmployeeEditPage() {
         companyId: er.item.companyId,
         departmentId: er.item.departmentId,
         jobId: er.item.jobId,
-        employeeGroupId: er.item.employeeGroupId,
+        employeeGroupId: er.item.employeeGroupId ?? "",
         firstName: er.item.firstName,
         lastName: er.item.lastName,
         dateOfBirth: er.item.dateOfBirth ?? "",
@@ -290,7 +298,6 @@ export default function EmployeeEditPage() {
     if (!form.companyId) { setError("Company is required."); return; }
     if (!form.departmentId) { setError("Department is required."); return; }
     if (!form.jobId) { setError("Job is required."); return; }
-    if (!form.employeeGroupId) { setError("Employee group is required."); return; }
     if (!form.firstName.trim()) { setError("First name is required."); return; }
     if (!form.lastName.trim()) { setError("Last name is required."); return; }
     if (!form.hireDate) { setError("Hire date is required."); return; }
@@ -306,6 +313,7 @@ export default function EmployeeEditPage() {
         email: form.email?.toString().trim() || null,
         phone: form.phone?.toString().trim() || null,
         badgeNumber: form.badgeNumber?.toString().trim() || null,
+        employeeGroupId: form.employeeGroupId?.toString().trim() || null,
         idNumber: form.idNumber?.toString().trim() || null,
         gender: form.gender?.toString().trim() || null,
         nationality: form.nationality?.toString().trim() || null,
@@ -324,6 +332,20 @@ export default function EmployeeEditPage() {
       const msg = e instanceof Error && e.message ? e.message : t("employees.msg.saveFailed");
       setError(msg);
       setBusy(false);
+    }
+  }
+
+  async function confirmDelete() {
+    setDeleteBusy(true);
+    try {
+      await deleteTenantEmployee(id);
+      showToast(`"${form.firstName.trim()} ${form.lastName.trim()}" deleted.`);
+      router.push("/app/employees");
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : t("employees.msg.deleteFailed");
+      showToast(msg, "error");
+      setDeleteBusy(false);
+      setDeleteOpen(false);
     }
   }
 
@@ -400,8 +422,25 @@ export default function EmployeeEditPage() {
               {t("employees.action.cancel")}
             </Link>
           ) : null}
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="rounded border border-destructive/40 px-4 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/5"
+          >
+            {t("employees.action.delete")}
+          </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title={t("employees.delete.title")}
+        description={t("employees.delete.description").replace("{name}", headline || t("employees.action.edit"))}
+        confirmLabel={t("employees.action.delete")}
+        busy={deleteBusy}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteOpen(false)}
+      />
 
       {error ? (
         <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">
@@ -542,8 +581,8 @@ export default function EmployeeEditPage() {
                           {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </Field>
-                      <Field label="Employee group" required>
-                        <select className={inputCls} value={form.employeeGroupId} onChange={(e) => patch({ employeeGroupId: e.target.value })}>
+                      <Field label="Employee group" hint="Optional. Assign a group later from Employee groups.">
+                        <select className={inputCls} value={form.employeeGroupId ?? ""} onChange={(e) => patch({ employeeGroupId: e.target.value })}>
                           <option value="">Select group…</option>
                           {formGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
                         </select>

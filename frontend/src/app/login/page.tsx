@@ -12,11 +12,50 @@ import {
   redirectCheck,
   type TenantSummary,
 } from "@/lib/api";
-import { defaultTenantAppUrl, getAdminWebOrigin, isAdminWebOriginUrl, tenantWebAppUrlForHandle } from "@/lib/web-origins";
+import {
+  defaultTenantAppUrl,
+  getAdminWebOrigin,
+  isAdminWebOriginUrl,
+  isAuthGateReason,
+  shouldBlockLoginAutoRedirect,
+  tenantWebAppUrlForHandle,
+  type AuthGateReason,
+} from "@/lib/web-origins";
 
 type SessionLandingContext = {
   isPlatformSuperadmin: boolean;
   tenants: TenantSummary[];
+};
+
+const AUTH_GATE_REASON_COPY: Record<
+  AuthGateReason,
+  { title: string; body: string; tone: "amber" | "destructive" }
+> = {
+  session_expired: {
+    title: "Your session expired",
+    body: "Sign in again to continue where you left off.",
+    tone: "amber",
+  },
+  forbidden: {
+    title: "You don't have access to this workspace",
+    body: "Sign in with a different account, or open a tenant you belong to.",
+    tone: "amber",
+  },
+  tenant_not_found: {
+    title: "This workspace was not found",
+    body: "Check the address in your browser, or sign in to open a tenant you belong to.",
+    tone: "amber",
+  },
+  server_error: {
+    title: "We couldn't load your workspace",
+    body: "The server returned an error. Try again in a moment, or sign in again.",
+    tone: "destructive",
+  },
+  load_failed: {
+    title: "We couldn't reach the server",
+    body: "Check your connection and that the API is running, then try signing in again.",
+    tone: "destructive",
+  },
 };
 
 function tenantHandleFromAbsoluteUrl(absoluteUrl: string): string | null {
@@ -91,12 +130,25 @@ async function detectSessionLandingContext(): Promise<SessionLandingContext | nu
 export default function LoginPage() {
   const [email, setEmail] = useState("admin@demo.lvh.me");
   const [password, setPassword] = useState("ChangeMe!1");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [gateReason, setGateReason] = useState<AuthGateReason | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("reason");
+    if (reason && isAuthGateReason(reason)) {
+      setGateReason(reason);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
+      const reason = new URLSearchParams(window.location.search).get("reason");
+      if (shouldBlockLoginAutoRedirect(reason)) {
+        return;
+      }
       const session = await detectSessionLandingContext();
       if (cancelled || !session) {
         return;
@@ -111,20 +163,21 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setMsg(null);
+    setEmailNotVerified(false);
+    setErrorMsg(null);
     try {
       await loginJson(email, password);
       const session = await detectSessionLandingContext();
       if (!session) {
-        setMsg("Signed in but could not resolve workspace.");
+        setErrorMsg("Signed in but could not resolve workspace.");
         return;
       }
       await goToPostAuthDestination(session, "assign");
     } catch (err) {
       if (err instanceof EmailNotVerifiedError) {
-        setMsg("Confirm your email before signing in. Use Verify email / resend from the link below.");
+        setEmailNotVerified(true);
       } else {
-        setMsg(err instanceof Error ? err.message : "Login failed");
+        setErrorMsg(err instanceof Error ? err.message : "Login failed");
       }
     } finally {
       setBusy(false);
@@ -158,6 +211,47 @@ export default function LoginPage() {
             required
           />
         </label>
+        {gateReason ? (
+          <div
+            role="alert"
+            data-testid="login-gate-reason-panel"
+            className={
+              AUTH_GATE_REASON_COPY[gateReason].tone === "amber"
+                ? "rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-4"
+                : "rounded-lg border border-destructive-border bg-destructive-soft px-4 py-4"
+            }
+          >
+            <p className="text-base font-semibold text-foreground">{AUTH_GATE_REASON_COPY[gateReason].title}</p>
+            <p className="mt-2 text-sm text-foreground">{AUTH_GATE_REASON_COPY[gateReason].body}</p>
+          </div>
+        ) : null}
+        {emailNotVerified ? (
+          <div
+            role="alert"
+            data-testid="login-email-not-verified-panel"
+            className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-4"
+          >
+            <p className="text-base font-semibold text-foreground">Confirm your email before signing in</p>
+            <p className="mt-2 text-sm text-foreground">
+              We sent a verification link to <span className="font-medium">{email}</span>. Open it, or request a new
+              one.
+            </p>
+            <Link
+              href="/verify-email"
+              className="mt-3 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90"
+            >
+              Verify email / resend
+            </Link>
+          </div>
+        ) : null}
+        {errorMsg ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive-border bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
+            {errorMsg}
+          </p>
+        ) : null}
         <button
           type="submit"
           disabled={busy}
@@ -165,7 +259,6 @@ export default function LoginPage() {
         >
           {busy ? "Signing in…" : "Continue"}
         </button>
-        {msg ? <p className="text-sm text-muted">{msg}</p> : null}
       </form>
       <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-center text-sm text-muted">
         <Link href="/register" className="text-primary underline-offset-4 hover:underline">

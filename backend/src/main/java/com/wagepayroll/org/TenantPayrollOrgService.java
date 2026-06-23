@@ -67,6 +67,8 @@ public class TenantPayrollOrgService {
 			"MONTHLY");
 	private static final Set<String> ALLOWED_SALARY_TYPES = Set.of("HOURLY", "MONTHLY");
 	private static final Set<String> ALLOWED_EMPLOYEE_STATUS = Set.of("ACTIVE", "ON_LEAVE", "SUSPENDED",
+			"TERMINATED", "DRAFT");
+	private static final Set<String> COMPLETED_EMPLOYEE_STATUS = Set.of("ACTIVE", "ON_LEAVE", "SUSPENDED",
 			"TERMINATED");
 
 	private static final long MAX_LOGO_BYTES = 256 * 1024L;
@@ -418,14 +420,19 @@ public class TenantPayrollOrgService {
 
 	@Transactional
 	public TenantEmployeeItemDto createEmployee(UUID tenantId, TenantEmployeeUpsertRequest request) {
+		if (isDraftStatus(request.status())) {
+			return createDraftEmployee(tenantId, request);
+		}
 		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
 		UUID departmentId = requiredUuid(request.departmentId(), "departmentId is required");
 		UUID jobId = requiredUuid(request.jobId(), "jobId is required");
-		UUID employeeGroupId = requiredUuid(request.employeeGroupId(), "employeeGroupId is required");
+		UUID employeeGroupId = request.employeeGroupId();
 		requireCompany(tenantId, companyId);
 		requireDepartment(tenantId, departmentId, companyId);
 		TenantJobEntity job = requireJob(tenantId, jobId, companyId);
-		requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		if (employeeGroupId != null) {
+			requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		}
 		if (!job.getDepartmentId().equals(departmentId)) {
 			throw badRequest("jobId does not belong to departmentId");
 		}
@@ -449,16 +456,21 @@ public class TenantPayrollOrgService {
 	@Transactional
 	public TenantEmployeeItemDto updateEmployee(UUID tenantId, UUID id, TenantEmployeeUpsertRequest request) {
 		TenantEmployeeEntity entity = requireEmployee(tenantId, id);
+		if (isDraftEntity(entity) || isDraftStatus(request.status())) {
+			return updateDraftEmployee(tenantId, entity, request);
+		}
 		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
 		if (!entity.getCompanyId().equals(companyId)) {
 			throw badRequest("companyId cannot be changed");
 		}
 		UUID departmentId = requiredUuid(request.departmentId(), "departmentId is required");
 		UUID jobId = requiredUuid(request.jobId(), "jobId is required");
-		UUID employeeGroupId = requiredUuid(request.employeeGroupId(), "employeeGroupId is required");
+		UUID employeeGroupId = request.employeeGroupId();
 		requireDepartment(tenantId, departmentId, companyId);
 		TenantJobEntity job = requireJob(tenantId, jobId, companyId);
-		requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		if (employeeGroupId != null) {
+			requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		}
 		if (!job.getDepartmentId().equals(departmentId)) {
 			throw badRequest("jobId does not belong to departmentId");
 		}
@@ -475,15 +487,119 @@ public class TenantPayrollOrgService {
 		if (request == null || request.status() == null || request.status().isBlank()) {
 			throw badRequest("status is required");
 		}
+		if (isDraftStatus(request.status())) {
+			throw badRequest("Use employee onboarding to create drafts");
+		}
 		TenantEmployeeEntity entity = requireEmployee(tenantId, id);
+		if (isDraftEntity(entity)) {
+			throw badRequest("Complete employee onboarding before changing status");
+		}
 		entity.setStatus(normalizeEmployeeStatus(request.status()));
 		entity.setUpdatedAt(Instant.now());
 		return toEmployeeDto(saveWithConflict(entity));
 	}
 
 	@Transactional
+	public TenantEmployeeItemDto completeEmployeeOnboarding(UUID tenantId, UUID id,
+			TenantEmployeeUpsertRequest request, String targetStatus) {
+		TenantEmployeeEntity entity = requireEmployee(tenantId, id);
+		if (!isDraftEntity(entity)) {
+			throw badRequest("Employee onboarding is already complete");
+		}
+		if (request == null) {
+			throw badRequest("Request body is required");
+		}
+		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
+		if (!entity.getCompanyId().equals(companyId)) {
+			throw badRequest("companyId cannot be changed");
+		}
+		UUID departmentId = requiredUuid(request.departmentId(), "departmentId is required");
+		UUID jobId = requiredUuid(request.jobId(), "jobId is required");
+		requireDepartment(tenantId, departmentId, companyId);
+		TenantJobEntity job = requireJob(tenantId, jobId, companyId);
+		UUID employeeGroupId = request.employeeGroupId();
+		if (employeeGroupId != null) {
+			requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		}
+		if (!job.getDepartmentId().equals(departmentId)) {
+			throw badRequest("jobId does not belong to departmentId");
+		}
+		entity.setDepartmentId(departmentId);
+		entity.setJobId(jobId);
+		entity.setEmployeeGroupId(employeeGroupId);
+		applyEmployee(entity, request, false);
+		String resolvedStatus = targetStatus != null && !targetStatus.isBlank()
+				? normalizeCompletedEmployeeStatus(targetStatus)
+				: "ACTIVE";
+		entity.setStatus(resolvedStatus);
+		entity.setActive(request.active() == null || request.active().booleanValue());
+		entity.setUpdatedAt(Instant.now());
+		TenantEmployeeEntity saved = saveWithConflict(entity);
+		payrollStandingProvisionService.provisionForNewEmployee(tenantId, companyId, saved.getId(),
+				saved.getHireDate());
+		return toEmployeeDto(saved);
+	}
+
+	private TenantEmployeeItemDto createDraftEmployee(UUID tenantId, TenantEmployeeUpsertRequest request) {
+		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
+		requireCompany(tenantId, companyId);
+		TenantEmployeeEntity entity = new TenantEmployeeEntity();
+		entity.setId(UUID.randomUUID());
+		entity.setTenantId(tenantId);
+		entity.setCompanyId(companyId);
+		applyDraftEmployment(entity, tenantId, request);
+		applyEmployeeDraft(entity, request, true);
+		entity.setStatus("DRAFT");
+		entity.setActive(false);
+		Instant now = Instant.now();
+		entity.setCreatedAt(now);
+		entity.setUpdatedAt(now);
+		return toEmployeeDto(saveWithConflict(entity));
+	}
+
+	private TenantEmployeeItemDto updateDraftEmployee(UUID tenantId, TenantEmployeeEntity entity,
+			TenantEmployeeUpsertRequest request) {
+		UUID companyId = requiredUuid(request.companyId(), "companyId is required");
+		if (!entity.getCompanyId().equals(companyId)) {
+			throw badRequest("companyId cannot be changed");
+		}
+		requireCompany(tenantId, companyId);
+		applyDraftEmployment(entity, tenantId, request);
+		applyEmployeeDraft(entity, request, false);
+		entity.setStatus("DRAFT");
+		entity.setActive(false);
+		entity.setUpdatedAt(Instant.now());
+		return toEmployeeDto(saveWithConflict(entity));
+	}
+
+	private void applyDraftEmployment(TenantEmployeeEntity entity, UUID tenantId, TenantEmployeeUpsertRequest request) {
+		UUID companyId = entity.getCompanyId();
+		UUID departmentId = request.departmentId();
+		UUID jobId = request.jobId();
+		UUID employeeGroupId = request.employeeGroupId();
+		if (departmentId != null) {
+			requireDepartment(tenantId, departmentId, companyId);
+		}
+		if (jobId != null) {
+			TenantJobEntity job = requireJob(tenantId, jobId, companyId);
+			if (departmentId != null && !job.getDepartmentId().equals(departmentId)) {
+				throw badRequest("jobId does not belong to departmentId");
+			}
+		}
+		if (employeeGroupId != null) {
+			requireEmployeeGroup(tenantId, employeeGroupId, companyId);
+		}
+		entity.setDepartmentId(departmentId);
+		entity.setJobId(jobId);
+		entity.setEmployeeGroupId(employeeGroupId);
+	}
+
+	@Transactional
 	public TenantEmployeeItemDto patchEmployeeActive(UUID tenantId, UUID id, TenantActivePatchRequest request) {
 		TenantEmployeeEntity entity = requireEmployee(tenantId, id);
+		if (isDraftEntity(entity)) {
+			throw badRequest("Complete employee onboarding before changing active state");
+		}
 		entity.setActive(requireActive(request));
 		entity.setUpdatedAt(Instant.now());
 		return toEmployeeDto(saveWithConflict(entity));
@@ -744,6 +860,24 @@ public class TenantPayrollOrgService {
 		else if (request.active() != null) {
 			entity.setActive(request.active().booleanValue());
 		}
+		applyEmployeePersonalFields(entity, request, create);
+	}
+
+	private void applyEmployeeDraft(TenantEmployeeEntity entity, TenantEmployeeUpsertRequest request, boolean create) {
+		if (request == null) {
+			throw badRequest("Request body is required");
+		}
+		entity.setFirstName(requireText(request.firstName(), "firstName", 100));
+		entity.setLastName(requireText(request.lastName(), "lastName", 100));
+		entity.setDateOfBirth(request.dateOfBirth());
+		entity.setHireDate(request.hireDate());
+		entity.setEmail(normalizeEmail(request.email()));
+		entity.setPhone(trimToNull(request.phone()));
+		applyEmployeePersonalFields(entity, request, create);
+	}
+
+	private void applyEmployeePersonalFields(TenantEmployeeEntity entity, TenantEmployeeUpsertRequest request,
+			boolean create) {
 		String badgeNumber = trimToNull(request.badgeNumber());
 		if (badgeNumber != null && badgeNumber.length() > 40) {
 			throw badRequest("badgeNumber exceeds max length 40");
@@ -1071,6 +1205,22 @@ public class TenantPayrollOrgService {
 			throw badRequest("Unsupported employee status");
 		}
 		return normalized;
+	}
+
+	private String normalizeCompletedEmployeeStatus(String value) {
+		String normalized = requireText(value, "targetStatus", 30).toUpperCase(Locale.ROOT);
+		if (!COMPLETED_EMPLOYEE_STATUS.contains(normalized)) {
+			throw badRequest("Unsupported employee status");
+		}
+		return normalized;
+	}
+
+	private static boolean isDraftStatus(String status) {
+		return status != null && "DRAFT".equalsIgnoreCase(status.trim());
+	}
+
+	private static boolean isDraftEntity(TenantEmployeeEntity entity) {
+		return entity != null && isDraftStatus(entity.getStatus());
 	}
 
 	private String normalizeEmail(String value) {

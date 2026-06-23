@@ -14,14 +14,32 @@ public class DataCopyTenantBankTemplatesFromPlatform extends CustomDataTaskChang
 	private String tenantId;
 	private String companyId;
 	private String payrollCountry;
+	private String backfillAll;
 
 	@Override
 	public void handleUpdate() throws Exception {
+		if ("true".equalsIgnoreCase(trimToEmpty(backfillAll))) {
+			try (PreparedStatement companies = connection.prepareStatement("""
+					SELECT tenant_id, id, payroll_country FROM tenant_company
+					WHERE payroll_country IS NOT NULL AND TRIM(payroll_country) <> ''
+					""")) {
+				try (ResultSet rs = companies.executeQuery()) {
+					while (rs.next()) {
+						copyForCompany(rs.getString("tenant_id"), rs.getString("id"), rs.getString("payroll_country"));
+					}
+				}
+			}
+			return;
+		}
 		if (tenantId == null || tenantId.isBlank() || companyId == null || companyId.isBlank()
 				|| payrollCountry == null || payrollCountry.isBlank()) {
 			return;
 		}
-		String country = payrollCountry.trim().toUpperCase(Locale.ROOT);
+		copyForCompany(tenantId, companyId, payrollCountry);
+	}
+
+	private void copyForCompany(String tenantIdValue, String companyIdValue, String payrollCountryValue) throws Exception {
+		String country = payrollCountryValue.trim().toUpperCase(Locale.ROOT);
 		try (PreparedStatement sources = connection.prepareStatement("""
 				SELECT id, country_code, name, bank_name, swift_bic, bank_code, account_number_format, active
 				FROM platform_bank_template
@@ -32,22 +50,27 @@ public class DataCopyTenantBankTemplatesFromPlatform extends CustomDataTaskChang
 			try (ResultSet rs = sources.executeQuery()) {
 				while (rs.next()) {
 					String platformId = rs.getString("id");
-					if (alreadyCopied(platformId)) {
+					if (alreadyCopied(tenantIdValue, companyIdValue, platformId)) {
 						continue;
 					}
-					insertCopy(platformId, rs);
+					insertCopy(tenantIdValue, companyIdValue, platformId, rs);
 				}
 			}
 		}
 	}
 
-	private boolean alreadyCopied(String platformBankTemplateId) throws Exception {
+	private static String trimToEmpty(String value) {
+		return value == null ? "" : value.trim();
+	}
+
+	private boolean alreadyCopied(String tenantIdValue, String companyIdValue, String platformBankTemplateId)
+			throws Exception {
 		try (PreparedStatement ps = connection.prepareStatement("""
 				SELECT COUNT(*) FROM tenant_bank_template
 				WHERE tenant_id = ? AND company_id = ? AND platform_bank_template_id = ?
 				""")) {
-			ps.setString(1, tenantId);
-			ps.setString(2, companyId);
+			ps.setString(1, tenantIdValue);
+			ps.setString(2, companyIdValue);
 			ps.setString(3, platformBankTemplateId);
 			try (ResultSet rs = ps.executeQuery()) {
 				rs.next();
@@ -56,7 +79,8 @@ public class DataCopyTenantBankTemplatesFromPlatform extends CustomDataTaskChang
 		}
 	}
 
-	private void insertCopy(String platformId, ResultSet platformRow) throws Exception {
+	private void insertCopy(String tenantIdValue, String companyIdValue, String platformId, ResultSet platformRow)
+			throws Exception {
 		try (PreparedStatement ps = connection.prepareStatement("""
 				INSERT INTO tenant_bank_template (
 				  id, tenant_id, company_id, platform_bank_template_id, country_code,
@@ -65,8 +89,8 @@ public class DataCopyTenantBankTemplatesFromPlatform extends CustomDataTaskChang
 				""")) {
 			int i = 1;
 			setData(ps, i++, UUID.randomUUID().toString());
-			setData(ps, i++, tenantId);
-			setData(ps, i++, companyId);
+			setData(ps, i++, tenantIdValue);
+			setData(ps, i++, companyIdValue);
 			setData(ps, i++, platformId);
 			setData(ps, i++, platformRow.getString("country_code"));
 			setData(ps, i++, platformRow.getString("name"));
@@ -103,5 +127,13 @@ public class DataCopyTenantBankTemplatesFromPlatform extends CustomDataTaskChang
 
 	public void setPayrollCountry(String payrollCountry) {
 		this.payrollCountry = payrollCountry;
+	}
+
+	public String getBackfillAll() {
+		return backfillAll;
+	}
+
+	public void setBackfillAll(String backfillAll) {
+		this.backfillAll = backfillAll;
 	}
 }

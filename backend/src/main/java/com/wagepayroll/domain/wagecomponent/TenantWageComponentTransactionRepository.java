@@ -28,4 +28,6 @@ public interface TenantWageComponentTransactionRepository
 
 	List<TenantWageComponentTransactionEntity> findByTenantIdAndCompanyIdAndPayPeriodIdAndEmployeeIdIn(UUID tenantId,
 			UUID companyId, UUID payPeriodId, Collection<UUID> employeeIds);
+
+	void deleteByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

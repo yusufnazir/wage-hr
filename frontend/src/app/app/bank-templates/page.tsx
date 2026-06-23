@@ -125,8 +125,8 @@ export default function TenantBankTemplatesPage() {
     return (
       <div className="mx-auto max-w-5xl">
         <NoCompanyEmptyState
-          title="Bank templates need a company"
-          body="Create a company first. Bank templates are managed per company and copied from the platform catalog on company creation."
+          title="Banks need a company"
+          body="Create a company first. Banks are seeded per company from the platform catalog when the company is created."
           returnTo={returnTo}
           showViewCompanies={me.privileges.includes("COMPANY_VIEW") || me.privileges.includes("COMPANY_MANAGE")}
         />
@@ -204,14 +204,6 @@ export default function TenantBankTemplatesPage() {
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">{t("bankTemplates.title")}</h1>
         <div className="flex items-center gap-3">
-          {canManage && companyId ? (
-            <Link
-              href={`/app/bank-templates/new?companyId=${encodeURIComponent(companyId)}`}
-              className="rounded bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground"
-            >
-              + {t("bankTemplates.action.new")}
-            </Link>
-          ) : null}
           {canManageCatalog ? (
             <Link
               href="/app/platform-bank-templates"

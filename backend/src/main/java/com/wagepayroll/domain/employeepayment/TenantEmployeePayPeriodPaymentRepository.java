@@ -45,4 +45,8 @@ public interface TenantEmployeePayPeriodPaymentRepository
 	Page<TenantEmployeePayPeriodPaymentEntity> findClosedHistory(@Param("tenantId") UUID tenantId,
 			@Param("employeeId") UUID employeeId, @Param("year") Integer year, @Param("payPeriodId") UUID payPeriodId,
 			Pageable pageable);
+
+	boolean existsByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
+
+	void deleteByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

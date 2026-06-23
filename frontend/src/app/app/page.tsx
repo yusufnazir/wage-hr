@@ -267,7 +267,7 @@ export default function TenantAppShellPage() {
         <section className="rounded-xl border border-border bg-surface p-7 shadow-sm">
           <h1 className="text-xl font-semibold text-foreground">Create your company to get started</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            This workspace needs at least one company before you can set up payroll structures, pay periods, bank templates, or payment locations.
+            This workspace needs at least one company before you can set up payroll structures, pay periods, banks, or payment locations.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             {canCreateCompany ? (

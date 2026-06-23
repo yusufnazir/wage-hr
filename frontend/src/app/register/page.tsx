@@ -7,6 +7,11 @@ import { authGlassCardClassName } from "@/components/shell/AuthShell";
 import { registerJson } from "@/lib/api";
 import { tenantWebAppUrlForHandle } from "@/lib/web-origins";
 
+type RegistrationSuccess = {
+  email: string;
+  tenantHandle?: string;
+};
+
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -15,13 +20,14 @@ export default function RegisterPage() {
   const [tenantHandle, setTenantHandle] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState<RegistrationSuccess | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setMsg(null);
+    setErrorMsg(null);
     try {
       const res = await registerJson({
         firstName,
@@ -32,18 +38,68 @@ export default function RegisterPage() {
         agreeToTermsOfService: agreeTerms,
         agreeToPrivacyPolicy: agreePrivacy,
       });
-      const hint = res.tenantHandle
-        ? `Your workspace: ${tenantWebAppUrlForHandle(res.tenantHandle)}`
-        : "";
-      setMsg(`Check your email to verify your account before signing in. ${hint}`);
+      setRegistrationSuccess({
+        email,
+        tenantHandle: res.tenantHandle ?? tenantHandle.trim() || undefined,
+      });
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Registration failed");
+      setErrorMsg(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setBusy(false);
     }
   }
 
   const canSubmit = agreeTerms && agreePrivacy && !busy;
+  const workspaceUrl = registrationSuccess?.tenantHandle
+    ? tenantWebAppUrlForHandle(registrationSuccess.tenantHandle)
+    : null;
+
+  if (registrationSuccess) {
+    return (
+      <AuthSplitLayout
+        title="Check your email"
+        subtitle="Your account was created. Verify your email before signing in."
+      >
+        <div className={`flex flex-col gap-4 p-6 ${authGlassCardClassName}`}>
+          <div
+            role="status"
+            aria-live="polite"
+            data-testid="register-success-panel"
+            className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-4"
+          >
+            <p className="text-base font-semibold text-foreground">Account created</p>
+            <p className="mt-2 text-sm text-foreground">
+              We sent a verification link to{" "}
+              <span className="font-medium">{registrationSuccess.email}</span>. Open it before signing in.
+            </p>
+            {workspaceUrl ? (
+              <p className="mt-3 text-sm text-foreground">
+                <span className="font-medium">Your workspace:</span>{" "}
+                <a
+                  href={workspaceUrl}
+                  className="break-all font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {workspaceUrl}
+                </a>
+              </p>
+            ) : null}
+          </div>
+          <Link
+            href="/verify-email"
+            className="rounded-md border border-border bg-background px-4 py-2.5 text-center text-sm font-medium text-foreground hover:bg-muted/40"
+          >
+            Didn&apos;t get the email? Resend verification
+          </Link>
+          <Link
+            href="/login"
+            className="rounded-md bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90"
+          >
+            Go to sign in
+          </Link>
+        </div>
+      </AuthSplitLayout>
+    );
+  }
 
   return (
     <AuthSplitLayout title="Create account" subtitle="Your name, email, password, and organization handle.">
@@ -142,6 +198,11 @@ export default function RegisterPage() {
             .
           </span>
         </label>
+        {errorMsg ? (
+          <p role="alert" className="rounded-lg border border-destructive-border bg-destructive-soft px-4 py-3 text-sm text-destructive">
+            {errorMsg}
+          </p>
+        ) : null}
         <button
           type="submit"
           disabled={!canSubmit}
@@ -149,7 +210,6 @@ export default function RegisterPage() {
         >
           {busy ? "Creating…" : "Register"}
         </button>
-        {msg ? <p className="text-sm text-muted">{msg}</p> : null}
       </form>
       <p className="text-center text-sm text-muted">
         <Link href="/login" className="text-primary underline-offset-4 hover:underline">

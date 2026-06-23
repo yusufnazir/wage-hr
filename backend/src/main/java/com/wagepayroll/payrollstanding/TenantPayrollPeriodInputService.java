@@ -344,11 +344,15 @@ public class TenantPayrollPeriodInputService {
 			if (employee == null) {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "EMPLOYEE_NOT_FOUND");
 			}
+			if ("DRAFT".equalsIgnoreCase(employee.getStatus())) {
+				skippedInactiveEmployee++;
+				continue;
+			}
 			if (!employee.isActive()) {
 				skippedInactiveEmployee++;
 				continue;
 			}
-			if (employee.getHireDate().isAfter(period.getEndDate())) {
+			if (employee.getHireDate() == null || employee.getHireDate().isAfter(period.getEndDate())) {
 				skippedInactiveEmployee++;
 				continue;
 			}

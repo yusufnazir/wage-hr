@@ -29,4 +29,6 @@ public interface TenantDepartmentRepository extends JpaRepository<TenantDepartme
 	boolean existsByTenantIdAndCompanyIdAndCodeAndIdNot(UUID tenantId, UUID companyId, String code, UUID id);
 
 	List<TenantDepartmentEntity> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
+
+	List<TenantDepartmentEntity> findByTenantIdAndManagerEmployeeId(UUID tenantId, UUID managerEmployeeId);
 }

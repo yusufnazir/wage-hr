@@ -27,6 +27,8 @@ export default function TenantPaymentLocationNewPage() {
   const t = useCallback((key: string) => navLabel(me.locale, key), [me.locale]);
 
   const canManage = me.privileges.includes("PAYMENT_LOCATION_MANAGE");
+  const canOpenCurrencies =
+    me.privileges.includes("TENANT_CURRENCY_EDIT") || me.privileges.includes("TENANT_CURRENCY_VIEW");
 
   const [load, setLoad] = useState<LoadState>("loading");
   const [companies, setCompanies] = useState<TenantCompanyItem[]>([]);
@@ -199,39 +201,71 @@ export default function TenantPaymentLocationNewPage() {
           </div>
         </div>
 
-        <label className="block space-y-1">
-          <span className="text-sm text-muted">{t("paymentLocations.label.currency")}</span>
-          {currencies.length > 0 ? (
-            <select
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              required
-            >
-              <option value="">— Select currency —</option>
-              {currencies.map((c) => (
-                <option key={c.id} value={c.code}>{c.code} — {c.displayName}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              maxLength={3}
-              required
-              placeholder="e.g. SRD"
-              className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-            />
-          )}
-        </label>
+        <div className="space-y-1">
+          <label className="block space-y-1">
+            <span className="text-sm text-muted">{t("paymentLocations.label.currency")}</span>
+            {currencies.length > 0 ? (
+              <select
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                required
+              >
+                <option value="">— Select currency —</option>
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.code}>{c.code} — {c.displayName}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                maxLength={3}
+                required
+                placeholder="e.g. SRD"
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+              />
+            )}
+          </label>
+          <p className="text-xs text-muted">
+            {t("paymentLocations.hint.moreCurrencies")}{" "}
+            {canOpenCurrencies ? (
+              <>
+                {t("paymentLocations.hint.enableMoreCurrencies")}{" "}
+                <Link href="/app/tenant-currencies" className="font-medium text-primary underline-offset-4 hover:underline">
+                  {t("paymentLocations.action.openCurrencies")}
+                </Link>
+              </>
+            ) : (
+              t("paymentLocations.hint.enableMoreCurrencies")
+            )}
+          </p>
+        </div>
 
         {paymentType === "BANK_ACCOUNT" ? (
           <>
             <label className="block space-y-1">
               <span className="text-sm text-muted">{t("paymentLocations.label.bankTemplate")}</span>
               {bankTemplates.length === 0 ? (
-                <p className="text-sm text-muted">No active banks available for this company.</p>
+                <div
+                  role="status"
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-3 text-sm text-foreground"
+                >
+                  <p>No banks are set up for this company yet.</p>
+                  <p className="mt-1 text-muted">
+                    Banks are seeded from the platform catalog when the company is created. If the list is empty, open
+                    Banks to review them or contact your platform operator.
+                  </p>
+                  {me.privileges.includes("BANK_TEMPLATE_VIEW") && companyId ? (
+                    <Link
+                      href={`/app/bank-templates?companyId=${encodeURIComponent(companyId)}`}
+                      className="mt-2 inline-flex font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      Go to Banks
+                    </Link>
+                  ) : null}
+                </div>
               ) : (
                 <select
                   className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
@@ -266,7 +300,7 @@ export default function TenantPaymentLocationNewPage() {
         <div className="flex gap-3 pt-1">
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || (paymentType === "BANK_ACCOUNT" && bankTemplates.length === 0)}
             className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
             {t("paymentLocations.action.create")}

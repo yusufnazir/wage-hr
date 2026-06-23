@@ -22,15 +22,15 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 	private UUID companyId;
 
 	@JdbcTypeCode(SqlTypes.VARCHAR)
-	@Column(name = "department_id", length = 36, nullable = false)
+	@Column(name = "department_id", length = 36)
 	private UUID departmentId;
 
 	@JdbcTypeCode(SqlTypes.VARCHAR)
-	@Column(name = "job_id", length = 36, nullable = false)
+	@Column(name = "job_id", length = 36)
 	private UUID jobId;
 
 	@JdbcTypeCode(SqlTypes.VARCHAR)
-	@Column(name = "employee_group_id", length = 36, nullable = false)
+	@Column(name = "employee_group_id", length = 36)
 	private UUID employeeGroupId;
 
 	@Column(name = "first_name", nullable = false, length = 100)
@@ -42,7 +42,7 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 	@Column(name = "date_of_birth")
 	private LocalDate dateOfBirth;
 
-	@Column(name = "hire_date", nullable = false)
+	@Column(name = "hire_date")
 	private LocalDate hireDate;
 
 	@Column(name = "email", length = 190)

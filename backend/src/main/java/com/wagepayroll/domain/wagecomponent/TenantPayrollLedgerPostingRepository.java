@@ -9,4 +9,6 @@ public interface TenantPayrollLedgerPostingRepository extends JpaRepository<Tena
 	boolean existsByTenantIdAndPayPeriodRunId(UUID tenantId, UUID payPeriodRunId);
 
 	long countByTenantIdAndPayPeriodRunId(UUID tenantId, UUID payPeriodRunId);
+
+	boolean existsByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

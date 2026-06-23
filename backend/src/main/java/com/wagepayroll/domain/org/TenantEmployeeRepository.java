@@ -25,6 +25,7 @@ public interface TenantEmployeeRepository
 	@Query("""
 			SELECT e.id FROM TenantEmployeeEntity e
 			WHERE e.tenantId = :tenantId AND e.companyId = :companyId AND e.active = true
+			  AND e.status <> 'DRAFT'
 			ORDER BY e.badgeNumber ASC
 			""")
 	List<UUID> findActiveIdsByTenantIdAndCompanyId(@Param("tenantId") UUID tenantId,

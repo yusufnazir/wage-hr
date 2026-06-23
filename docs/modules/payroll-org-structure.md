@@ -153,7 +153,7 @@ Rules:
 - company_id (UUID, required)
 - department_id (UUID, required)
 - job_id (UUID, required)
-- employee_group_id (UUID, required)
+- employee_group_id (UUID, optional — assign later when groups exist)
 - badge_number (nullable, operator-assigned label, unique per company when set)
 - first_name
 - last_name
@@ -172,19 +172,21 @@ Rules:
 - address_city (nullable)
 - address_postal_code (nullable)
 - address_country (nullable, ISO-3166-1 alpha-2)
-- status
+- status (enum: DRAFT | ACTIVE | ON_LEAVE | SUSPENDED | TERMINATED)
 - active
 - created_at
 - updated_at
 
 Rules:
-- Employee belongs to exactly one company, department, job, and employee group
-- department, job, employee_group must all belong to same company and tenant
+- Employee belongs to exactly one company, department, and job; employee group is optional
+- department and job must belong to same company and tenant; employee_group when set must belong to same company and tenant
 - email unique per company when present
 - badge_number unique per company when set (NULLs allowed; not unique among themselves)
 - nationality and address_country, when set, must be valid ISO-3166-1 alpha-2 codes present in `platform_country`
 - gender and civil_state, when set, must match the closed enums listed above
 - resignation_date, when set, must be on or after hire_date
+- **DRAFT** — onboarding in progress (create wizard). `active` is always `false`. `department_id`, `job_id`, and `hire_date` may be null until onboarding completes. Draft employees are **excluded from payroll materialization**, standing-instruction auto-provision, and default pay-period employee selection.
+- Completing onboarding (`POST /employees/{id}/complete-onboarding`) validates employment fields, sets a non-draft status (default `ACTIVE`), sets `active` (default `true`), and provisions standing instructions.
 
 ### 6) Employee Compensation (tenant_employee_compensation)
 
@@ -253,6 +255,8 @@ Tenant context from host/subdomain and enforced server-side.
 - POST /employees
 - GET /employees/{id}
 - PUT /employees/{id}
+- DELETE /employees/{id} — hard-delete employee and related configuration rows; **always allowed for DRAFT**; blocked with **409** when payroll result lines, pay-period payments, or ledger postings exist (use deactivate instead)
+- POST /employees/{id}/complete-onboarding — finalize a DRAFT employee (requires full employment; provisions standing instructions)
 - PATCH /employees/{id}/status
 - PATCH /employees/{id}/active
 
@@ -377,8 +381,8 @@ Employee Group:
 - no hierarchy fields
 
 Employee:
-- company_id, department_id, job_id, employee_group_id, first_name, last_name, hire_date, status required
-- referenced records must belong to same company and tenant
+- company_id, department_id, job_id, first_name, last_name, hire_date, status required
+- employee_group_id optional; when set, referenced group must belong to same company and tenant
 
 ---
 
@@ -425,8 +429,23 @@ All five resources (Companies, Departments, Jobs, Employee Groups, Employees) fo
 | `/app/employee-groups/new` | Create form |
 | `/app/employee-groups/{id}/edit` | Edit form |
 | `/app/employees` | Card list + multi-select company/status filters + name search |
-| `/app/employees/new` | Create form |
+| `/app/employees/new` | **Create wizard** (stepper): Personal information → Contact information → Employment → Compensation (incl. work time / hours setup) → Payment information → User account |
 | `/app/employees/{id}/edit` | Edit form (tabbed: Employee / Employment / Compensation / Contact / Documents) |
+
+### Employee create wizard (v1)
+
+Route `/app/employees/new` is a **horizontal stepper**, not a single-page form:
+
+1. **Personal information** — name, ID, demographics, badge (optional).
+2. **Contact information** — email, phone, address.
+3. **Employment** — company, department, job, optional employee group, hire date, target status after completion.
+4. **Compensation** — wage, currency, **work time (hours setup)**, statutory toggles. Optional; saved when continuing if any compensation fields are filled.
+5. **Payment information** — payment destinations panel (requires `EMPLOYEE_PAYMENT_VIEW`; same as edit tab).
+6. **User account** — placeholder in v1 (tenant user invite/link not implemented); shows contact email hint and link to `/app/users`.
+
+**Draft persistence:** Each **Next** saves the employee with `status=DRAFT` and `active=false` (create on first save, then PUT). Draft rows appear on the employee list with **Continue setup**. Resume via `/app/employees/new?draft={id}`. **Finish** calls `POST /employees/{id}/complete-onboarding`, which activates the employee for payroll.
+
+Users may navigate back to completed steps. Incomplete drafts cannot participate in payroll or receive standing instructions until onboarding is finished.
 
 ### Feedback and confirmation rules
 
@@ -435,6 +454,7 @@ Follow `docs/guides/WEB-THEMING-AND-DESIGN-SYSTEM.md` §9 for all mutating actio
 - **Create / update:** show a success toast on redirect back to the list page.
 - **Toggle active/inactive (soft delete):** show a **confirmation dialog** before calling the API. Dialog title: `"Deactivate {resource}?"`. After confirmation, show a success toast and refresh the list.
 - **Hard delete (if introduced):** always confirm with a destructive-styled dialog; show a success toast after.
+- **Employee delete:** list cards and edit profile expose **Delete** (`DELETE /employees/{id}`) with confirmation. Draft employees can always be removed. Completed employees with payroll history receive **409** — use **Deactivate** instead.
 - Error conditions: display an inline error or error toast; never silently fail.
 
 ### Privilege-gated UI

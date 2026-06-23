@@ -14,6 +14,7 @@ import com.wagepayroll.auth.EmailVerificationMailPort;
 import com.wagepayroll.auth.Sha256Hex;
 import com.wagepayroll.domain.emailverification.EmailVerificationTokenRepository;
 import com.wagepayroll.domain.membership.MembershipRepository;
+import com.wagepayroll.domain.privilege.PrivilegeRepository;
 import com.wagepayroll.domain.role.RoleEntity;
 import com.wagepayroll.domain.role.RolePrivilegeRepository;
 import com.wagepayroll.domain.role.RoleRepository;
@@ -71,6 +72,9 @@ class RegistrationTenantBootstrapIT {
 	private RolePrivilegeRepository rolePrivilegeRepository;
 
 	@Autowired
+	private PrivilegeRepository privilegeRepository;
+
+	@Autowired
 	private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
 	@BeforeEach
@@ -111,6 +115,12 @@ class RegistrationTenantBootstrapIT {
 				.anySatisfy(ur -> assertThat(ur.getRoleId()).isEqualTo(adminRoleId));
 
 		assertThat(rolePrivilegeRepository.findPrivilegeIdsByTenantIdAndRoleId(tenantId, adminRoleId)).isNotEmpty();
+
+		var adminPrivilegeCodes = rolePrivilegeRepository.findPrivilegeIdsByTenantIdAndRoleId(tenantId, adminRoleId).stream()
+				.map(id -> privilegeRepository.findById(id).orElseThrow().getCode())
+				.toList();
+		assertThat(adminPrivilegeCodes).contains("PAYMENT_LOCATION_VIEW", "PAYMENT_LOCATION_MANAGE");
+		assertThat(adminPrivilegeCodes).contains("BANK_TEMPLATE_VIEW", "BANK_TEMPLATE_MANAGE");
 	}
 
 	@Test

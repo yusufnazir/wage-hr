@@ -16,4 +16,6 @@ public interface TenantPayrollResultLineRepository extends JpaRepository<TenantP
 
 	List<TenantPayrollResultLineEntity> findByTenantIdAndPayPeriodRunIdAndEmployeeIdOrderByProcessingOrderSnapshotAsc(
 			UUID tenantId, UUID payPeriodRunId, UUID employeeId);
+
+	boolean existsByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

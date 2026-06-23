@@ -289,3 +289,15 @@ databaseChangeLog:
   - include:
       file: dml/data-m53-sr-p4-training-1.xml
       relativeToChangelogFile: true
+  - include:
+      file: dml/data-m54-payment-location-role-template-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m55-bank-template-role-template-privileges-1.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/alter-table-tenant-employee-employee-group-nullable.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/alter-table-tenant-employee-draft-nullable.xml
+      relativeToChangelogFile: true

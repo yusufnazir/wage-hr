@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        data-m11 seeded BANK_TEMPLATE_* privileges and granted them to the demo tenant only.
+        Add ADMIN role template grants, backfill existing Admin roles, and copy platform banks
+        onto companies that were created before tenant bank templates were provisioned.
+    -->
+
+    <changeSet id="data-m55-rtp-admin-bank-template-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="BANK_TEMPLATE_VIEW"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m55-rtp-admin-bank-template-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataGrantRoleTemplatePrivilege">
+            <param name="roleTemplateId" value="60000000-0000-0000-0000-000000000001"/>
+            <param name="privilegeCode" value="BANK_TEMPLATE_MANAGE"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m55-backfill-admin-bank-template-view-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataPropagateRoleTemplatePrivilegeToTenantRoles">
+            <param name="roleTemplateCode" value="ADMIN"/>
+            <param name="privilegeCode" value="BANK_TEMPLATE_VIEW"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m55-backfill-admin-bank-template-manage-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataPropagateRoleTemplatePrivilegeToTenantRoles">
+            <param name="roleTemplateCode" value="ADMIN"/>
+            <param name="privilegeCode" value="BANK_TEMPLATE_MANAGE"/>
+        </customChange>
+    </changeSet>
+
+    <changeSet id="data-m55-backfill-tenant-bank-templates-all-companies-1" author="wagepayroll" onValidationFail="MARK_RAN">
+        <customChange class="com.wagepayroll.liquibase.task.DataCopyTenantBankTemplatesFromPlatform">
+            <param name="backfillAll" value="true"/>
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

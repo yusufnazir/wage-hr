@@ -14,6 +14,7 @@ import com.wagepayroll.api.dto.TenantDepartmentItemDto;
 import com.wagepayroll.api.dto.TenantDepartmentUpsertRequest;
 import com.wagepayroll.api.dto.TenantEmployeeGroupItemDto;
 import com.wagepayroll.api.dto.TenantEmployeeGroupUpsertRequest;
+import com.wagepayroll.api.dto.TenantEmployeeCompleteOnboardingRequest;
 import com.wagepayroll.api.dto.TenantEmployeeItemDto;
 import com.wagepayroll.api.dto.TenantEmployeeStatusPatchRequest;
 import com.wagepayroll.api.dto.TenantEmployeeUpsertRequest;
@@ -24,6 +25,7 @@ import com.wagepayroll.api.dto.TenantWorkTimeItemDto;
 import com.wagepayroll.api.dto.TenantWorkTimeUpsertRequest;
 import com.wagepayroll.common.api.ApiResponse;
 import com.wagepayroll.common.api.RequestIdFilter;
+import com.wagepayroll.org.TenantEmployeeDeletionService;
 import com.wagepayroll.org.TenantPayrollOrgService;
 import com.wagepayroll.payperiod.TenantPayPeriodService;
 import com.wagepayroll.security.RequiresPrivilege;
@@ -51,10 +53,13 @@ public class TenantPayrollOrgController {
 
 	private final TenantPayrollOrgService service;
 	private final TenantPayPeriodService payPeriodService;
+	private final TenantEmployeeDeletionService employeeDeletionService;
 
-	public TenantPayrollOrgController(TenantPayrollOrgService service, TenantPayPeriodService payPeriodService) {
+	public TenantPayrollOrgController(TenantPayrollOrgService service, TenantPayPeriodService payPeriodService,
+			TenantEmployeeDeletionService employeeDeletionService) {
 		this.service = service;
 		this.payPeriodService = payPeriodService;
+		this.employeeDeletionService = employeeDeletionService;
 	}
 
 	@GetMapping("/companies")
@@ -300,6 +305,17 @@ public class TenantPayrollOrgController {
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.employee.updated"));
 	}
 
+	@PostMapping("/employees/{id}/complete-onboarding")
+	@RequiresPrivilege("EMPLOYEE_MANAGE")
+	public ResponseEntity<ApiResponse<Object>> completeEmployeeOnboarding(@PathVariable("id") UUID id,
+			@Valid @RequestBody TenantEmployeeCompleteOnboardingRequest request) {
+		TenantEmployeeUpsertRequest employee = request != null ? request.employee() : null;
+		String targetStatus = request != null ? request.targetStatus() : null;
+		TenantEmployeeItemDto item = service.completeEmployeeOnboarding(TenantContext.requireTenantId(), id, employee,
+				targetStatus);
+		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.employee.onboarding.completed"));
+	}
+
 	@PatchMapping("/employees/{id}/status")
 	@RequiresPrivilege("EMPLOYEE_MANAGE")
 	public ResponseEntity<ApiResponse<Object>> patchEmployeeStatus(@PathVariable("id") UUID id,
@@ -314,6 +330,13 @@ public class TenantPayrollOrgController {
 			@Valid @RequestBody TenantActivePatchRequest request) {
 		TenantEmployeeItemDto item = service.patchEmployeeActive(TenantContext.requireTenantId(), id, request);
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.employee.active.updated"));
+	}
+
+	@DeleteMapping("/employees/{id}")
+	@RequiresPrivilege("EMPLOYEE_MANAGE")
+	public ResponseEntity<Void> deleteEmployee(@PathVariable("id") UUID id) {
+		employeeDeletionService.deleteEmployee(TenantContext.requireTenantId(), id);
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/work-times")

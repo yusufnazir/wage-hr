@@ -13,4 +13,6 @@ public interface TenantPayrollYtdAccumulatorRepository extends JpaRepository<Ten
 
 	List<TenantPayrollYtdAccumulatorEntity> findByTenantIdAndEmployeeIdAndTaxYearOrderByAccumulatorCodeAsc(
 			UUID tenantId, UUID employeeId, int taxYear);
+
+	void deleteByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }

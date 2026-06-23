@@ -33,4 +33,6 @@ public interface TenantEmployeePayrollStandingInstructionRepository
 
 	List<TenantEmployeePayrollStandingInstructionEntity> findByTenantIdAndCompanyIdAndEmployeeIdIn(UUID tenantId,
 			UUID companyId, Collection<UUID> employeeIds);
+
+	void deleteByTenantIdAndEmployeeId(UUID tenantId, UUID employeeId);
 }
