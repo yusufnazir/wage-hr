@@ -30,6 +30,7 @@ const AUTH_SURFACE_PATHS = [
   "/verify-email",
   "/forgot-password",
   "/reset-password",
+  "/activate-account",
   "/terms-of-service",
   "/privacy-policy",
 ];

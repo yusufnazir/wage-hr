@@ -23,6 +23,7 @@ import {
   fetchTenantCurrencies,
   fetchTenantDepartments,
   fetchTenantEmployee,
+  fetchTenantEmployeeCompensation,
   fetchTenantEmployeeGroups,
   fetchTenantJobs,
   fetchTenantWorkTimes,
@@ -33,6 +34,7 @@ import {
   type TenantCurrencyItem,
   type TenantDepartmentItem,
   type TenantEmployeeCompensationPayload,
+  type TenantEmployeeCompensationItem,
   type TenantEmployeeGroupItem,
   type TenantEmployeeItem,
   type TenantEmployeeUpsertPayload,
@@ -118,6 +120,25 @@ function itemToForm(item: TenantEmployeeItem): TenantEmployeeUpsertPayload {
     addressCity: item.addressCity,
     addressCountry: item.addressCountry,
     addressPostalCode: item.addressPostalCode,
+  };
+}
+
+function normalizeCompensationWageType(
+  wageType: TenantEmployeeCompensationItem["wageType"],
+): TenantEmployeeCompensationPayload["wageType"] {
+  return wageType === "PER_HOUR" ? "PER_HOUR" : "PER_PERIOD";
+}
+
+function compensationItemToForm(item: TenantEmployeeCompensationItem): TenantEmployeeCompensationPayload {
+  return {
+    currencyCode: item.currencyCode,
+    wageType: normalizeCompensationWageType(item.wageType),
+    wageAmount: item.wageAmount,
+    workTimeId: item.workTimeId ?? "",
+    applyTaxes: item.applyTaxes,
+    applyTaxExempt: item.applyTaxExempt,
+    applyAov: item.applyAov,
+    notes: item.notes ?? "",
   };
 }
 
@@ -230,6 +251,8 @@ export function EmployeeCreateWizard() {
 
   const [form, setForm] = useState<TenantEmployeeUpsertPayload>(emptyPayload());
   const [targetStatus, setTargetStatus] = useState("ACTIVE");
+  const [enableUserAccount, setEnableUserAccount] = useState(false);
+  const [linkedUserId, setLinkedUserId] = useState<string | null>(null);
   const [compForm, setCompForm] = useState<TenantEmployeeCompensationPayload>(emptyCompensation());
   const [wageAmountInput, setWageAmountInput] = useState("");
 
@@ -302,7 +325,10 @@ export function EmployeeCreateWizard() {
       if (workTimesR.ok) setWorkTimes(workTimesR.items);
 
       if (draftId) {
-        const er = await fetchTenantEmployee(draftId);
+        const [er, compR] = await Promise.all([
+          fetchTenantEmployee(draftId),
+          fetchTenantEmployeeCompensation(draftId),
+        ]);
         if (!er.ok) {
           setLoad("error");
           return;
@@ -313,9 +339,17 @@ export function EmployeeCreateWizard() {
         }
         setCreatedEmployeeId(er.item.id);
         setForm(itemToForm(er.item));
+        setLinkedUserId(er.item.userId ?? null);
         setMaxReachedStep(steps.length - 1);
         const company = cr.items.find((c) => c.id === er.item.companyId);
-        setCompForm(emptyCompensation(company?.currency ?? "SRD"));
+        if (compR.ok) {
+          const loaded = compensationItemToForm(compR.item);
+          setCompForm(loaded);
+          setWageAmountInput(formatWageAmountForInput(loaded.wageAmount));
+          setCompSaved(compensationHasData(loaded));
+        } else {
+          setCompForm(emptyCompensation(company?.currency ?? "SRD"));
+        }
       } else {
         const defaultCompanyId = cr.items[0]?.id ?? "";
         const defaultCurrency = cr.items[0]?.currency ?? "SRD";
@@ -425,6 +459,10 @@ export function EmployeeCreateWizard() {
       setError("First name and last name are required.");
       return;
     }
+    if (enableUserAccount && !form.email?.trim()) {
+      setError(t("employees.wizard.userAccountEmailRequired"));
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -436,6 +474,7 @@ export function EmployeeCreateWizard() {
         employeeId,
         normalizeEmployeePayload(form),
         targetStatus,
+        enableUserAccount && !linkedUserId,
       );
       showToast(`"${completed.firstName} ${completed.lastName}" is ready for payroll.`);
       router.push(`/app/employees/${completed.id}/edit/employee`);
@@ -778,13 +817,28 @@ export function EmployeeCreateWizard() {
               <p className="mt-3 text-sm text-foreground">
                 {t("employees.wizard.userAccountEmailHint").replace("{email}", form.email)}
               </p>
-            ) : null}
-            <Link
-              href="/app/users"
-              className="mt-4 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline"
-            >
-              {t("employees.wizard.userAccountLink")}
-            </Link>
+            ) : (
+              <p className="mt-3 text-sm text-amber-600 dark:text-amber-400">
+                {t("employees.wizard.userAccountEmailRequired")}
+              </p>
+            )}
+            {linkedUserId ? (
+              <p className="mt-3 text-sm text-success">{t("employees.wizard.userAccountAlreadyLinked")}</p>
+            ) : (
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface-alt px-4 py-3">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={enableUserAccount}
+                  disabled={!form.email?.trim()}
+                  onChange={(e) => setEnableUserAccount(e.target.checked)}
+                />
+                <span className="text-sm">
+                  <span className="font-medium text-foreground">{t("employees.wizard.userAccountEnable")}</span>
+                  <span className="mt-1 block text-muted">{t("employees.wizard.userAccountEnableHint")}</span>
+                </span>
+              </label>
+            )}
           </Section>
         ) : null}
       </div>

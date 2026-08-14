@@ -441,7 +441,7 @@ Route `/app/employees/new` is a **horizontal stepper**, not a single-page form:
 3. **Employment** — company, department, job, optional employee group, hire date, target status after completion.
 4. **Compensation** — wage, currency, **work time (hours setup)**, statutory toggles. Optional; saved when continuing if any compensation fields are filled.
 5. **Payment information** — payment destinations panel (requires `EMPLOYEE_PAYMENT_VIEW`; same as edit tab).
-6. **User account** — placeholder in v1 (tenant user invite/link not implemented); shows contact email hint and link to `/app/users`.
+6. **User account** — optional toggle **Create user account for this employee** (default off). When enabled on **Finish**, requires contact email. If `user_id` is already set, skip. Otherwise resolve or create `user_account`, add tenant membership + **Employee** role, set `tenant_employee.user_id`. **New users** receive `EMPLOYEE_ACCOUNT_ACTIVATION` email with activation link (`/activate-account?token=…`) to set password. **Existing users** receive `EMPLOYEE_ACCOUNT_LINKED` (no activation link). Activation: `POST /api/v1/auth/employee-account/activate` (anonymous, CSRF-exempt).
 
 **Draft persistence:** Each **Next** saves the employee with `status=DRAFT` and `active=false` (create on first save, then PUT). Draft rows appear on the employee list with **Continue setup**. Resume via `/app/employees/new?draft={id}`. **Finish** calls `POST /employees/{id}/complete-onboarding`, which activates the employee for payroll.
 

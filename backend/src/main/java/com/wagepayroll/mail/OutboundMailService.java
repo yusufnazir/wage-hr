@@ -30,7 +30,8 @@ import org.springframework.web.server.ResponseStatusException;
  * {@code {baseUrl}/rest/v1/api/register-mail}; otherwise logs (local/dev parity with the former logging adapters).
  */
 @Component
-public class OutboundMailService implements MailSendPort, PasswordResetMailPort, EmailVerificationMailPort {
+public class OutboundMailService implements MailSendPort, PasswordResetMailPort, EmailVerificationMailPort,
+		EmployeeAccountMailPort {
 
 	private static final Logger log = LoggerFactory.getLogger(OutboundMailService.class);
 
@@ -128,6 +129,58 @@ public class OutboundMailService implements MailSendPort, PasswordResetMailPort,
 			return;
 		}
 		postTransactional(mail, email, subject, text, html, "password_reset");
+	}
+
+	@Override
+	public void sendActivationEmail(String email, String firstName, String companyName, String tenantHandle,
+			String roleName, String activationUrl, String preferredLocale) {
+		sendEmployeeAccountMail(MailTemplateCodes.EMPLOYEE_ACCOUNT_ACTIVATION, email, firstName, companyName, tenantHandle,
+				roleName, activationUrl, preferredLocale, "employee_account_activation");
+	}
+
+	@Override
+	public void sendLinkedEmail(String email, String firstName, String companyName, String tenantHandle, String roleName,
+			String preferredLocale) {
+		sendEmployeeAccountMail(MailTemplateCodes.EMPLOYEE_ACCOUNT_LINKED, email, firstName, companyName, tenantHandle,
+				roleName, null, preferredLocale, "employee_account_linked");
+	}
+
+	private void sendEmployeeAccountMail(String templateCode, String email, String firstName, String companyName,
+			String tenantHandle, String roleName, String activationUrl, String preferredLocale, String logKind) {
+		MergedMailApiSettings mail = mailApiSettingsMergeService.resolve();
+		Map<String, String> vars = new LinkedHashMap<>();
+		vars.put("firstName", safeTemplateValue(firstName));
+		vars.put("companyName", safeTemplateValue(companyName));
+		vars.put("tenantHandle", safeTemplateValue(tenantHandle));
+		vars.put("roleName", safeTemplateValue(roleName));
+		vars.put("activationLink", safeTemplateValue(activationUrl));
+		Optional<RenderedCatalogEmail> catalog = MailTemplateCodes.EMPLOYEE_ACCOUNT_ACTIVATION.equals(templateCode)
+				? mailTemplateCatalogService.tryRenderEmployeeAccountActivation(preferredLocale, vars)
+				: mailTemplateCatalogService.tryRenderEmployeeAccountLinked(preferredLocale, vars);
+		String subject;
+		String text;
+		String html = null;
+		if (catalog.isPresent()) {
+			RenderedCatalogEmail r = catalog.get();
+			subject = r.subject();
+			text = r.textBody();
+			html = r.htmlBody();
+		}
+		else if (MailTemplateCodes.EMPLOYEE_ACCOUNT_ACTIVATION.equals(templateCode)) {
+			subject = "Your account for " + safeTemplateValue(companyName);
+			text = "An account has been created for you at " + companyName + " with role " + roleName + ".\nActivate: "
+					+ activationUrl + "\n";
+		}
+		else {
+			subject = "Linked to " + safeTemplateValue(companyName);
+			text = "Your existing account has been linked to " + companyName + " with role " + roleName
+					+ ".\nSign in with your existing password.\n";
+		}
+		if (!mail.isFullyConfigured()) {
+			log.info("[{}] email={} activationUrl={}", logKind, email, activationUrl);
+			return;
+		}
+		postTransactional(mail, email, subject, text, html, logKind);
 	}
 
 	/**

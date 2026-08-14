@@ -48,11 +48,20 @@ function newDraftKey(): string {
   return `draft-${nextDraftKey}`;
 }
 
-function emptyDraft(currency: string): DestDraft {
+function defaultCashLocationId(
+  locations: TenantPaymentLocationRow[],
+  currency: string,
+): string {
+  const cash = locations.filter((l) => l.paymentType === "CASH");
+  const match = cash.find((l) => l.currency === currency);
+  return (match ?? cash[0])?.id ?? "";
+}
+
+function emptyDraft(currency: string, paymentLocationId = ""): DestDraft {
   return {
     key: newDraftKey(),
-    channelType: "BANK",
-    paymentLocationId: "",
+    channelType: "CASH",
+    paymentLocationId,
     bankTemplateId: "",
     accountNumber: "",
     currency,
@@ -123,17 +132,18 @@ export function EmployeePaymentPanel({ employeeId, companyId, defaultCurrency }:
   const [historyLoad, setHistoryLoad] = useState<"loading" | "ready" | "error">("loading");
   const [historyItems, setHistoryItems] = useState<TenantEmployeePayPeriodPaymentItem[]>([]);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (locationRows: TenantPaymentLocationRow[] = []) => {
     const r = await fetchTenantEmployeePaymentOverview(employeeId);
     if (!r.ok) {
       setLoad(r.status === 403 ? "forbidden" : "error");
       return;
     }
     setOverview(r.item);
+    const currency = defaultCurrency || "SRD";
     const nextDrafts =
       r.item.destinations.length > 0
         ? r.item.destinations.map(draftFromRow)
-        : [emptyDraft(defaultCurrency || "SRD")];
+        : [emptyDraft(currency, defaultCashLocationId(locationRows, currency))];
     setDrafts(nextDrafts);
     setLoad("ready");
     return r.item;
@@ -188,7 +198,7 @@ export function EmployeePaymentPanel({ employeeId, companyId, defaultCurrency }:
       ]);
       if (lr.ok) setLocations(lr.items);
       if (br.ok) setBanks(br.items);
-      await reload();
+      await reload(lr.ok ? lr.items : []);
     })();
   }, [canView, companyId, reload]);
 
@@ -407,7 +417,7 @@ export function EmployeePaymentPanel({ employeeId, companyId, defaultCurrency }:
                 type="button"
                 className="rounded border border-border px-3 py-1.5 text-sm hover:bg-surface-alt"
                 onClick={() => {
-                  const d = emptyDraft(defaultCurrency);
+                  const d = emptyDraft(defaultCurrency, defaultCashLocationId(cashLocations, defaultCurrency));
                   setDrafts((prev) => [...prev, d]);
                   setSelection({ kind: "destination", key: d.key });
                 }}

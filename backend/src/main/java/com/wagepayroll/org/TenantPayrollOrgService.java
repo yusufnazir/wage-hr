@@ -90,6 +90,7 @@ public class TenantPayrollOrgService {
 	private final TenantPayPeriodService payPeriodService;
 	private final DefaultPayrollCatalogProvisioningService defaultPayrollCatalogProvisioningService;
 	private final TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService;
+	private final EmployeeUserProvisioningService employeeUserProvisioningService;
 
 	public TenantPayrollOrgService(TenantCompanyRepository companyRepository, TenantDepartmentRepository departmentRepository,
 			TenantJobRepository jobRepository, TenantEmployeeGroupRepository employeeGroupRepository,
@@ -100,7 +101,8 @@ public class TenantPayrollOrgService {
 			BankTemplateCopyService bankTemplateCopyService, LedgerTemplateCopyService ledgerTemplateCopyService,
 			TenantPayPeriodService payPeriodService,
 			DefaultPayrollCatalogProvisioningService defaultPayrollCatalogProvisioningService,
-			TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService) {
+			TenantEmployeePayrollStandingProvisionService payrollStandingProvisionService,
+			EmployeeUserProvisioningService employeeUserProvisioningService) {
 		this.companyRepository = companyRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobRepository = jobRepository;
@@ -116,6 +118,7 @@ public class TenantPayrollOrgService {
 		this.payPeriodService = payPeriodService;
 		this.defaultPayrollCatalogProvisioningService = defaultPayrollCatalogProvisioningService;
 		this.payrollStandingProvisionService = payrollStandingProvisionService;
+		this.employeeUserProvisioningService = employeeUserProvisioningService;
 	}
 
 	@Transactional(readOnly = true)
@@ -501,7 +504,7 @@ public class TenantPayrollOrgService {
 
 	@Transactional
 	public TenantEmployeeItemDto completeEmployeeOnboarding(UUID tenantId, UUID id,
-			TenantEmployeeUpsertRequest request, String targetStatus) {
+			TenantEmployeeUpsertRequest request, String targetStatus, boolean enableUserAccount, String tenantHandle) {
 		TenantEmployeeEntity entity = requireEmployee(tenantId, id);
 		if (!isDraftEntity(entity)) {
 			throw badRequest("Employee onboarding is already complete");
@@ -537,6 +540,8 @@ public class TenantPayrollOrgService {
 		TenantEmployeeEntity saved = saveWithConflict(entity);
 		payrollStandingProvisionService.provisionForNewEmployee(tenantId, companyId, saved.getId(),
 				saved.getHireDate());
+		employeeUserProvisioningService.provisionIfRequested(tenantId, tenantHandle, saved, enableUserAccount);
+		saved = employeeRepository.findByIdAndTenantId(saved.getId(), tenantId).orElse(saved);
 		return toEmployeeDto(saved);
 	}
 
@@ -1404,6 +1409,6 @@ public class TenantPayrollOrgService {
 				e.getEmail(), e.getPhone(), e.getStatus(), e.isActive(), e.getBadgeNumber(), e.getIdNumber(),
 				e.getGender(), e.getNationality(), e.getPlaceOfBirth(), e.getCivilState(), e.getResignationDate(),
 				e.getAddressStreet(), e.getAddressNumber(), e.getAddressCity(), e.getAddressCountry(),
-				e.getAddressPostalCode(), e.getCreatedAt(), e.getUpdatedAt());
+				e.getAddressPostalCode(), e.getUserId(), e.getCreatedAt(), e.getUpdatedAt());
 	}
 }

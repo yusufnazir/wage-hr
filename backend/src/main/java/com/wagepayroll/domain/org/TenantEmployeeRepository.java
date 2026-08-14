@@ -17,6 +17,10 @@ public interface TenantEmployeeRepository
 
 	Optional<TenantEmployeeEntity> findByIdAndTenantIdAndCompanyId(UUID id, UUID tenantId, UUID companyId);
 
+	Optional<TenantEmployeeEntity> findByTenantIdAndUserId(UUID tenantId, UUID userId);
+
+	boolean existsByTenantIdAndUserIdAndIdNot(UUID tenantId, UUID userId, UUID id);
+
 	boolean existsByTenantIdAndCompanyIdAndBadgeNumber(UUID tenantId, UUID companyId, String badgeNumber);
 
 	boolean existsByTenantIdAndCompanyIdAndBadgeNumberAndIdNot(UUID tenantId, UUID companyId, String badgeNumber,

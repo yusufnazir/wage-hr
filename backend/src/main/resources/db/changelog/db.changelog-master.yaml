@@ -301,3 +301,12 @@ databaseChangeLog:
   - include:
       file: ddl/alter-table-tenant-employee-draft-nullable.xml
       relativeToChangelogFile: true
+  - include:
+      file: ddl/alter-table-tenant-employee-user-id.xml
+      relativeToChangelogFile: true
+  - include:
+      file: ddl/schema-m58-employee-account-activation-token.xml
+      relativeToChangelogFile: true
+  - include:
+      file: dml/data-m58-employee-account-mail-templates-1.xml
+      relativeToChangelogFile: true

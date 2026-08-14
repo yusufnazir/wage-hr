@@ -321,9 +321,13 @@ const en: Record<string, string> = {
   "employees.wizard.compensationSaved": "Compensation saved.",
   "employees.wizard.paymentIntro": "Configure how this employee is paid. Changes are saved from this panel.",
   "employees.wizard.userAccountIntro":
-    "Linking a login to this employee is not available in this version. Use the tenant user directory when invitations are enabled.",
+    "Optionally create a login for this employee. They receive the Employee role and an email with next steps.",
+  "employees.wizard.userAccountEnable": "Create user account for this employee",
+  "employees.wizard.userAccountEnableHint":
+    "Uses the contact email from step 2. New users get an activation link to set a password; existing users are linked without activation.",
+  "employees.wizard.userAccountEmailRequired": "Add a contact email on step 2 to enable a user account.",
+  "employees.wizard.userAccountAlreadyLinked": "This employee is already linked to a user account.",
   "employees.wizard.userAccountEmailHint": "Contact email on file: {email}",
-  "employees.wizard.userAccountLink": "Open user directory",
   "employees.wizard.finish": "Finish",
   "employees.col.name": "Name",
   "employees.col.email": "Email",
@@ -1659,9 +1663,13 @@ const nl: Record<string, string> = {
   "employees.wizard.compensationSaved": "Compensatie opgeslagen.",
   "employees.wizard.paymentIntro": "Configureer hoe deze werknemer wordt betaald. Wijzigingen worden in dit paneel opgeslagen.",
   "employees.wizard.userAccountIntro":
-    "Een login koppelen aan deze werknemer is in deze versie niet beschikbaar. Gebruik de gebruikerslijst wanneer uitnodigingen zijn ingeschakeld.",
+    "Optioneel een login voor deze werknemer aanmaken. Zij krijgen de rol Employee en een e-mail met vervolgstappen.",
+  "employees.wizard.userAccountEnable": "Gebruikersaccount voor deze werknemer aanmaken",
+  "employees.wizard.userAccountEnableHint":
+    "Gebruikt het contact-e-mailadres uit stap 2. Nieuwe gebruikers krijgen een activatielink; bestaande gebruikers worden gekoppeld zonder activatie.",
+  "employees.wizard.userAccountEmailRequired": "Voeg een contact-e-mailadres toe in stap 2 om een gebruikersaccount in te schakelen.",
+  "employees.wizard.userAccountAlreadyLinked": "Deze werknemer is al gekoppeld aan een gebruikersaccount.",
   "employees.wizard.userAccountEmailHint": "E-mailadres in dossier: {email}",
-  "employees.wizard.userAccountLink": "Open gebruikerslijst",
   "employees.wizard.finish": "Voltooien",
   "employees.hint.payrollInputNeedsCompany":
     "Selecteer eerst een bedrijf op het tabblad Dienstverband voordat u looninvoer kunt beheren.",

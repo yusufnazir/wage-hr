@@ -42,6 +42,14 @@ public class MailTemplateCatalogService {
 		return tryRenderActiveTemplate(MailTemplateCodes.PASSWORD_RESET_REQUEST, preferredLocaleTag, vars);
 	}
 
+	public Optional<RenderedCatalogEmail> tryRenderEmployeeAccountActivation(String preferredLocaleTag, Map<String, String> vars) {
+		return tryRenderActiveTemplate(MailTemplateCodes.EMPLOYEE_ACCOUNT_ACTIVATION, preferredLocaleTag, vars);
+	}
+
+	public Optional<RenderedCatalogEmail> tryRenderEmployeeAccountLinked(String preferredLocaleTag, Map<String, String> vars) {
+		return tryRenderActiveTemplate(MailTemplateCodes.EMPLOYEE_ACCOUNT_LINKED, preferredLocaleTag, vars);
+	}
+
 	private Optional<RenderedCatalogEmail> tryRenderActiveTemplate(String code, String preferredLocaleTag, Map<String, String> vars) {
 		Optional<MailTemplateEntity> template = mailTemplateRepository.findByCodeAndActiveIsTrue(code);
 		if (template.isEmpty()) {

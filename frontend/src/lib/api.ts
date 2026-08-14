@@ -503,6 +503,10 @@ export async function resetPasswordJson(token: string, newPassword: string): Pro
   await postJson("/api/v1/auth/reset-password", { token, newPassword }, [204]);
 }
 
+export async function activateEmployeeAccountJson(token: string, password: string): Promise<void> {
+  await postJson("/api/v1/auth/employee-account/activate", { token, password }, [204]);
+}
+
 export type ApiEnvelope<T> = { data: T; meta: { requestId: string } };
 
 export type MePayload = {
@@ -3783,6 +3787,7 @@ export type TenantEmployeeItem = {
   addressCity: string | null;
   addressCountry: string | null;
   addressPostalCode: string | null;
+  userId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -3894,12 +3899,13 @@ export async function completeTenantEmployeeOnboarding(
   id: string,
   employee: TenantEmployeeUpsertPayload,
   targetStatus: string,
+  enableUserAccount?: boolean,
 ): Promise<TenantEmployeeItem> {
   const r = await fetchBff(bffUrl(`/api/v1/employees/${encodeURIComponent(id)}/complete-onboarding`), {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ employee, targetStatus }),
+    body: JSON.stringify({ employee, targetStatus, enableUserAccount: enableUserAccount === true }),
   });
   if (!r.ok) throw new Error(await readFailureMessage(r));
   const body = (await r.json()) as ApiEnvelope<{ item: TenantEmployeeItem }>;

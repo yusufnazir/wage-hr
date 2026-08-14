@@ -49,7 +49,8 @@ public class SecurityConfiguration {
 		http.exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 		http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 		http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-				.ignoringRequestMatchers("/api/v1/auth/invitations/accept", "/api/v1/billing/webhooks/**"));
+				.ignoringRequestMatchers("/api/v1/auth/invitations/accept", "/api/v1/auth/employee-account/activate",
+						"/api/v1/billing/webhooks/**"));
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health", "/error").permitAll()
 				.requestMatchers("/api/v1/billing/webhooks/**").permitAll()
@@ -59,6 +60,7 @@ public class SecurityConfiguration {
 						.permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/platform/public-surface").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/invitations/accept").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/v1/auth/employee-account/activate").permitAll()
 				.requestMatchers("/api/**").authenticated()
 				.anyRequest().denyAll());
 		return http.build();

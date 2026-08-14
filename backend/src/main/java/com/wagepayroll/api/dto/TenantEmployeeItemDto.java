@@ -30,6 +30,7 @@ public record TenantEmployeeItemDto(
 		String addressCity,
 		String addressCountry,
 		String addressPostalCode,
+		UUID userId,
 		Instant createdAt,
 		Instant updatedAt) {
 }

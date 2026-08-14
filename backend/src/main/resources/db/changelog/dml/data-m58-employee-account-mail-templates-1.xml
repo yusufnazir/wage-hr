@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="data-m58-employee-account-mail-templates-1" author="wagepayroll">
+        <insert tableName="mail_template">
+            <column name="id" value="60000000-0000-0000-0000-000000000004"/>
+            <column name="code" value="EMPLOYEE_ACCOUNT_ACTIVATION"/>
+            <column name="content_version" value="mt-m58-1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template">
+            <column name="id" value="60000000-0000-0000-0000-000000000005"/>
+            <column name="code" value="EMPLOYEE_ACCOUNT_LINKED"/>
+            <column name="content_version" value="mt-m58-1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000041"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000004"/>
+            <column name="locale" value="en"/>
+            <column name="subject" value="Your account for {{companyName}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1&gt;Welcome, {{firstName}}&lt;/h1&gt;&lt;p&gt;An account has been created for you at &lt;strong&gt;{{companyName}}&lt;/strong&gt; ({{tenantHandle}}) with the &lt;strong&gt;{{roleName}}&lt;/strong&gt; role.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;{{activationLink}}&quot; style=&quot;color:#2563eb&quot;&gt;Activate your account and set a password&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000042"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000004"/>
+            <column name="locale" value="nl"/>
+            <column name="subject" value="Uw account voor {{companyName}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1&gt;Welkom, {{firstName}}&lt;/h1&gt;&lt;p&gt;Er is een account voor u aangemaakt bij &lt;strong&gt;{{companyName}}&lt;/strong&gt; ({{tenantHandle}}) met de rol &lt;strong&gt;{{roleName}}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;{{activationLink}}&quot; style=&quot;color:#2563eb&quot;&gt;Activeer uw account en stel een wachtwoord in&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000051"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000005"/>
+            <column name="locale" value="en"/>
+            <column name="subject" value="You are linked to {{companyName}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1&gt;Hello, {{firstName}}&lt;/h1&gt;&lt;p&gt;Your existing account has been linked to employee records at &lt;strong&gt;{{companyName}}&lt;/strong&gt; ({{tenantHandle}}) with the &lt;strong&gt;{{roleName}}&lt;/strong&gt; role.&lt;/p&gt;&lt;p&gt;Sign in with your existing password.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="mail_template_locale">
+            <column name="id" value="60000000-0000-0000-0000-000000000052"/>
+            <column name="mail_template_id" value="60000000-0000-0000-0000-000000000005"/>
+            <column name="locale" value="nl"/>
+            <column name="subject" value="U bent gekoppeld aan {{companyName}}"/>
+            <column name="body_html" value="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body style=&quot;font-family:system-ui,sans-serif;line-height:1.5&quot;&gt;&lt;h1&gt;Hallo, {{firstName}}&lt;/h1&gt;&lt;p&gt;Uw bestaande account is gekoppeld aan werknemersgegevens bij &lt;strong&gt;{{companyName}}&lt;/strong&gt; ({{tenantHandle}}) met de rol &lt;strong&gt;{{roleName}}&lt;/strong&gt;.&lt;/p&gt;&lt;p&gt;Meld u aan met uw bestaande wachtwoord.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

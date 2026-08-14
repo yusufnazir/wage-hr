@@ -33,6 +33,10 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 	@Column(name = "employee_group_id", length = 36)
 	private UUID employeeGroupId;
 
+	@JdbcTypeCode(SqlTypes.VARCHAR)
+	@Column(name = "user_id", length = 36)
+	private UUID userId;
+
 	@Column(name = "first_name", nullable = false, length = 100)
 	private String firstName;
 
@@ -129,6 +133,14 @@ public class TenantEmployeeEntity extends TenantScopedEntity {
 
 	public void setEmployeeGroupId(UUID employeeGroupId) {
 		this.employeeGroupId = employeeGroupId;
+	}
+
+	public UUID getUserId() {
+		return userId;
+	}
+
+	public void setUserId(UUID userId) {
+		this.userId = userId;
 	}
 
 	public String getFirstName() {

@@ -311,8 +311,9 @@ public class TenantPayrollOrgController {
 			@Valid @RequestBody TenantEmployeeCompleteOnboardingRequest request) {
 		TenantEmployeeUpsertRequest employee = request != null ? request.employee() : null;
 		String targetStatus = request != null ? request.targetStatus() : null;
+		boolean enableUserAccount = request != null && Boolean.TRUE.equals(request.enableUserAccount());
 		TenantEmployeeItemDto item = service.completeEmployeeOnboarding(TenantContext.requireTenantId(), id, employee,
-				targetStatus);
+				targetStatus, enableUserAccount, TenantContext.requireTenantHandle());
 		return ResponseEntity.ok(ApiResponse.of(Map.of("item", item), "tenant.employee.onboarding.completed"));
 	}
 
